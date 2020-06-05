@@ -1,11 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useField } from '@unform/core';
 
-import { Input } from './styles';
+// import { Input } from './styles';
 
 export default function Input({ name }) {
+  const inputRef = useRef(null);
   const { fieldName, registerField, defaultValue, error } = useField(name);
 
-  useEffect(() => {}, []);
-  return <input />;
+  useEffect(() => {
+    registerField({
+      name: fieldName,
+      ref: inputRef.current,
+      path: 'value',
+    });
+  }, [fieldName, registerField]);
+
+  return <input ref={inputRef} />;
 }

@@ -1,17 +1,20 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Form } from '@unform/web';
-import { Input } from '../../components/Form/styles';
-
-// import { Container } from './styles';
+import logo from '../../assets/logo.svg';
+// import { Form, Container } from './styles';
+import Input from '../../components/Form/Input';
 
 export default function SignIn() {
   return (
-    <div>
-      <h1>Hello World</h1>
-
-      <Form>
-        <Input name="email" />
-      </Form>
-    </div>
+    <>
+      <img src={logo} alt="Sis - MEI" />
+      <form>
+        <input type="email" placeholder="Seu e-mail" />
+        <input type="password" placeholder="Sua senha" />
+        <button type="submit">Acessar</button>
+        <Link to="/register">Registrar</Link>
+      </form>
+    </>
   );
 }
