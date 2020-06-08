@@ -9,31 +9,52 @@ export const Wrapper = styled.div`
 `;
 
 export const Content = styled.div`
+  max-width: 720px;
   width: 100%;
-  max-width: 315px;
+  padding: 25px;
   text-align: center;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+  border: 1px;
+  border-radius: 5px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
   img {
     width: 100px;
   }
 
-  img:hover {
-    animation: rotation 2s infinite linear;
+  button, a {
+    margin: 0;
+    height: 44px;
+    background: #81d4fa;
+    font-weight: bold;
+    color: #000;
+    border: 0;
+    border-radius: 4px;
+    transition: background 0.3s;
+
+    &:hover {
+      background: #29b6f6;
+    }
   }
 
-  @keyframes rotation {
-    from {
-      transform: ${props => (props.submit ? `rotate(0deg)` : '')};
-    }
-    to {
-      transform: ${props => (props.submit ? `rotate(359deg)` : '')};
+  a {
+      background: #c5e1a5;
+      display: flex;
+      width: 250px;
+      align-items: center;
+      margin: 20px auto;
+      justify-content: center;
+      &:hover {
+        background: #9ccc65;
+      }
     }
   }
 
   form {
     display: flex;
     flex-direction: column;
-    margin-top: 30px;
 
     input {
       background: rgba(0, 0, 0, 0.1);
@@ -45,39 +66,7 @@ export const Content = styled.div`
       margin: 0 0 10px;
 
       &::placeholder {
-        color: rgba(0, 0, 0, 0.2);
+        color: rgba(0, 0, 0, 0.4);
       }
     }
-
-    button {
-      margin: 0;
-      height: 44px;
-      background: #81d4fa;
-      font-weight: bold;
-      color: #000;
-      border: 0;
-      border-radius: 4px;
-      transition: background 0.3s;
-
-      &:hover {
-        background: #29b6f6;
-      }
-    }
-
-    a {
-      margin-top: 10px;
-      height: 44px;
-      line-height: 44px;
-      background: #c5e1a5;
-      font-weight: bold;
-      color: #000;
-      border: 0;
-      border-radius: 4px;
-      transition: background 0.3s;
-
-      &:hover {
-        background: #9ccc65;
-      }
-    }
-  }
 `;
