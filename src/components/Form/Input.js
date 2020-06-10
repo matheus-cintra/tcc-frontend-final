@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useField } from '@unform/core';
 
-// import { Input } from './styles';
+import { ErrorMessage } from './styles';
 
 export default function Input({ name, ...rest }) {
   const inputRef = useRef(null);
@@ -19,11 +19,9 @@ export default function Input({ name, ...rest }) {
     <>
       <input ref={inputRef} {...rest} />
       {error && (
-        <span
-          style={{ color: '#f00', margin: '-5px 0 5px 30px', display: 'block' }}
-        >
+        <ErrorMessage>
           {error}
-        </span>
+        </ErrorMessage>
       )}
     </>
   );

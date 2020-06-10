@@ -1,10 +1,19 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
+import Header from '../../../components/Header';
+import Sidenav from '../../../components/Sidenav';
+// import Sidenav from '../../../components/Sidenav';
 
-import { Wrapper } from './styles';
+import { Wrapper, Container } from './styles';
 
 export default function DefaultLayout({ children }) {
-  return <Wrapper>{children}</Wrapper>;
+  return (
+    <Wrapper>
+      <Sidenav />
+      <Header />
+      <Container>{children}</Container>
+    </Wrapper>
+  );
 }
 
 DefaultLayout.propTypes = {

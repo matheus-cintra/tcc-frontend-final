@@ -24,7 +24,8 @@ export const Content = styled.div`
     width: 100px;
   }
 
-  button, a {
+  button,
+  a {
     margin: 0;
     height: 44px;
     background: #81d4fa;
@@ -40,15 +41,14 @@ export const Content = styled.div`
   }
 
   a {
-      background: #c5e1a5;
-      display: flex;
-      width: 250px;
-      align-items: center;
-      margin: 20px auto;
-      justify-content: center;
-      &:hover {
-        background: #9ccc65;
-      }
+    background: #c5e1a5;
+    display: flex;
+    width: 250px;
+    align-items: center;
+    margin: 20px auto;
+    justify-content: center;
+    &:hover {
+      background: #9ccc65;
     }
   }
 
@@ -69,4 +69,13 @@ export const Content = styled.div`
         color: rgba(0, 0, 0, 0.4);
       }
     }
+  }
+
+  @media screen and (max-width: 800px) {
+    width: calc(100vw - 60%);
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 `;

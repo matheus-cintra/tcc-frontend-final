@@ -21,6 +21,7 @@ import Contract from '../pages/Contract';
 import Customer from '../pages/Customer';
 import Service from '../pages/Service';
 import ServiceOrder from '../pages/ServiceOrder';
+import ConfirmationRegister from '../pages/ConfirmationRegister';
 
 /* ****************************************************************************
 Definição das rotas de navegação
@@ -30,6 +31,7 @@ export default function Routes() {
     <Switch>
       <Route path="/" exact component={SignIn} />
       <Route path="/register" component={SignUp} />
+      <Route path="/confirmation" exact component={ConfirmationRegister} />
       <Route path="/dashboard" component={DashBoard} isPrivate />
       <Route path="/profile" component={Profile} isPrivate />
       <Route path="/billing/:id?" component={Billing} isPrivate />

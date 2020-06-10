@@ -19,8 +19,6 @@ export function signFailure() {
 }
 
 export function signUpRequest(payload) {
-  console.warn('chegou a> ', payload);
-
   return {
     type: '@auth/SIGN_UP_REQUEST',
     payload: { ...payload },

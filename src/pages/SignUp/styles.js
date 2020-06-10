@@ -21,6 +21,18 @@ export const Form = styled(Unform)`
     width: 250px;
     align-self: flex-end;
   }
+
+  @media screen and (max-width: 800px) {
+    margin-top: 30px;
+
+    div {
+      display: flex;
+    }
+
+    button {
+      width: 100%;
+    }
+  }
 `;
 
 export const LogoContainer = styled.div`

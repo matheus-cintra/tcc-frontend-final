@@ -28,4 +28,8 @@ export const RegisterContainer = styled.div`
     line-height: 22px;
     margin-top: 20px;
   }
+
+  @media screen and (max-width: 800px) {
+    margin-top: 20px;
+  }
 `;
