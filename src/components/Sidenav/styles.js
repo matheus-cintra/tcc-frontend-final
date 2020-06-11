@@ -6,12 +6,6 @@ const sizes = {
   smartphone: '230px',
 };
 
-const device = {
-  mobile: `(min-width: ${sizes.mobile})`,
-  tablet: `(min-width: ${sizes.tablet})`,
-  desktop: `(min-width: ${sizes.desktop})`,
-};
-
 export const Container = styled.nav`
   background: #455a64;
   height: 100%;

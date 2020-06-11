@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import { Form as Unform } from '@unform/web';
 
 export const ErrorMessage = styled.span`
   color: #f00;

@@ -1,15 +1,7 @@
 import React, { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import Icon from '@mdi/react';
-import { Form } from './styles';
-import logo from '../../assets/logo.svg';
-import Input from '../../components/Form/Input';
-import { InputContainer, LogoContainer } from './styles';
 import * as Yup from 'yup';
-import { validateSignUp } from '../../Schemas/globalSchemas';
-
-import { signUpRequest } from '../../store/modules/auth/actions';
-
 import {
   mdiAccount,
   mdiEmail,
@@ -18,19 +10,26 @@ import {
   mdiFileDocument,
   mdiFactory,
 } from '@mdi/js';
+import { Form, InputContainer, LogoContainer } from './styles';
+import logo from '../../assets/logo.svg';
+import Input from '../../components/Form/Input';
+
+import { validateSignUp } from '../../Schemas/globalSchemas';
+
+import { signUpRequest } from '../../store/modules/auth/actions';
 
 export default function SignUp() {
   const formRef = useRef(null);
   const dispatch = useDispatch();
 
-  async function handleSubmit(data, { reset }, event) {
+  async function handleSubmit(data) {
     try {
       await validateSignUp(data);
 
       dispatch(signUpRequest(data));
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        let errorMessages = {};
+        const errorMessages = {};
 
         error.inner.forEach(err => {
           errorMessages[err.path] = err.message;

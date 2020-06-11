@@ -5,12 +5,11 @@ import { Router } from 'react-router-dom';
 
 import './config/ReactotronConfig';
 
+import { ToastContainer } from 'react-toastify';
 import Routes from './routes';
 import history from './services/history';
 
 import { store, persistor } from './store';
-
-import { ToastContainer } from 'react-toastify';
 
 import GlobalStyle from './styles/global';
 

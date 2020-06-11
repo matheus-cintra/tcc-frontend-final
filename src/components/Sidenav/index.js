@@ -1,12 +1,6 @@
 import React from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import Icon from '@mdi/react';
-import {
-  mdiViewDashboard,
-  mdiAccountSupervisor,
-  mdiAccount,
-  mdiCogs,
-} from '@mdi/js';
 import { Container } from './styles';
 import routes from './routesTemplate';
 

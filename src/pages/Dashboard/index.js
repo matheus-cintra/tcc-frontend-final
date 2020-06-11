@@ -1,5 +1,4 @@
 import React from 'react';
-import api from '../../services/api';
 import {
   LineChart,
   Line,
@@ -11,6 +10,7 @@ import {
 } from 'recharts';
 
 import { GraphContainer, Graph, BigGraph } from './styles';
+
 const data = [
   { name: 'Janeiro', clientes: 3, pv: 325, amt: 158 },
   { name: 'Fevereiro', clientes: 7, pv: 2400, amt: 2400 },

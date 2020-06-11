@@ -2,7 +2,6 @@ import {
   mdiViewDashboard,
   mdiAccountSupervisor,
   mdiBriefcaseAccount,
-  mdiBadgeAccount,
 } from '@mdi/js';
 
 const routes = [

@@ -1,9 +1,8 @@
 import * as Yup from 'yup';
 
-
-/*******************************************************************************
-* SignUp Schema
-*******************************************************************************/
+/** *****************************************************************************
+ * SignUp Schema
+ ****************************************************************************** */
 const signUpSchema = Yup.object().shape({
   name: Yup.string()
     .min(4, 'Nome muito pequeno.')
@@ -17,10 +16,10 @@ const signUpSchema = Yup.object().shape({
 });
 
 const validateSignUp = async function validateSignUp(data) {
-  return await signUpSchema.validate(data, {
+  return signUpSchema.validate(data, {
     abortEarly: false,
   });
 };
-/******************************************************************************/
+/** *************************************************************************** */
 
 export { validateSignUp };

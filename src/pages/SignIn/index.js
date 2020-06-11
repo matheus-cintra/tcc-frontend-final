@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/logo.svg';
-import { Form, LoginContainer, RegisterContainer, Button } from './styles';
-import Input from '../../components/Form/Input';
 import * as Yup from 'yup';
+import logo from '../../assets/logo.svg';
+import { Form, LoginContainer, RegisterContainer } from './styles';
+import Input from '../../components/Form/Input';
 
 import { signInRequest } from '../../store/modules/auth/actions';
 
@@ -32,7 +32,7 @@ export default function SignIn() {
       dispatch(signInRequest(email, password));
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        let errorMessages = {};
+        const errorMessages = {};
 
         error.inner.forEach(err => {
           errorMessages[err.path] = err.message;

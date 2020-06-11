@@ -1,10 +1,10 @@
 import { takeLatest, call, put, all } from 'redux-saga/effects';
 
+import { toast } from 'react-toastify';
 import history from '../../../services/history';
 import api from '../../../services/api';
 
-import { signInSuccess, signUpSuccess } from './actions';
-import { toast } from 'react-toastify';
+import { signInSuccess } from './actions';
 
 export function* signIn({ payload }) {
   const { email, password } = payload;
@@ -23,7 +23,10 @@ export function* signIn({ payload }) {
 
 export function* signUp({ payload }) {
   try {
-    const response = yield call(api.post, '/api/v1/register', { ...payload });
+    const response = yield call(api.post, '/api/v1/register', { ...payload }); //eslint-disable-line
+
+    console.warn('IMPLEMENTAR CHECAGEM DE REGISTRO'); // eslint-disable-line
+
     history.push('/confirmation');
   } catch (err) {
     toast.error(err.response.data.description);
