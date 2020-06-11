@@ -30,5 +30,6 @@ module.exports = {
     'react-hooks/exhaustive-deps': 'warn',
     'react/jsx-props-no-spreading': 'off',
     'no-underscore-dangle': 'off',
+    'consistent-return': 'off'
   },
 };

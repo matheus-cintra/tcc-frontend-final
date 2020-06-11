@@ -33,7 +33,6 @@
   "bugs": {
     "url": "https://github.com/matheus-cintra/tcc-frontend-final/issues"
   },
-  "homepage": "https://github.com/matheus-cintra/tcc-frontend-final#readme",
   "private": true,
   "dependencies": {
     "@mdi/js": "^5.3.45",
@@ -51,6 +50,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.10.0",
+    "react-input-mask": "^3.0.0-alpha.2",
     "react-modal": "^3.11.2",
     "react-redux": "^7.2.0",
     "react-router-dom": "^5.2.0",

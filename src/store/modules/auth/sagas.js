@@ -9,16 +9,23 @@ import { signInSuccess } from './actions';
 export function* signIn({ payload }) {
   const { email, password } = payload;
 
-  const response = yield call(api.post, '/api/v1/login', { email, password });
+  try {
+    const response = yield call(api.post, '/api/v1/login', { email, password });
+    console.warn('response > ', response);
 
-  const { token, user } = response.data.data;
+    const { token, user } = response.data.data;
 
-  api.defaults.headers['auth-token'] = token;
-  api.defaults.headers['account-id'] = user._id;
+    console.warn('user > ', user);
 
-  yield put(signInSuccess(token, user));
+    api.defaults.headers['auth-token'] = token;
+    api.defaults.headers['account-id'] = user._id;
 
-  history.push('/dashboard');
+    yield put(signInSuccess(token, user));
+
+    history.push('/dashboard');
+  } catch (err) {
+    toast.error(err.response.data.description);
+  }
 }
 
 export function* signUp({ payload }) {

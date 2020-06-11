@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import helper from '../helpers/helper';
 
 /** *****************************************************************************
  * SignUp Schema
@@ -16,6 +17,10 @@ const signUpSchema = Yup.object().shape({
 });
 
 const validateSignUp = async function validateSignUp(data) {
+  if (data.cnpj) {
+    data.cnpj = helper.returnOnlyNumbers(data.cnpj);
+  }
+
   return signUpSchema.validate(data, {
     abortEarly: false,
   });

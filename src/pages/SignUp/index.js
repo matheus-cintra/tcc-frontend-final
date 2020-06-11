@@ -22,6 +22,15 @@ export default function SignUp() {
   const formRef = useRef(null);
   const dispatch = useDispatch();
 
+  /** ************************* PRINT FORM IN CONSOLE ************************* */
+  const root = document.getElementById('root');
+  root.addEventListener('dblclick', () => {
+    if (formRef.current === null) return;
+    const { getData } = formRef.current;
+    console.warn('myForm > ', getData()); //eslint-disable-line
+  });
+  /** ************************************************************************* */
+
   async function handleSubmit(data) {
     try {
       await validateSignUp(data);
@@ -64,7 +73,12 @@ export default function SignUp() {
         </InputContainer>
         <InputContainer>
           <Icon path={mdiPhone} title="Telefone" size={1} color="#c3c3c3" />
-          <Input name="phone" type="name" placeholder="Seu telefone" />
+          <Input
+            mask="99-99999-9999"
+            name="phone"
+            type="name"
+            placeholder="Seu telefone"
+          />
         </InputContainer>
         <InputContainer>
           <Icon
@@ -73,7 +87,12 @@ export default function SignUp() {
             size={1}
             color="#c3c3c3  "
           />
-          <Input name="cnpj" type="name" placeholder="Seu CNPJ*" />
+          <Input
+            mask="99-999-999/9999-99"
+            name="cnpj"
+            type="name"
+            placeholder="Seu CNPJ*"
+          />
         </InputContainer>
         <InputContainer>
           <Icon path={mdiFactory} title="Empresa" size={1} color="#c3c3c3  " />
