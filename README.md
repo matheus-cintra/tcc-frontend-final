@@ -1,68 +1,42 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Sis MEI - SaaS
 
-## Available Scripts
+## Descrição
 
-In the project directory, you can run:
+Este projeto é referente ao frontend do TCC de Ciência da Computação dos alunos Matheus Cintra, Lucas Mancini e João Miranda. Nosso projeto, é um sistema do tipo SaaS, no qual um microempreendedor individual poderá ter controle sobre seus
+serviços prestados. Também terá controle sobre seus clientes, bem como informações
+em forma de gráfico com informações relevantes como vendas, clientes, caixa.
+
+## Tecnologias
+
+- NodeJS - Um ambiente de execução JavaScript assíncrono orientado a eventos, o Node.js é projetado para desenvolvimento de aplicações escaláveis de rede.
+
+- MongoDB - MongoDB é um software de banco de dados orientado a documentos livre, de código aberto e multiplataforma, escrito na linguagem C++.
+
+- ReactJS - Uma biblioteca JavaScript de código aberto com foco em criar interfaces de usuário em páginas web. É mantido pelo Facebook, Instagram, outras empresas e uma comunidade de desenvolvedores individuais. É utilizado nos sites da Netflix, Imgur, Feedly, Airbnb, SeatGeek, HelloSign, Walmart e outros.
+
+- Express - Uma estrutura de aplicativo da Web para o Node.js, lançada como software livre e de código aberto sob a Licença MIT. Ele foi projetado para criar aplicativos da Web e APIs.
+
+## Como rodar o Frontend
+
+Ao clonar o repositório, você deverá preencher o arquivo `.env` com as variáveis de ambiente. Existe um arquivo chamado `.env-example` com as variáveis que deverão ser preenchidas.
+
+Após isso, deverá ser instalado os pacotes necessários para a aplicação, com o seguinte comando:
+
+### `yarn install`
+
+Feito isso, basta rodar o projeto com:
 
 ### `yarn start`
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Feito isso, será aberta uma aba em seu navegador em modo de desenvolvedor, na seguinte URL: [http://localhost:300](http://localhost:300). Qualquer alteração realizada no código, a página será automaticamente recarregada.
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+<!-- ### `yarn test` -->
 
-### `yarn test`
+<!-- Launches the test runner in the interactive watch mode.<br />
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information. -->
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Para gerar a build de produção do projeto, rode o seguinte comando:
 
 ### `yarn build`
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `yarn build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+Irá gerar todos os arquivos necessário para subir o projeto para Internet. Os arquivos ficarão salvos na pasta `build`.
