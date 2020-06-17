@@ -30,6 +30,8 @@ export function* signIn({ payload }) {
 
 export function* signUp({ payload }) {
   try {
+    console.warn('Payload > ', payload);
+
     const response = yield call(api.post, '/api/v1/register', { ...payload }); //eslint-disable-line
 
     console.warn('IMPLEMENTAR CHECAGEM DE REGISTRO'); // eslint-disable-line

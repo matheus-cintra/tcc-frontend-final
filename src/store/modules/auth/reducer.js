@@ -9,8 +9,6 @@ const INITIAL_STATE = {
 export default function auth(state = INITIAL_STATE, action) {
   switch (action.type) {
     case '@auth/SIGN_IN_SUCCESS': {
-      console.warn('action > ', action);
-
       return produce(state, draft => {
         draft.token = action.payload.token;
         draft.signed = true;
