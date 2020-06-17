@@ -10,9 +10,12 @@ import { store } from '../store';
 export default function RouteWrapper({
   component: Component,
   isPrivate,
+  title,
   ...rest
 }) {
   const { signed } = store.getState().auth;
+
+  if (title) window.document.title = title;
 
   if (!signed && isPrivate) {
     return <Redirect to="/" />;
@@ -40,6 +43,7 @@ RouteWrapper.propTypes = {
   isPrivate: PropTypes.bool,
   component: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
     .isRequired,
+  title: PropTypes.string.isRequired,
 };
 
 RouteWrapper.defaultProps = {
