@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 export const Toolbar = styled.div`
   background: #455a64;
@@ -84,4 +85,9 @@ export const SpanContainer = styled.div`
       margin-left: 79px;
     }
   }
+`;
+
+export const Scroll = styled(PerfectScrollbar)`
+  max-height: 800px;
+  margin: 0 0 25px 0;
 `;

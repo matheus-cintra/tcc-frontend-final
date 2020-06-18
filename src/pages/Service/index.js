@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '@mdi/react';
 import { mdiPlusCircle } from '@mdi/js';
-import { Toolbar, ServiceTitle, ServiceList, SpanContainer } from './styles';
+import {
+  Toolbar,
+  ServiceTitle,
+  ServiceList,
+  SpanContainer,
+  Scroll,
+} from './styles';
 import Modal from '../../components/Modals';
 import ServiceDialog from '../../components/Dialogs/ServiceDialog';
-import api from '../../services/api';
-import helpers from '../../helpers/helper';
+import methods from './methods';
 
 export default function Service() {
   const [working, setWorking] = useState(false);
@@ -14,28 +19,17 @@ export default function Service() {
   const [currentService, setCurrentService] = useState({});
 
   const getServices = async () => {
-    if (open === true) return;
+    if (open) return;
 
-    const result = await api.get('/api/v1/registration-service/');
-    if (result.data && result.data.data && result.data.data.services) {
-      let { services } = result.data.data;
-      services = services.map(service => {
-        const _price = helpers.formatPrice(service.price);
-        return {
-          ...service,
-          formatedPrice: _price,
-        };
-      });
-
-      setServicesList(services);
-      setWorking(false);
-    }
+    const services = await methods.getServiceList();
+    setServicesList(services);
+    setWorking(false);
   };
 
   useEffect(() => {
     setWorking(true);
     getServices();
-  }, []);
+  }, [working, getServices]);
 
   useEffect(() => {
     if (working) return;
@@ -67,21 +61,23 @@ export default function Service() {
         </ServiceTitle>
       </Toolbar>
       {!working && serviceList.length > 0 ? (
-        <ServiceList>
-          {serviceList.map(service => (
-            <li key={service._id}>
-              <button type="button" onClick={() => handleOpen(service)}>
-                <SpanContainer>
-                  <span>
-                    {service.code} - {service.name}
-                  </span>
-                  <span>{service.description}</span>
-                </SpanContainer>
-                <span>R$ {service.formatedPrice}</span>
-              </button>
-            </li>
-          ))}
-        </ServiceList>
+        <Scroll>
+          <ServiceList>
+            {serviceList.map(service => (
+              <li key={service._id}>
+                <button type="button" onClick={() => handleOpen(service)}>
+                  <SpanContainer>
+                    <span>
+                      {service.code} - {service.name}
+                    </span>
+                    <span>{service.description}</span>
+                  </SpanContainer>
+                  <span>R$ {service.formatedPrice}</span>
+                </button>
+              </li>
+            ))}
+          </ServiceList>
+        </Scroll>
       ) : null}
 
       <Modal open={open} setOpen={setOpen}>
