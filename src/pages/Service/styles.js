@@ -40,9 +40,12 @@ export const ServiceList = styled.ul`
     }
 
     button {
+      display: flex;
+      justify-content: space-between;
       width: 100%;
       border: none;
-      padding: 20px 20px 20px 40px;
+      align-items: center;
+      padding: 20px;
       background: #e0e0e0;
       transition: background 0.3s;
 
@@ -54,7 +57,31 @@ export const ServiceList = styled.ul`
         display: flex;
         font-size: 16px;
         font-weight: normal;
+
+        &:first-child {
+          margin: 0 15px;
+        }
+
+        &:last-child {
+          margin-right: 15px;
+        }
       }
+    }
+  }
+`;
+
+export const SpanContainer = styled.div`
+  span {
+    display: flex;
+    font-size: 16px;
+    font-weight: normal;
+
+    &:first-child {
+      margin: 0 15px;
+    }
+
+    &:last-child {
+      margin-left: 79px;
     }
   }
 `;

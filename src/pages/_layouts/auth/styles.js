@@ -9,6 +9,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Content = styled.div`
+  background: #fff;
   max-width: 720px;
   width: 100%;
   padding: 25px;
