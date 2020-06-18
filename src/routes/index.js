@@ -75,7 +75,11 @@ export default function Routes() {
         isPrivate
       />
 
-      <Route path="/" component={() => <h1>404</h1>} />
+      <Route
+        path="/"
+        title="Página não encontrada"
+        component={() => <h1>404</h1>}
+      />
     </Switch>
   );
 }
