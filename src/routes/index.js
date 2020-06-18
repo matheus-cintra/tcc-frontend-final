@@ -29,16 +29,51 @@ Definição das rotas de navegação
 export default function Routes() {
   return (
     <Switch>
-      <Route path="/" exact component={SignIn} />
-      <Route path="/register" component={SignUp} />
-      <Route path="/confirmation" exact component={ConfirmationRegister} />
-      <Route path="/dashboard" component={DashBoard} isPrivate />
-      <Route path="/profile" component={Profile} isPrivate />
-      <Route path="/billing/:id?" component={Billing} isPrivate />
-      <Route path="/contract/:id?" component={Contract} isPrivate />
-      <Route path="/customer/:id?" component={Customer} isPrivate />
-      <Route path="/service/:id?" component={Service} isPrivate />
-      <Route path="/service-order/:id?" component={ServiceOrder} isPrivate />
+      <Route path="/" title="SisMEI - SaaS" exact component={SignIn} />
+      <Route path="/register" title="Registro" component={SignUp} />
+      <Route
+        path="/confirmation"
+        title="Confirmação"
+        exact
+        component={ConfirmationRegister}
+      />
+      <Route
+        path="/dashboard"
+        title="Dashboard"
+        component={DashBoard}
+        isPrivate
+      />
+      <Route path="/profile" title="Perfil" component={Profile} isPrivate />
+      <Route
+        path="/billing/:id?"
+        title="Faturamento"
+        component={Billing}
+        isPrivate
+      />
+      <Route
+        path="/contract/:id?"
+        title="Contratos"
+        component={Contract}
+        isPrivate
+      />
+      <Route
+        path="/customer/:id?"
+        title="Clientes"
+        component={Customer}
+        isPrivate
+      />
+      <Route
+        path="/service/:id?"
+        title="Serviços"
+        component={Service}
+        isPrivate
+      />
+      <Route
+        path="/service-order/:id?"
+        title="Ordem de Serviço"
+        component={ServiceOrder}
+        isPrivate
+      />
 
       <Route path="/" component={() => <h1>404</h1>} />
     </Switch>
