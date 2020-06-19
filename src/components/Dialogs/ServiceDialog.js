@@ -83,7 +83,7 @@ function ServiceDialog({ setOpen, current }) {
   return (
     <>
       <Toolbar>
-        <Title>{serviceId ? 'Editando Serviço' : 'Novo Serviço'}</Title>
+        <Title>{serviceId ? 'Editar Serviço' : 'Novo Serviço'}</Title>
         <Icon
           path={mdiClose}
           title="Close"

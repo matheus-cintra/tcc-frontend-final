@@ -88,6 +88,6 @@ export const SpanContainer = styled.div`
 `;
 
 export const Scroll = styled(PerfectScrollbar)`
-  max-height: 800px;
+  max-height: calc(100vh - 170px);
   margin: 0 0 25px 0;
 `;

@@ -29,7 +29,7 @@ export default function Service() {
   useEffect(() => {
     setWorking(true);
     getServices();
-  }, [working, getServices]);
+  }, []);
 
   useEffect(() => {
     if (working) return;
