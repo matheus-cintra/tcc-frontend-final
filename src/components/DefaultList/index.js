@@ -14,8 +14,6 @@ function DefaultList(props) {
     itemList,
   } = props;
 
-  console.warn('itemList > ', itemList);
-
   return (
     <>
       <Toolbar>
