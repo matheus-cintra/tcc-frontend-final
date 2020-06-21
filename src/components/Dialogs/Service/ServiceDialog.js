@@ -4,8 +4,8 @@ import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan } from '@mdi/js';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
-import api from '../../services/api';
-import Input from '../InputMask/Input';
+import api from '../../../services/api';
+import Input from '../../InputMask/Input';
 
 import {
   Container,
@@ -16,7 +16,7 @@ import {
   RowContainer,
   InputContainer,
 } from './styles';
-import helper from '../../helpers/helper';
+import helper from '../../../helpers/helper';
 
 function ServiceDialog({ setOpen, current }) {
   const serviceId = current._id;
