@@ -1,5 +1,14 @@
 import styled from 'styled-components';
 
+export const DefaultInput = styled.input`
+  width: 100%;
+  margin: 5px;
+  height: 30px;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+`;
+
 export const ErrorMessage = styled.span`
   color: #f00;
   margin: -5px 0 5px 30px;

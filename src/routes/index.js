@@ -16,6 +16,7 @@ import SignIn from '../pages/SignIn';
 import SignUp from '../pages/SignUp';
 import DashBoard from '../pages/Dashboard';
 import Profile from '../pages/Profile';
+import MyCompany from '../pages/MyCompany';
 import Billing from '../pages/Billing';
 import Contract from '../pages/Contract';
 import Customer from '../pages/Customer';
@@ -41,6 +42,12 @@ export default function Routes() {
         path="/dashboard"
         title="Dashboard"
         component={DashBoard}
+        isPrivate
+      />
+      <Route
+        path="/my-company"
+        title="Minha Empresa"
+        component={MyCompany}
         isPrivate
       />
       <Route path="/profile" title="Perfil" component={Profile} isPrivate />

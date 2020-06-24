@@ -2,6 +2,7 @@ import {
   mdiViewDashboard,
   mdiAccountSupervisor,
   mdiBriefcaseAccount,
+  mdiFactory,
 } from '@mdi/js';
 
 const routes = [
@@ -12,6 +13,14 @@ const routes = [
     color: '#fff',
     name: 'Dashboard',
     route: '/dashboard',
+  },
+  {
+    icon: mdiFactory,
+    title: 'Empresa',
+    size: 1,
+    color: '#fff',
+    name: 'Empresa',
+    route: '/my-company',
   },
   {
     icon: mdiAccountSupervisor,
