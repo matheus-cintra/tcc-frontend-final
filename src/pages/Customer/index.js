@@ -24,12 +24,12 @@ export default function Customer() {
   useEffect(() => {
     setWorking(true);
     gerCustomers();
-  }, []);
+  }, []); //eslint-disable-line
 
   useEffect(() => {
     if (working) return;
     gerCustomers();
-  }, [open]);
+  }, [open]); //eslint-disable-line
 
   const handleOpen = customer => {
     setCurrentCustomer(customer);

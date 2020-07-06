@@ -13,7 +13,6 @@ export default function Service() {
 
   const getServices = async () => {
     if (open) return;
-
     const services = await methods.getServiceList();
     setServicesList(services);
     setWorking(false);
