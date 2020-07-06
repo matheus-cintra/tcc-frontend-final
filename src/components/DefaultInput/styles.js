@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const DefaultInput = styled.input`
-  width: 100%;
+  width: ${props => (props.width ? props.width : '100')}%;
   margin: 5px;
   height: 30px;
   border: none;
@@ -17,4 +17,10 @@ export const ErrorMessage = styled.span`
   @media screen and (max-width: 900px) {
     margin: -8px 0 10px 0;
   }
+`;
+
+export const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 `;

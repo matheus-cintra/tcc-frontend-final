@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Form as Unform } from '@unform/web';
 
 export const InputContainer = styled.div`
-  display: unset;
+  display: flex;
   justify-content: center;
   align-items: center;
 
@@ -24,10 +24,6 @@ export const Form = styled(Unform)`
 
   @media screen and (max-width: 800px) {
     margin-top: 30px;
-
-    div {
-      display: flex;
-    }
 
     button {
       width: 100%;

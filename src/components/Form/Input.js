@@ -24,10 +24,10 @@ export default function Input({ name, ...rest }) {
   }, [fieldName, registerField]);
 
   return (
-    <>
+    <div>
       <ReactInputMask ref={inputRef} {...rest} />
       {error && <ErrorMessage>{error}</ErrorMessage>}
-    </>
+    </div>
   );
 }
 

@@ -76,7 +76,7 @@ export default function SignUp() {
           <Input
             mask="99-99999-9999"
             name="phone"
-            type="name"
+            type="text"
             placeholder="Seu telefone"
           />
         </InputContainer>
@@ -90,7 +90,7 @@ export default function SignUp() {
           <Input
             mask="99-999-999/9999-99"
             name="cnpj"
-            type="name"
+            type="text"
             placeholder="Seu CNPJ*"
           />
         </InputContainer>

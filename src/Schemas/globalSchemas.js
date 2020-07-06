@@ -27,4 +27,27 @@ const validateSignUp = async function validateSignUp(data) {
 };
 /** *************************************************************************** */
 
-export { validateSignUp };
+/** *****************************************************************************
+ * Company Schema
+ ****************************************************************************** */
+const companySchema = Yup.object().shape({
+  fantasyName: Yup.string()
+    .min(4, 'Nome muito curto')
+    .required('Nome fantasia necessário'),
+  email: Yup.string().email('E-mail inválido'),
+  phone: Yup.string().min(11, 'Telefone Inálido').max(11, 'Telefone Inválido'),
+  zipCode: Yup.string().min(8, 'Cep Inálido').max(8, 'Cep Inválido'),
+  street: Yup.string(),
+  number: Yup.string(),
+  additional: Yup.string(),
+  city: Yup.string(),
+  state: Yup.string(),
+});
+
+const validateCompany = async data => {
+  return companySchema.validate(data, {
+    abortEarly: false,
+  });
+};
+
+export { validateSignUp, validateCompany };

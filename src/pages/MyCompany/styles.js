@@ -40,10 +40,14 @@ export const Row = styled.div`
     flex-direction: column;
     align-items: center;
     margin-top: 0;
+
+    div {
+      width: 100%;
+    }
   }
 
   input {
-    width: 100%;
+    width: ${props => (props.width ? props.width : '100')}%;
     margin: 5px;
     height: 30px;
     border: none;
@@ -78,5 +82,29 @@ export const SubmitButton = styled.button.attrs({
 
   @media screen and (max-width: 768px) {
     margin: 30px 0 0 0;
+  }
+`;
+
+export const SearchButton = styled.button.attrs({
+  type: 'button',
+})`
+  border: none;
+  background: transparent;
+  padding: 4px;
+`;
+
+export const SearchContainer = styled.div`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+
+  @media screen and (max-width: 768px) {
+    input {
+      margin-left: 0;
+    }
+
+    button {
+      margin-left: 5px;
+    }
   }
 `;

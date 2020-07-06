@@ -74,7 +74,7 @@ export const Content = styled.div`
 
   @media screen and (max-width: 800px) {
     width: calc(100vw - 60%);
-    min-width: 300px;
+    min-width: 375px;
     display: flex;
     flex-direction: column;
     align-items: center;
