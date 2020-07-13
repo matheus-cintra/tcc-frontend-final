@@ -16,16 +16,13 @@ import {
   RowContainer,
   InputContainer,
 } from './styles';
-import helper from '../../../helpers/helper';
 
 function CustomerDialog({ setOpen, current }) {
   const customerId = current._id;
   const formRef = useRef(null);
 
   const schema = Yup.object().shape({
-    code: Yup.string().required('Código Obrigatório'),
     name: Yup.string().required('Nome Obrigatório'),
-    price: Yup.string().required('Preço Obrigatório'),
   });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
@@ -47,13 +44,15 @@ function CustomerDialog({ setOpen, current }) {
         abortEarly: false,
       });
 
-      const price = helper.formatPrice(data.price, 'data');
-
       const ds = {
-        code: data.code,
         name: data.name,
-        price,
+        cpf: data.cpf,
+        cnpj: data.cnpj,
+        phone: data.contact.phone,
+        email: data.contact.email,
+        person: data.contact.person,
         description: data.description,
+        address: data.address,
       };
 
       const result = customerId
@@ -98,33 +97,71 @@ function CustomerDialog({ setOpen, current }) {
             <RowContainer>
               <InputContainer style={{ width: '200px', marginRight: '15px' }}>
                 <Input
-                  name="code"
-                  type="text"
-                  defaultValue={current.code}
-                  placeholder="Código*"
-                />
-              </InputContainer>
-              <InputContainer>
-                <Input
                   name="name"
                   type="text"
                   defaultValue={current.name}
                   placeholder="Nome*"
                 />
               </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
+              <InputContainer>
                 <Input
-                  name="price"
+                  mask="999.999.999-99"
+                  name="cpf"
                   type="text"
-                  defaultValue={current.formatedPrice}
-                  placeholder="Preço*"
+                  defaultValue={current.cpf}
+                  placeholder="Cpf"
                 />
+                <InputContainer>
+                  <Input
+                    mask="99-999-999/9999-99"
+                    name="cnpj"
+                    type="text"
+                    defaultValue={current.cnpj}
+                    placeholder="Cnpj"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    mask="99-99999-9999"
+                    name="phone"
+                    type="text"
+                    defaultValue={current.contact.phone}
+                    placeholder="Telefone"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="email"
+                    type="text"
+                    defaultValue={current.contact.email}
+                    placeholder="Email"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="person"
+                    type="text"
+                    defaultValue={current.contact.person}
+                    placeholder="Nome"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="description"
+                    type="text"
+                    defaultValue={current.description}
+                    placeholder="Descrição"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    mask="99999-999"
+                    name="address"
+                    type="text"
+                    defaultValue={current.address}
+                    placeholder="Endereço"
+                  />
+                </InputContainer>
               </InputContainer>
             </RowContainer>
             <RowContainer>
@@ -143,11 +180,61 @@ function CustomerDialog({ setOpen, current }) {
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input name="code" type="text" placeholder="Código*" />
-              </InputContainer>
-              <InputContainer>
+              <InputContainer style={{ marginRight: '15px' }}>
                 <Input name="name" type="text" placeholder="Nome*" />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '300px',
+                  marginLeft: '15px',
+                  marginRight: '10px',
+                }}
+              >
+                <Input
+                  mask="999.999.999-99"
+                  name="cpf"
+                  type="text"
+                  placeholder="CPF"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '400px',
+                  marginLeft: '15px',
+                  marginRight: '10px',
+                }}
+              >
+                <Input
+                  mask="99-999-999/9999-99"
+                  name="cnpj"
+                  type="text"
+                  placeholder="CNPJ"
+                />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '200px',
+                  marginRight: '15px',
+                }}
+              >
+                <Input
+                  mask="99-99999-9999"
+                  name="phone"
+                  type="text"
+                  placeholder="Telefone"
+                />
+              </InputContainer>
+
+              <InputContainer
+                style={{
+                  width: '200px',
+                  marginLeft: '15px',
+                  marginRight: '10px',
+                }}
+              >
+                <Input name="email" type="text" placeholder="Email" />
               </InputContainer>
               <InputContainer
                 style={{
@@ -156,12 +243,31 @@ function CustomerDialog({ setOpen, current }) {
                   marginRight: '10px',
                 }}
               >
-                <Input name="price" type="text" placeholder="Preço*" />
+                <Input name="person" type="text" placeholder="Cliente" />
               </InputContainer>
             </RowContainer>
             <RowContainer>
-              <InputContainer style={{ marginRight: '10px' }}>
+              <InputContainer
+                style={{
+                  marginRight: '15px',
+                }}
+              >
                 <Input name="description" type="text" placeholder="Descrição" />
+              </InputContainer>
+
+              <InputContainer
+                style={{
+                  width: '200px',
+                  marginLeft: '15px',
+                  marginRight: '10px',
+                }}
+              >
+                <Input
+                  mask="99999-999"
+                  name="address"
+                  type="text"
+                  placeholder="Endereço"
+                />
               </InputContainer>
             </RowContainer>
           </Form>

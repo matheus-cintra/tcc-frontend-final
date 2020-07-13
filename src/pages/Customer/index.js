@@ -5,8 +5,6 @@ import Modal from '../../components/Modals';
 import CustomerDialog from '../../components/Dialogs/Customers/CustomersDialog';
 import methods from './methods';
 
-// import { Container } from './styles';
-
 export default function Customer() {
   const [working, setWorking] = useState(false);
   const [customerList, setCustomerList] = useState([]);
