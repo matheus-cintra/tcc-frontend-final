@@ -21,9 +21,9 @@ function CustomerDialog({ setOpen, current }) {
   const customerId = current._id;
   const formRef = useRef(null);
 
-  const schema = Yup.object().shape({
-    name: Yup.string().required('Nome Obrigatório'),
-  });
+  // const schema = Yup.object().shape({
+  // name: Yup.string().required('Nome Obrigatório'),
+  // });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
   const root = document.getElementById('root');
@@ -39,20 +39,32 @@ function CustomerDialog({ setOpen, current }) {
   };
 
   async function handleSubmit(data) {
+    console.warn('oba', data);
     try {
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+      //   await schema.validate(data, {
+      //    abortEarly: false,
+      // });
+
+      const address = {
+        cep: '12345678',
+        address: 'Rua Maceio',
+        additional: undefined,
+        neighborhood: 'nossa senhora de fatima',
+        city: 'Americana',
+        state: 'SP',
+        unity: undefined,
+        ibge: '3501608',
+        gia: '1650',
+      };
 
       const ds = {
         name: data.name,
         cpf: data.cpf,
         cnpj: data.cnpj,
-        phone: data.contact.phone,
-        email: data.contact.email,
-        person: data.contact.person,
+        phone: data.phone,
+        email: data.email,
         description: data.description,
-        address: data.address,
+        address,
       };
 
       const result = customerId
@@ -180,14 +192,16 @@ function CustomerDialog({ setOpen, current }) {
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
-              <InputContainer style={{ marginRight: '15px' }}>
+              <InputContainer style={{ marginRight: '5px' }}>
                 <Input name="name" type="text" placeholder="Nome*" />
               </InputContainer>
+            </RowContainer>
+            <RowContainer>
               <InputContainer
                 style={{
-                  width: '300px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -199,9 +213,9 @@ function CustomerDialog({ setOpen, current }) {
               </InputContainer>
               <InputContainer
                 style={{
-                  width: '400px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -215,8 +229,8 @@ function CustomerDialog({ setOpen, current }) {
             <RowContainer>
               <InputContainer
                 style={{
-                  width: '200px',
-                  marginRight: '15px',
+                  width: '50%',
+                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -229,45 +243,91 @@ function CustomerDialog({ setOpen, current }) {
 
               <InputContainer
                 style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
                 }}
               >
                 <Input name="email" type="text" placeholder="Email" />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
-                <Input name="person" type="text" placeholder="Cliente" />
               </InputContainer>
             </RowContainer>
             <RowContainer>
               <InputContainer
                 style={{
-                  marginRight: '15px',
-                }}
-              >
-                <Input name="description" type="text" placeholder="Descrição" />
-              </InputContainer>
-
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
+                  width: '20%',
+                  marginRight: '5px',
                 }}
               >
                 <Input
                   mask="99999-999"
                   name="address"
                   type="text"
-                  placeholder="Endereço"
+                  placeholder="Cep"
                 />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '65%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="street" type="text" placeholder="Rua" />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '14%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  maxlength="5"
+                  name="number"
+                  type="text"
+                  placeholder="Número"
+                />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  name="additional"
+                  type="text"
+                  placeholder="Complemento"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="city" type="text" placeholder="Cidade" />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="state" type="text" placeholder="Estado" />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="description" type="text" placeholder="Descrição" />
               </InputContainer>
             </RowContainer>
           </Form>
