@@ -52,4 +52,29 @@ const validateCompany = async data => {
   });
 };
 
-export { validateSignUp, validateCompany };
+/** *************************************************************************** */
+
+/** *****************************************************************************
+ * Customer Schema
+ ****************************************************************************** */
+const customerSchema = Yup.object().shape({
+  name: Yup.string().required('Nome obrigatório'),
+  cnpj: Yup.string().min(18, 'CNPJ inválido').max(18, 'CNPJ inválido'),
+  cpf: Yup.string().min(14, 'CPF inválido').max(14, 'CPF inválido'),
+  phone: Yup.string().min(11, 'Telefone Inválido').max(11, 'Telefone Inválido'),
+  email: Yup.string().email('E-mail inválido'),
+  person: Yup.string(),
+  zipCode: Yup.string().min(8, 'Cep Inválido').max(8, 'Cep Inválido'),
+  street: Yup.string(),
+  number: Yup.string(),
+  additional: Yup.string(),
+  city: Yup.string(),
+  state: Yup.string(),
+});
+const validateCustomer = async data => {
+  return customerSchema.validate(data, {
+    abortEarly: false,
+  });
+};
+
+export { validateSignUp, validateCompany, validateCustomer };

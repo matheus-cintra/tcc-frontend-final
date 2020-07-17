@@ -16,17 +16,14 @@ import {
   RowContainer,
   InputContainer,
 } from './styles';
-import helper from '../../../helpers/helper';
 
 function CustomerDialog({ setOpen, current }) {
   const customerId = current._id;
   const formRef = useRef(null);
 
-  const schema = Yup.object().shape({
-    code: Yup.string().required('Código Obrigatório'),
-    name: Yup.string().required('Nome Obrigatório'),
-    price: Yup.string().required('Preço Obrigatório'),
-  });
+  // const schema = Yup.object().shape({
+  // name: Yup.string().required('Nome Obrigatório'),
+  // });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
   const root = document.getElementById('root');
@@ -42,18 +39,32 @@ function CustomerDialog({ setOpen, current }) {
   };
 
   async function handleSubmit(data) {
+    console.warn('oba', data);
     try {
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+      //   await schema.validate(data, {
+      //    abortEarly: false,
+      // });
 
-      const price = helper.formatPrice(data.price, 'data');
+      const address = {
+        cep: '12345678',
+        address: 'Rua Maceio',
+        additional: undefined,
+        neighborhood: 'nossa senhora de fatima',
+        city: 'Americana',
+        state: 'SP',
+        unity: undefined,
+        ibge: '3501608',
+        gia: '1650',
+      };
 
       const ds = {
-        code: data.code,
         name: data.name,
-        price,
+        cpf: data.cpf,
+        cnpj: data.cnpj,
+        phone: data.phone,
+        email: data.email,
         description: data.description,
+        address,
       };
 
       const result = customerId
@@ -98,33 +109,71 @@ function CustomerDialog({ setOpen, current }) {
             <RowContainer>
               <InputContainer style={{ width: '200px', marginRight: '15px' }}>
                 <Input
-                  name="code"
-                  type="text"
-                  defaultValue={current.code}
-                  placeholder="Código*"
-                />
-              </InputContainer>
-              <InputContainer>
-                <Input
                   name="name"
                   type="text"
                   defaultValue={current.name}
                   placeholder="Nome*"
                 />
               </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
+              <InputContainer>
                 <Input
-                  name="price"
+                  mask="999.999.999-99"
+                  name="cpf"
                   type="text"
-                  defaultValue={current.formatedPrice}
-                  placeholder="Preço*"
+                  defaultValue={current.cpf}
+                  placeholder="Cpf"
                 />
+                <InputContainer>
+                  <Input
+                    mask="99-999-999/9999-99"
+                    name="cnpj"
+                    type="text"
+                    defaultValue={current.cnpj}
+                    placeholder="Cnpj"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    mask="99-99999-9999"
+                    name="phone"
+                    type="text"
+                    defaultValue={current.contact.phone}
+                    placeholder="Telefone"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="email"
+                    type="text"
+                    defaultValue={current.contact.email}
+                    placeholder="Email"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="person"
+                    type="text"
+                    defaultValue={current.contact.person}
+                    placeholder="Nome"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    name="description"
+                    type="text"
+                    defaultValue={current.description}
+                    placeholder="Descrição"
+                  />
+                </InputContainer>
+                <InputContainer>
+                  <Input
+                    mask="99999-999"
+                    name="address"
+                    type="text"
+                    defaultValue={current.address}
+                    placeholder="Endereço"
+                  />
+                </InputContainer>
               </InputContainer>
             </RowContainer>
             <RowContainer>
@@ -143,24 +192,141 @@ function CustomerDialog({ setOpen, current }) {
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input name="code" type="text" placeholder="Código*" />
-              </InputContainer>
-              <InputContainer>
+              <InputContainer style={{ marginRight: '5px' }}>
                 <Input name="name" type="text" placeholder="Nome*" />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
-                <Input name="price" type="text" placeholder="Preço*" />
               </InputContainer>
             </RowContainer>
             <RowContainer>
-              <InputContainer style={{ marginRight: '10px' }}>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="999.999.999-99"
+                  name="cpf"
+                  type="text"
+                  placeholder="CPF"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99-999-999/9999-99"
+                  name="cnpj"
+                  type="text"
+                  placeholder="CNPJ"
+                />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99-99999-9999"
+                  name="phone"
+                  type="text"
+                  placeholder="Telefone"
+                />
+              </InputContainer>
+
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="email" type="text" placeholder="Email" />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '20%',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99999-999"
+                  name="address"
+                  type="text"
+                  placeholder="Cep"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '65%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="street" type="text" placeholder="Rua" />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '14%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  maxlength="5"
+                  name="number"
+                  type="text"
+                  placeholder="Número"
+                />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  name="additional"
+                  type="text"
+                  placeholder="Complemento"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="city" type="text" placeholder="Cidade" />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '33%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="state" type="text" placeholder="Estado" />
+              </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  marginRight: '5px',
+                }}
+              >
                 <Input name="description" type="text" placeholder="Descrição" />
               </InputContainer>
             </RowContainer>
