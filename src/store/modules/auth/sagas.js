@@ -1,10 +1,11 @@
 import { takeLatest, call, put, all } from 'redux-saga/effects';
 
 import { toast } from 'react-toastify';
+import jwt from 'jsonwebtoken';
 import history from '../../../services/history';
 import api from '../../../services/api';
 
-import { signInSuccess } from './actions';
+import { signInSuccess, logoutUser } from './actions';
 
 export function* signIn({ payload }) {
   const { email, password } = payload;
@@ -42,12 +43,30 @@ export function* signUp({ payload }) {
   }
 }
 
-export function setToken({ payload }) {
+export function* setToken({ payload }) {
+  console.warn('entrou no rehydrate');
+
   if (!payload) return;
 
   const { token } = payload.auth;
   const accountId =
     payload.user && payload.user.profile && payload.user.profile._id;
+
+  const user = jwt.decode(token);
+  const currTime = new Date().getTime() / 1000;
+
+  if (!user) return;
+
+  if (currTime > user.exp) {
+    console.warn('JWT Expirado');
+
+    // localStorage.removeItem('persist:sismei');
+
+    yield put(logoutUser());
+    return history.push('/');
+  }
+
+  console.warn('Passou na validação do JWT');
 
   if (token && accountId) {
     api.defaults.headers['auth-token'] = token;

@@ -35,8 +35,8 @@ const companySchema = Yup.object().shape({
     .min(4, 'Nome muito curto')
     .required('Nome fantasia necessário'),
   email: Yup.string().email('E-mail inválido'),
-  phone: Yup.string().min(11, 'Telefone Inálido').max(11, 'Telefone Inválido'),
-  zipCode: Yup.string().min(8, 'Cep Inálido').max(8, 'Cep Inválido'),
+  phone: Yup.string().min(11, 'Telefone Inválido').max(11, 'Telefone Inválido'),
+  zipCode: Yup.string().max(8, 'Cep Inválido'),
   street: Yup.string(),
   number: Yup.string(),
   additional: Yup.string(),
@@ -45,6 +45,8 @@ const companySchema = Yup.object().shape({
 });
 
 const validateCompany = async data => {
+  console.warn('data > ', data);
+
   return companySchema.validate(data, {
     abortEarly: false,
   });

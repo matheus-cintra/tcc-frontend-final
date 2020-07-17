@@ -3,6 +3,8 @@ import Icon from '@mdi/react';
 import { mdiAccountSearch } from '@mdi/js';
 import * as Yup from 'yup';
 import { getCompanyInfo } from './methods';
+import helper from '../../helpers/helper';
+import api from '../../services/api';
 
 import {
   Toolbar,
@@ -36,18 +38,26 @@ function MyCompany() {
     getCompany();
   }, []);
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
+  /** ************************* PRINT FORM IN CONSOLE ************************ */
   const root = document.getElementById('root');
   root.addEventListener('dblclick', () => {
-    console.warn('myForm > ', companyInfo); //eslint-disable-line
+    if (companyInfo._id) console.warn('myForm > ', companyInfo); //eslint-disable-line
   });
-  /** ************************************************************************* */
+  /** ************************************************************************ */
 
   async function handleSubmit(data) {
     try {
+      formRef.current.setErrors({});
+
+      data.phone = helper.returnOnlyNumbers(data.phone);
+      data.cnpj = helper.returnOnlyNumbers(data.cnpj);
+
       await validateCompany(data);
 
-      console.warn('Passou > ', data);
+      const result = await api.put(`/api/v1/company/${companyInfo._id}`, {
+        ...data,
+      });
+      console.warn('result', result);
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         const errorMessages = {};
@@ -94,12 +104,18 @@ function MyCompany() {
             />
           </Row>
           <Row>
-            <DefaultInput name="email" type="text" placeholder="E-mail" />
+            <DefaultInput
+              name="email"
+              type="text"
+              placeholder="E-mail"
+              defaultValue={companyInfo.email}
+            />
             <Input
               mask="(99) 99999-9999"
               name="phone"
               type="text"
               placeholder="Seu telefone"
+              defaultValue={companyInfo.phone}
             />
           </Row>
           <Row>

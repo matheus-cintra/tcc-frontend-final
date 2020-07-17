@@ -15,6 +15,13 @@ export default function auth(state = INITIAL_STATE, action) {
       });
     }
 
+    case '@auth/LOGOUT_USER': {
+      return produce(state, draft => {
+        draft.token = null;
+        draft.signed = false;
+      });
+    }
+
     default:
       return state;
   }

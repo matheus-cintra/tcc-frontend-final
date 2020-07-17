@@ -3,11 +3,11 @@ import ReactInputMask from 'react-input-mask';
 import PropTypes from 'prop-types';
 import { useField } from '@unform/core';
 
-import { ErrorMessage } from './styles';
+import { ErrorMessage, InputContainer } from './styles';
 
 export default function Input({ name, ...rest }) {
   const inputRef = useRef(null);
-  const { fieldName, registerField, error } = useField(name);
+  const { fieldName, registerField, defaultValue, error } = useField(name);
 
   useEffect(() => {
     registerField({
@@ -23,11 +23,13 @@ export default function Input({ name, ...rest }) {
     });
   }, [fieldName, registerField]);
 
+  console.warn('rest > ', defaultValue);
+
   return (
-    <div>
-      <ReactInputMask ref={inputRef} {...rest} />
+    <InputContainer>
+      <ReactInputMask ref={inputRef} defaultValue={defaultValue} {...rest} />
       {error && <ErrorMessage>{error}</ErrorMessage>}
-    </div>
+    </InputContainer>
   );
 }
 
