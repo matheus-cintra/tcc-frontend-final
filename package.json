@@ -48,7 +48,7 @@
     "jsonwebtoken": "^8.5.1",
     "polished": "^3.6.3",
     "prop-types": "^15.7.2",
-    "rc-steps": "^4.0.0",
+    "rc-steps": "^4.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-icons": "^3.10.0",
