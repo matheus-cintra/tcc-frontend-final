@@ -36,12 +36,13 @@ const companySchema = Yup.object().shape({
     .required('Nome fantasia necessário'),
   email: Yup.string().email('E-mail inválido'),
   phone: Yup.string().min(11, 'Telefone Inválido').max(11, 'Telefone Inválido'),
-  zipCode: Yup.string().max(8, 'Cep Inválido'),
-  street: Yup.string(),
+  cep: Yup.string().max(8, 'Cep Inválido'),
+  address: Yup.string(),
   number: Yup.string(),
   additional: Yup.string(),
-  city: Yup.string(),
+  neighborhood: Yup.string(),
   state: Yup.string(),
+  city: Yup.string(),
 });
 
 const validateCompany = async data => {

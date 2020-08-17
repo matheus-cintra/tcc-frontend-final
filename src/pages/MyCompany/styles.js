@@ -20,6 +20,10 @@ export const ToolbarTitle = styled.div`
 
 export const Container = styled.main`
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  height: ${props => (props.loading ? '60%' : null)};
+  display: ${props => (props.loading ? 'flex' : null)};
+  justify-content: ${props => (props.loading ? 'center' : null)};
+  align-items: ${props => (props.loading ? 'center' : null)};
 `;
 
 export const Form = styled(Unform)`
@@ -105,6 +109,25 @@ export const SearchContainer = styled.div`
 
     button {
       margin-left: 5px;
+    }
+  }
+`;
+
+export const LoadingScreen = styled.div`
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  padding: 100px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 `;

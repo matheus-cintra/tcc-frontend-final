@@ -90,4 +90,9 @@ export const RowContainer = styled.div`
   input {
     width: 100%;
   }
+
+  label {
+    align-self: center;
+    margin-left: 25px;
+  }
 `;

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan } from '@mdi/js';
@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import Input from '../../InputMask/Input';
+import DefaultInput from '../../DefaultInput/Input';
 
 import {
   Container,
@@ -20,6 +21,7 @@ import {
 function CustomerDialog({ setOpen, current }) {
   const customerId = current._id;
   const formRef = useRef(null);
+  const [entityType, setEntityType] = useState('1');
 
   // const schema = Yup.object().shape({
   // name: Yup.string().required('Nome Obrigatório'),
@@ -36,6 +38,10 @@ function CustomerDialog({ setOpen, current }) {
 
   const handleClose = () => {
     setOpen(open => !open);
+  };
+
+  const handleOptionChange = type => {
+    setEntityType(type);
   };
 
   async function handleSubmit(data) {
@@ -108,11 +114,12 @@ function CustomerDialog({ setOpen, current }) {
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
               <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input
+                <DefaultInput
                   name="name"
                   type="text"
                   defaultValue={current.name}
-                  placeholder="Nome*"
+                  placeholder="Razão Social*"
+                  required
                 />
               </InputContainer>
               <InputContainer>
@@ -123,57 +130,45 @@ function CustomerDialog({ setOpen, current }) {
                   defaultValue={current.cpf}
                   placeholder="Cpf"
                 />
-                <InputContainer>
-                  <Input
-                    mask="99-999-999/9999-99"
-                    name="cnpj"
-                    type="text"
-                    defaultValue={current.cnpj}
-                    placeholder="Cnpj"
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Input
-                    mask="99-99999-9999"
-                    name="phone"
-                    type="text"
-                    defaultValue={current.contact.phone}
-                    placeholder="Telefone"
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Input
-                    name="email"
-                    type="text"
-                    defaultValue={current.contact.email}
-                    placeholder="Email"
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Input
-                    name="person"
-                    type="text"
-                    defaultValue={current.contact.person}
-                    placeholder="Nome"
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Input
-                    name="description"
-                    type="text"
-                    defaultValue={current.description}
-                    placeholder="Descrição"
-                  />
-                </InputContainer>
-                <InputContainer>
-                  <Input
-                    mask="99999-999"
-                    name="address"
-                    type="text"
-                    defaultValue={current.address}
-                    placeholder="Endereço"
-                  />
-                </InputContainer>
+                <Input
+                  mask="99-999-999/9999-99"
+                  name="cnpj"
+                  type="text"
+                  defaultValue={current.cnpj}
+                  placeholder="Cnpj"
+                />
+              </InputContainer>
+              <InputContainer>
+                <Input
+                  mask="99-99999-9999"
+                  name="phone"
+                  type="text"
+                  defaultValue={current.contact.phone}
+                  placeholder="Telefone"
+                />
+                <Input
+                  name="email"
+                  type="text"
+                  defaultValue={current.contact.email}
+                  placeholder="Email"
+                />
+              </InputContainer>
+              <InputContainer>
+                <Input
+                  name="person"
+                  type="text"
+                  defaultValue={current.contact.person}
+                  placeholder="Nome"
+                />
+              </InputContainer>
+              <InputContainer>
+                <Input
+                  mask="99999-999"
+                  name="address"
+                  type="text"
+                  defaultValue={current.address}
+                  placeholder="Endereço"
+                />
               </InputContainer>
             </RowContainer>
             <RowContainer>
@@ -193,44 +188,62 @@ function CustomerDialog({ setOpen, current }) {
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
               <InputContainer style={{ marginRight: '5px' }}>
-                <Input name="name" type="text" placeholder="Nome*" />
+                <Input name="name" type="text" placeholder="Nome*" required />
               </InputContainer>
+            </RowContainer>
+            <RowContainer>
+              <label>
+                <input
+                  type="radio"
+                  value="1"
+                  checked={entityType === '1'}
+                  onChange={() => handleOptionChange('1')}
+                />
+                Pessoa Física
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="2"
+                  checked={entityType === '2'}
+                  onChange={() => handleOptionChange('2')}
+                />
+                Pessoa Jurídica
+              </label>
+              {entityType === '1' ? (
+                <InputContainer
+                  style={{
+                    width: '50%',
+                    marginRight: '5px',
+                  }}
+                >
+                  <Input
+                    mask="999.999.999-99"
+                    name="cpf"
+                    type="text"
+                    placeholder="CPF"
+                  />
+                </InputContainer>
+              ) : (
+                <InputContainer
+                  style={{
+                    width: '50%',
+                    marginRight: '5px',
+                  }}
+                >
+                  <Input
+                    mask="99-999-999/9999-99"
+                    name="cnpj"
+                    type="text"
+                    placeholder="CNPJ"
+                  />
+                </InputContainer>
+              )}
             </RowContainer>
             <RowContainer>
               <InputContainer
                 style={{
                   width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <Input
-                  mask="999.999.999-99"
-                  name="cpf"
-                  type="text"
-                  placeholder="CPF"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <Input
-                  mask="99-999-999/9999-99"
-                  name="cnpj"
-                  type="text"
-                  placeholder="CNPJ"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -282,7 +295,7 @@ function CustomerDialog({ setOpen, current }) {
                 }}
               >
                 <Input
-                  maxlength="5"
+                  maxLength="5"
                   name="number"
                   type="text"
                   placeholder="Número"
