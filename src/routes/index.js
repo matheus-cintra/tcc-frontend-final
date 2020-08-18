@@ -17,12 +17,14 @@ import SignUp from '../pages/SignUp';
 import DashBoard from '../pages/Dashboard';
 import Profile from '../pages/Profile';
 import MyCompany from '../pages/MyCompany';
+import Providers from '../pages/Providers';
 import Billing from '../pages/Billing';
 import Contract from '../pages/Contract';
 import Customer from '../pages/Customer';
 import Service from '../pages/Service';
 import ServiceOrder from '../pages/ServiceOrder';
 import ConfirmationRegister from '../pages/ConfirmationRegister';
+import Attachments from '../pages/Attachments';
 
 /* ****************************************************************************
 Definição das rotas de navegação
@@ -79,6 +81,18 @@ export default function Routes() {
         path="/service-order/:id?"
         title="Ordem de Serviço"
         component={ServiceOrder}
+        isPrivate
+      />
+      <Route
+        path="/providers"
+        title="Fornecedores"
+        component={Providers}
+        isPrivate
+      />
+      <Route
+        path="/attachments"
+        title="Anexos"
+        component={Attachments}
         isPrivate
       />
 

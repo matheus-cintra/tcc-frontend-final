@@ -56,16 +56,13 @@ export const Container = styled.nav`
       a {
         display: flex;
         align-items: center;
-        padding: 0.5rem 4.45rem;
         color: #fff;
+        justify-content: space-between;
+        padding: 10px 35px;
 
         span {
           display: inline;
           align-items: center;
-        }
-
-        svg {
-          margin-right: 5px;
         }
       }
 
