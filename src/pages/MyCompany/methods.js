@@ -12,10 +12,12 @@ async function getCompanyInfo() {
   );
 
   const { phone } = result.data.data.company;
-  const phone1 = phone.slice(0, 2);
-  const phone2 = phone.slice(2, 7);
-  const phone3 = phone.slice(7, 11);
-  result.data.data.company._phone = `(${phone1}) ${phone2}-${phone3}`;
+  if (phone) {
+    const phone1 = phone.slice(0, 2);
+    const phone2 = phone.slice(2, 7);
+    const phone3 = phone.slice(7, 11);
+    result.data.data.company._phone = `(${phone1}) ${phone2}-${phone3}`;
+  }
 
   return result.data.data.company;
 }
