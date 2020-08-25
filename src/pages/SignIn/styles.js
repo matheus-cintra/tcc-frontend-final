@@ -30,6 +30,6 @@ export const RegisterContainer = styled.div`
   }
 
   @media screen and (max-width: 800px) {
-    margin-top: 20px;
+    margin-top: 60px;
   }
 `;

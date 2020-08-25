@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+
 import { useDispatch } from 'react-redux';
 import Icon from '@mdi/react';
 import * as Yup from 'yup';
@@ -9,7 +10,9 @@ import {
   mdiPhone,
   mdiFileDocument,
   mdiFactory,
+  mdiChevronLeft,
 } from '@mdi/js';
+import history from '../../services/history';
 import { Form, InputContainer, LogoContainer } from './styles';
 import logo from '../../assets/logo.svg';
 import Input from '../../components/Form/Input';
@@ -48,8 +51,20 @@ export default function SignUp() {
     }
   }
 
+  function handleBack() {
+    return history.push('/');
+  }
+
   return (
     <>
+      <Icon
+        path={mdiChevronLeft}
+        title="Close"
+        size={1.3}
+        color="#000"
+        onClick={handleBack}
+        style={{ cursor: 'pointer' }}
+      />
       <LogoContainer>
         <img src={logo} alt="Sis - MEI" />
       </LogoContainer>

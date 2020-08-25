@@ -35,6 +35,12 @@ export const LogoContainer = styled.div`
   display: flex;
 
   img {
-    margin-left: 25px;
+    margin-right: 30px;
+  }
+
+  @media screen and (max-width: 800px) {
+    img {
+      margin-right: 0px;
+    }
   }
 `;

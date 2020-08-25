@@ -15,7 +15,7 @@ export const Content = styled.div`
   padding: 25px;
   text-align: center;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   flex-direction: row;
   border: 1px;
   border-radius: 5px;
@@ -74,9 +74,13 @@ export const Content = styled.div`
 
   @media screen and (max-width: 800px) {
     width: calc(100vw - 60%);
-    min-width: 375px;
+    min-width: 300px;
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    svg {
+      align-self: flex-start;
+    }
   }
 `;
