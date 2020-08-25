@@ -43,6 +43,7 @@
     "@unform/core": "^2.1.0",
     "@unform/web": "^2.1.0",
     "axios": "^0.19.2",
+    "cpf-cnpj-validator": "^1.0.2",
     "history": "^4.10.1",
     "immer": "^6.0.9",
     "jsonwebtoken": "^8.5.1",

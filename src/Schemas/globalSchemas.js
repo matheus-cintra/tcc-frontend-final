@@ -21,6 +21,10 @@ const validateSignUp = async function validateSignUp(data) {
     data.cnpj = helper.returnOnlyNumbers(data.cnpj);
   }
 
+  if (data.phone) {
+    data.phone = helper.returnOnlyNumbers(data.phone);
+  }
+
   return signUpSchema.validate(data, {
     abortEarly: false,
   });
