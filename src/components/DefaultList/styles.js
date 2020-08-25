@@ -91,5 +91,18 @@ export const SpanContainer = styled.div`
     &:last-child {
       margin-left: 79px;
     }
+    button {
+      display: flex;
+      justify-content: space-between;
+      width: 50%;
+      border: none;
+      align-items: center;
+      padding: 10px;
+      background: #96FF9C;
+      transition: background 0.3s;
+
+      &:hover {
+        background: #96FF9C;
+      }
   }
 `;
