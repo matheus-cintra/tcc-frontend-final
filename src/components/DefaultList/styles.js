@@ -60,36 +60,28 @@ export const List = styled.ul`
       &:hover {
         background: #bdbdbd;
       }
-
-      span {
-        display: flex;
-        font-size: 16px;
-        font-weight: normal;
-
-        &:first-child {
-          margin: 0 15px;
-        }
-
-        &:last-child {
-          margin-right: 15px;
-        }
-      }
     }
   }
 `;
 
 export const SpanContainer = styled.div`
-  span {
-    display: flex;
-    font-size: 16px;
-    font-weight: normal;
-
-    &:first-child {
-      margin: 0 15px;
-    }
-
-    &:last-child {
-      margin-left: 79px;
-    }
-  }
+  display: flex;
+  align-items: center;
 `;
+
+export const CodeInfo = styled.span`
+  padding-right: 15px;
+  font-weight: bold;
+  font-size: 15px;
+`;
+
+export const TitleSubtitleContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-left: 15px;
+`;
+
+export const Title = styled.span``;
+
+export const Subtitle = styled.span``;

@@ -81,7 +81,6 @@ function CustomerDialog({ setOpen, current }) {
       const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
       if (result.data.sucess) {
         const addressResult = result.data.data;
-        console.warn('address > ', addressResult);
         formRef.current.setFieldValue('address.cep', addressResult.cep);
         formRef.current.setFieldValue('address.address', addressResult.address);
         formRef.current.setFieldValue('address.number', addressResult.number);
@@ -99,7 +98,6 @@ function CustomerDialog({ setOpen, current }) {
       setSearching(false);
     } catch (error) {
       setSearching(false);
-      console.warn('Error > ', error);
       return toast.error(error.response.data.data.message);
     }
   };
@@ -109,7 +107,6 @@ function CustomerDialog({ setOpen, current }) {
     let _cnpj;
     let _cpf;
     data.entityType = entityType;
-    console.warn('oba', data);
     try {
       await schema.validate(data, {
         abortEarly: false,
@@ -155,12 +152,13 @@ function CustomerDialog({ setOpen, current }) {
         });
 
         formRef.current.setErrors(errorMessages);
+      } else {
+        return toast.error(error.response.data.data.message);
       }
     }
   }
 
   const handleOpenAskDialog = () => {
-    console.warn('ta no hadle open ask');
     setAskOpen(asking => !asking);
   };
 
@@ -229,6 +227,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="cpf"
                     type="text"
                     placeholder="CPF"
+                    defaultValue={current.cpf}
                   />
                 </InputContainer>
               ) : (

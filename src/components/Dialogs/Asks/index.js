@@ -73,5 +73,9 @@ export default Asks;
 
 Asks.propTypes = {
   setAskOpen: PropTypes.func.isRequired,
-  customerId: PropTypes.string.isRequired,
+  customerId: PropTypes.string,
+};
+
+Asks.defaultProps = {
+  customerId: undefined,
 };
