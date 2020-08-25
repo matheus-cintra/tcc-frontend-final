@@ -11,6 +11,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Container = styled.main`
+  min-width: 350px;
   position: relative;
   height: 100vh;
   padding: 75px 10px 10px 10px;

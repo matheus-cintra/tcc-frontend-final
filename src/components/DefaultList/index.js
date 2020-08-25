@@ -12,6 +12,7 @@ import {
   TitleSubtitleContainer,
   Title,
   Subtitle,
+  RegisterSince,
 } from './styles';
 
 function DefaultList(props) {
@@ -22,8 +23,6 @@ function DefaultList(props) {
     iconTitle,
     working,
     itemList,
-    companyIcon,
-    personIcon,
   } = props;
 
   return (
@@ -42,7 +41,7 @@ function DefaultList(props) {
         </ToolbarTitle>
       </Toolbar>
       {!working && itemList && itemList.length > 0 ? (
-        <Scroll>
+        <Scroll options={{ suppressScrollX: true }}>
           <List>
             {itemList.map(item => (
               <li key={item._id}>
@@ -50,8 +49,8 @@ function DefaultList(props) {
                   <SpanContainer>
                     <CodeInfo>{item.code}</CodeInfo>
                     <Icon
-                      path={item.cnpj ? companyIcon : personIcon}
-                      title={iconTitle}
+                      path={item.icon}
+                      title={item.subtitle}
                       size="30px"
                       color="#333"
                     />
@@ -62,7 +61,9 @@ function DefaultList(props) {
                   </SpanContainer>
                   {item.formatedPrice ? (
                     <span>R$ {item.formatedPrice}</span>
-                  ) : null}
+                  ) : (
+                    <RegisterSince>{item.registerSince}</RegisterSince>
+                  )}
                 </button>
               </li>
             ))}
@@ -82,10 +83,4 @@ DefaultList.propTypes = {
   iconTitle: PropTypes.string.isRequired,
   working: PropTypes.bool.isRequired,
   itemList: PropTypes.arrayOf(PropTypes.object).isRequired,
-  companyIcon: PropTypes.string.isRequired,
-  personIcon: PropTypes.string.isRequired,
 };
-
-// <span>{item.code}</span>
-//                     <span> - {item.name}</span>
-//                     <span>{item.description}</span>

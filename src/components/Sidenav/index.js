@@ -3,8 +3,12 @@ import { NavLink } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { Container } from './styles';
 import routes from './routesTemplate';
+import { store } from '../../store';
 
 export default function Sidenav() {
+  const account = store.getState();
+  const userName = account.user.profile.name;
+
   return (
     <Container>
       <header>
@@ -12,7 +16,7 @@ export default function Sidenav() {
           src="https://api.adorable.io/avatars/100/abott@adorable.png"
           alt="Logo"
         />
-        <h2>Matheus Cintra</h2>
+        <h2>{userName}</h2>
       </header>
       <ul>
         {routes.map(route => (

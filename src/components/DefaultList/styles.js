@@ -82,6 +82,51 @@ export const TitleSubtitleContainer = styled.div`
   padding-left: 15px;
 `;
 
-export const Title = styled.span``;
+export const Title = styled.span`
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
 
-export const Subtitle = styled.span``;
+  @media screen and (max-width: 500px) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 68%;
+    text-align: left;
+  }
+
+  @media screen and (max-width: 400px) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 50%;
+    text-align: left;
+  }
+`;
+
+export const Subtitle = styled.span`
+  font-size: 13px;
+  color: #b3aaaa;
+
+  @media screen and (max-width: 500px) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 68%;
+    text-align: left;
+  }
+
+  @media screen and (max-width: 400px) {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 50%;
+    text-align: left;
+  }
+`;
+
+export const RegisterSince = styled.span`
+  @media screen and (max-width: 600px) {
+    display: none;
+  }
+`;

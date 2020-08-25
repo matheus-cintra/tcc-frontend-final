@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mdiPlusCircle, mdiFactory, mdiAccount } from '@mdi/js';
+import { mdiPlusCircle } from '@mdi/js';
 import DefaultList from '../../components/DefaultList';
 import Modal from '../../components/Modals';
 import CustomerDialog from '../../components/Dialogs/Customers/CustomersDialog';
@@ -15,7 +15,6 @@ export default function Customer() {
     if (open) return;
 
     const customers = await methods.getCustomersList();
-    console.warn('customers > ', customers);
     setCustomerList(customers);
     setWorking(false);
   };
@@ -48,8 +47,6 @@ export default function Customer() {
         iconTitle="Adicionar Cliente"
         working={working}
         itemList={customerList}
-        companyIcon={mdiFactory}
-        personIcon={mdiAccount}
       />
 
       <Modal open={open} setOpen={setOpen}>

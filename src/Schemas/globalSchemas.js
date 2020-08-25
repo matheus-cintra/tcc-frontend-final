@@ -50,8 +50,6 @@ const companySchema = Yup.object().shape({
 });
 
 const validateCompany = async data => {
-  console.warn('data > ', data);
-
   return companySchema.validate(data, {
     abortEarly: false,
   });

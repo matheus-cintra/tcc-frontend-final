@@ -22,8 +22,4 @@ async function getCompanyInfo() {
   return result.data.data.company;
 }
 
-async function getCepInfo(cep) {
-  console.warn('CEP > ', cep);
-}
-
-export { getCompanyInfo, getCepInfo };
+export { getCompanyInfo };

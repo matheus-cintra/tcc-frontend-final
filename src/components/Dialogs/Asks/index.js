@@ -27,8 +27,6 @@ function Asks({ setAskOpen, customerId }) {
       fileName: files.name,
     });
 
-    console.warn('URL > ', result.data.url);
-
     fetch(result.data.url, { method: 'PUT', body: files })
       .then(uploaded => {
         console.warn('RESULT > ', uploaded);

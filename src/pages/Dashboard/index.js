@@ -12,12 +12,12 @@ import {
 import { GraphContainer, Graph, BigGraph } from './styles';
 
 const data = [
-  { name: 'Janeiro', clientes: 3, pv: 325, amt: 158 },
-  { name: 'Fevereiro', clientes: 7, pv: 2400, amt: 2400 },
-  { name: 'Março', clientes: 12, pv: 2400, amt: 2400 },
-  { name: 'Abril', clientes: 24, pv: 2400, amt: 2400 },
-  { name: 'Maio', clientes: 18, pv: 2400, amt: 2400 },
-  { name: 'Junho', clientes: 31, pv: 2400, amt: 2400 },
+  { name: 'Janeiro', clientes: 3 },
+  { name: 'Fevereiro', clientes: 7 },
+  { name: 'Março', clientes: 12 },
+  { name: 'Abril', clientes: 24 },
+  { name: 'Maio', clientes: 18 },
+  { name: 'Junho', clientes: 31 },
 ];
 
 export default function Dashboard() {
@@ -25,7 +25,7 @@ export default function Dashboard() {
     <>
       <GraphContainer>
         <Graph>
-          <h2>Fluxo de Clientes (6 meses)</h2>
+          <h2>Numero de Cliente (6 meses)</h2>
           <ResponsiveContainer width="100%" height="70%">
             <LineChart width={600} height={300} data={data}>
               <Line type="monotone" dataKey="clientes" stroke="#8884d8" />
