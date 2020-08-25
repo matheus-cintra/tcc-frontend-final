@@ -21,6 +21,23 @@ function Asks({ setAskOpen, customerId }) {
     }
   }
 
+  async function handleUpload(e) {
+    const files = e.target.files[0];
+    const result = await api.post('/api/v1/tools/get-signed-url', {
+      fileName: files.name,
+    });
+
+    console.warn('URL > ', result.data.url);
+
+    fetch(result.data.url, { method: 'PUT', body: files })
+      .then(uploaded => {
+        console.warn('RESULT > ', uploaded);
+      })
+      .catch(err => {
+        console.warn('ERRO > ', err);
+      });
+  }
+
   return (
     <>
       <Toolbar>
@@ -45,6 +62,7 @@ function Asks({ setAskOpen, customerId }) {
           <button type="button" onClick={handleClose}>
             Não
           </button>
+          <input type="file" onChange={e => handleUpload(e)} />
         </BottomActions>
       </Container>
     </>
