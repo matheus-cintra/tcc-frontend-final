@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 
 import Icon from '@mdi/react';
+import { mdiFile, mdiMagnify } from '@mdi/js';
 import {
   Toolbar,
   ToolbarTitle,
@@ -13,7 +14,12 @@ import {
   Title,
   Subtitle,
   RegisterSince,
+  EmptyListContainer,
+  Text,
+  SearchForm,
 } from './styles';
+
+import DefaultInput from '../DefaultInput/Input';
 
 function DefaultList(props) {
   const {
@@ -23,12 +29,45 @@ function DefaultList(props) {
     iconTitle,
     working,
     itemList,
+    decorator,
   } = props;
+
+  const formRef = useRef();
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    setList(itemList);
+  }, [itemList]);
+
+  const handleSearch = async data => {
+    const { searchContent } = data;
+    let result;
+    if (searchContent === '') {
+      result = await decorator.getAllRegisters();
+    } else {
+      result = await decorator.getRegistersBySearch(searchContent);
+    }
+
+    setList(result);
+  };
 
   return (
     <>
       <Toolbar>
         <ToolbarTitle>
+          <SearchForm ref={formRef} onSubmit={handleSearch}>
+            <DefaultInput name="searchContent" placeholder="Busca..." />
+            <button type="submit">
+              <Icon
+                path={mdiMagnify}
+                title="Buscar"
+                size={1.4}
+                color="#FFF"
+                style={{ cursor: 'pointer' }}
+              />
+            </button>
+          </SearchForm>
+
           {title}
           <button type="button" onClick={handleOpen}>
             <Icon
@@ -40,10 +79,10 @@ function DefaultList(props) {
           </button>
         </ToolbarTitle>
       </Toolbar>
-      {!working && itemList && itemList.length > 0 ? (
+      {!working && list && list.length > 0 ? (
         <Scroll options={{ suppressScrollX: true }}>
           <List>
-            {itemList.map(item => (
+            {list.map(item => (
               <li key={item._id}>
                 <button type="button" onClick={() => handleOpen(item)}>
                   <SpanContainer>
@@ -69,7 +108,12 @@ function DefaultList(props) {
             ))}
           </List>
         </Scroll>
-      ) : null}
+      ) : (
+        <EmptyListContainer>
+          <Icon path={mdiFile} size={6} color="#CCC" />
+          <Text>Nenhum Documento</Text>
+        </EmptyListContainer>
+      )}
     </>
   );
 }
@@ -83,4 +127,5 @@ DefaultList.propTypes = {
   iconTitle: PropTypes.string.isRequired,
   working: PropTypes.bool.isRequired,
   itemList: PropTypes.arrayOf(PropTypes.object).isRequired,
+  decorator: PropTypes.objectOf(PropTypes.func).isRequired,
 };

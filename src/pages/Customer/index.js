@@ -14,7 +14,7 @@ export default function Customer() {
   const gerCustomers = async () => {
     if (open) return;
 
-    const customers = await methods.getCustomersList();
+    const customers = await methods.getAllRegisters();
     setCustomerList(customers);
     setWorking(false);
   };
@@ -47,6 +47,7 @@ export default function Customer() {
         iconTitle="Adicionar Cliente"
         working={working}
         itemList={customerList}
+        decorator={methods}
       />
 
       <Modal open={open} setOpen={setOpen}>

@@ -104,8 +104,6 @@ function CustomerDialog({ setOpen, current }) {
 
   async function handleSubmit(data) {
     setSubmitting(true);
-    let _cnpj;
-    let _cpf;
     data.entityType = entityType;
     try {
       await schema.validate(data, {
@@ -113,14 +111,14 @@ function CustomerDialog({ setOpen, current }) {
       });
 
       if (data.cnpj) {
-        _cnpj = helpers.returnOnlyNumbers(data.cnpj);
+        data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
       } else {
-        _cpf = helpers.returnOnlyNumbers(data.cpf);
+        data.cpf = helpers.returnOnlyNumbers(data.cpf);
       }
 
-      const cpfCnpjIsValid = _cnpj
-        ? _cnpjCheck.isValid(_cnpj)
-        : _cpfCheck.isValid(_cpf);
+      const cpfCnpjIsValid = data.cnpj
+        ? _cnpjCheck.isValid(data.cnpj)
+        : _cpfCheck.isValid(data.cpf);
 
       if (!cpfCnpjIsValid) {
         setSubmitting(false);
@@ -218,7 +216,7 @@ function CustomerDialog({ setOpen, current }) {
               {entityType === '1' ? (
                 <InputContainer
                   style={{
-                    width: '50%',
+                    width: '49%',
                     marginRight: '5px',
                   }}
                 >
@@ -233,7 +231,7 @@ function CustomerDialog({ setOpen, current }) {
               ) : (
                 <InputContainer
                   style={{
-                    width: '50%',
+                    width: '49%',
                     marginRight: '5px',
                   }}
                 >
@@ -251,6 +249,7 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '50%',
+                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -337,7 +336,6 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '15%',
-                  marginLeft: '5px',
                   marginRight: '5px',
                 }}
               >
@@ -367,6 +365,7 @@ function CustomerDialog({ setOpen, current }) {
                 style={{
                   width: '42%',
                   marginRight: '5px',
+                  marginLeft: '5px',
                 }}
               >
                 <DefaultInput
@@ -381,7 +380,6 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '50%',
-                  marginLeft: '5px',
                   marginRight: '5px',
                 }}
               >

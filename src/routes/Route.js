@@ -9,11 +9,15 @@ import DefaultLayout from '../pages/_layouts/default';
 
 import { store } from '../store';
 import { logoutUser } from '../store/modules/auth/actions';
+import { setModuleInfo } from '../store/modules/modulesInfo/actions';
 
 export default function RouteWrapper({
   component: Component,
   isPrivate,
   title,
+  moduleName,
+  moduleApi,
+  hasSearchBar,
   ...rest
 }) {
   const { signed } = store.getState().auth;
@@ -23,6 +27,12 @@ export default function RouteWrapper({
   const decoded = jwt.decode(token);
   const expired = decoded && currTime > decoded.exp;
   const dispatch = useDispatch();
+  const moduleInfo = {
+    moduleName,
+    moduleApi,
+    hasSearchBar,
+  };
+  dispatch(setModuleInfo(moduleInfo));
 
   if (expired) {
     dispatch(logoutUser());
@@ -58,8 +68,14 @@ RouteWrapper.propTypes = {
   component: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
     .isRequired,
   title: PropTypes.string.isRequired,
+  moduleName: PropTypes.string,
+  moduleApi: PropTypes.string,
+  hasSearchBar: PropTypes.bool,
 };
 
 RouteWrapper.defaultProps = {
   isPrivate: false,
+  moduleName: '',
+  moduleApi: '',
+  hasSearchBar: false,
 };

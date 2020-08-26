@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import PerfectScrollbar from 'react-perfect-scrollbar';
+import { Form as Unform } from '@unform/web';
 
 export const DefaultList = styled.div``;
 
@@ -13,7 +14,7 @@ export const Toolbar = styled.div`
 export const ToolbarTitle = styled.div`
   display: flex;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
 
   font-weight: normal;
   font-size: 24px;
@@ -130,3 +131,56 @@ export const RegisterSince = styled.span`
     display: none;
   }
 `;
+
+export const EmptyListContainer = styled.div`
+  border: 1px solid #ccc;
+  height: calc(100% - 70px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+export const Text = styled.span`
+  font-size: 20px;
+  color: #ccc;
+`;
+
+export const SearchForm = styled(Unform)`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 10px;
+
+  div {
+    padding-right: 10px;
+  }
+
+  button {
+    margin-left: 0;
+    height: 36px;
+    border-radius: 4px;
+    padding: 5px;
+    transition: background 0.3s;
+
+    &:hover {
+      background: #6f6e6e;
+    }
+  }
+
+  input {
+    padding: 10px;
+    border: none;
+    background: #f3f3f3;
+    background-color: transparent;
+    border-bottom: 1px solid #000;
+    color: #fff;
+
+    ::placeholder {
+      /* Chrome, Firefox, Opera, Safari 10.1+ */
+      color: #ccc;
+    }
+  }
+`;
+
+export const SearchInput = styled.input``;
