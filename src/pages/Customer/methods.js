@@ -2,11 +2,25 @@ import moment from 'moment';
 import { mdiFactory, mdiAccount } from '@mdi/js';
 import api from '../../services/api';
 
-async function getAllRegisters() {
-  const result = await api.get('/api/v1/customers/');
-  let customers = result.data.success ? result.data.data.customers : [];
+async function getRegisters(limit = undefined, skip = undefined) {
+  let uri;
 
-  customers = customers.map(customer => {
+  if (limit && skip) {
+    uri = `/api/v1/customers?limit=${limit}&skip=${skip}`;
+  } else if (limit && !skip) {
+    uri = `/api/v1/customers?limit=${limit}`;
+  } else if (!limit && skip) {
+    uri = `/api/v1/customers?skip=${skip}`;
+  } else {
+    uri = `/api/v1/customers`;
+  }
+
+  const result = await api.get(uri);
+
+  let docs = result.data.success ? result.data.data.customers : [];
+  const docCount = result.data.success ? result.data.data.qty : 0;
+
+  docs = docs.map(customer => {
     return {
       ...customer,
       registerSince: moment(customer.createdAt, 'YYYY-MM-DD').format(
@@ -17,7 +31,7 @@ async function getAllRegisters() {
     };
   });
 
-  return customers;
+  return { docs, docCount };
 }
 
 async function getRegistersBySearch(search) {
@@ -39,6 +53,6 @@ async function getRegistersBySearch(search) {
 }
 
 export default {
-  getAllRegisters,
+  getRegisters,
   getRegistersBySearch,
 };

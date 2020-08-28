@@ -29,6 +29,7 @@ function DefaultList(props) {
     iconTitle,
     working,
     itemList,
+    itemCount,
     decorator,
   } = props;
 
@@ -39,16 +40,22 @@ function DefaultList(props) {
     setList(itemList);
   }, [itemList]);
 
+  const handleLoadMore = async () => {
+    if (list.length === itemCount) return;
+    const result = await decorator.getRegisters('15', list.length);
+    setList([...list, ...result.docs]);
+  };
+
   const handleSearch = async data => {
     const { searchContent } = data;
     let result;
     if (searchContent === '') {
-      result = await decorator.getAllRegisters();
+      result = await decorator.getRegisters('15');
     } else {
       result = await decorator.getRegistersBySearch(searchContent);
     }
 
-    setList(result);
+    setList(result.docs);
   };
 
   return (
@@ -80,7 +87,10 @@ function DefaultList(props) {
         </ToolbarTitle>
       </Toolbar>
       {!working && list && list.length > 0 ? (
-        <Scroll options={{ suppressScrollX: true }}>
+        <Scroll
+          options={{ suppressScrollX: true }}
+          onYReachEnd={handleLoadMore}
+        >
           <List>
             {list.map(item => (
               <li key={item._id}>
@@ -128,4 +138,5 @@ DefaultList.propTypes = {
   working: PropTypes.bool.isRequired,
   itemList: PropTypes.arrayOf(PropTypes.object).isRequired,
   decorator: PropTypes.objectOf(PropTypes.func).isRequired,
+  itemCount: PropTypes.number.isRequired,
 };
