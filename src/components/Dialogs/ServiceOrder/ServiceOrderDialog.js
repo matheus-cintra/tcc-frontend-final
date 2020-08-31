@@ -1,9 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan } from '@mdi/js';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
+import moment from 'moment';
+import DefaultInput from '../../DefaultInput/Input';
+import Divider from '../../Divider';
 import api from '../../../services/api';
 import Input from '../../InputMask/Input';
 
@@ -15,12 +18,40 @@ import {
   BottomActions,
   RowContainer,
   InputContainer,
+  Select,
 } from './styles';
 import helper from '../../../helpers/helper';
 
 function ServiceOrderDialog({ setOpen, current }) {
   const serviceOrderId = current._id;
   const formRef = useRef(null);
+  const [paymentMethod, setPaymentMethod] = useState({});
+  const paymentMethods = [
+    {
+      id: 1,
+      content: 'TRANSFERÊNCIA',
+    },
+    {
+      id: 2,
+      content: 'BOLETO',
+    },
+    {
+      id: 3,
+      content: 'DINHEIRO',
+    },
+    {
+      id: 4,
+      content: 'CHEQUE',
+    },
+  ];
+
+  useEffect(() => {
+    const _paymentMethod = paymentMethods.find(
+      x => x.id === current.paymentMethod
+    );
+    setPaymentMethod(_paymentMethod);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const schema = Yup.object().shape({
     code: Yup.string().required('Código Obrigatório'),
@@ -28,6 +59,8 @@ function ServiceOrderDialog({ setOpen, current }) {
     serviceId: Yup.string().required('ServiceId Obrigatório'),
     customerId: Yup.string().required('customerId Obrigatório'),
     paymentMethod: Yup.string().required('Método de Pagamento Obrigatório'),
+    phone: Yup.string(),
+    email: Yup.string().email('Email inválido'),
   });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
@@ -43,21 +76,58 @@ function ServiceOrderDialog({ setOpen, current }) {
     setOpen(open => !open);
   };
 
+  function handleSelectPaymentMethod(e) {
+    setPaymentMethod(e.target.value);
+    // console.log('Valor', e.target.value);
+  }
+
   async function handleSubmit(data) {
     try {
+      data = {
+        ...data,
+        paymentMethod,
+      };
+      // console.log('entrou no submit', typeof paymentMethod);
       await schema.validate(data, {
         abortEarly: false,
       });
-
-      const price = helper.formatPrice(data.price, 'data');
-
-      const ds = {
+      // console.log('passou no validate');
+      let ds = {
         code: data.code,
+        servideId: data.serviceId,
         customerId: data.customerId,
-        serviceId: data.serviceId,
-        paymentMethod: data.paymentMethod,
-        price,
+        phone: data.phone,
+        email: data.email,
+        paymentMethod,
       };
+
+      if (data.price) {
+        const price = helper.formatPrice(data.price, 'data');
+        ds = { price };
+      }
+      if (data.serviceDate) {
+        const serviceDate = moment(data.serviceDate, 'DD/MM/YYYY');
+        ds = { serviceDate: serviceDate.format() };
+        if (serviceDate.isBefore(moment())) {
+          return toast.error('Não é possível informar uma data passada');
+        }
+      }
+
+      if (data.executedDate) {
+        const executedDate = moment(data.executedDate, 'DD/MM/YYYY');
+        ds = { executedDate: executedDate.format() };
+        if (executedDate.isBefore(moment())) {
+          return toast.error('Não é possível informar uma data passada');
+        }
+      }
+
+      if (data.paymentDate) {
+        const paymentDate = moment(data.paymentDate, 'DD/MM/YYYY');
+        ds = { paymentDate: paymentDate.format() };
+        if (paymentDate.isBefore(moment())) {
+          return toast.error('Não é possível informar uma data passada');
+        }
+      }
 
       const result = serviceOrderId
         ? await api.put(`/api/v1/service-order/${serviceOrderId}`, { ...ds })
@@ -71,6 +141,7 @@ function ServiceOrderDialog({ setOpen, current }) {
 
       handleClose();
     } catch (error) {
+      console.warn(error);
       if (error instanceof Yup.ValidationError) {
         const errorMessages = {};
 
@@ -100,13 +171,14 @@ function ServiceOrderDialog({ setOpen, current }) {
       {serviceOrderId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+            <Divider>Dados ordem de Serviço</Divider>
             <RowContainer>
               <InputContainer style={{ width: '200px', marginRight: '15px' }}>
                 <Input
                   name="code"
                   type="text"
                   defaultValue={current.code}
-                  placeholder="Código*"
+                  placeholder="Código da Ordem"
                 />
               </InputContainer>
               <InputContainer>
@@ -114,7 +186,7 @@ function ServiceOrderDialog({ setOpen, current }) {
                   name="serviceId"
                   type="text"
                   defaultValue={current.serviceId}
-                  placeholder="ServiceId*"
+                  placeholder="Nome do Serviço"
                 />
               </InputContainer>
               <InputContainer>
@@ -122,33 +194,129 @@ function ServiceOrderDialog({ setOpen, current }) {
                   name="customerId"
                   type="text"
                   defaultValue={current.customerId}
-                  placeholder="CustomerId*"
+                  placeholder="Nome do Cliente"
                 />
               </InputContainer>
-              <InputContainer>
+            </RowContainer>
+
+            <Divider>Contato</Divider>
+
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                }}
+              >
                 <Input
-                  name="paymentMethod"
+                  mask="99-99999-9999"
+                  defaultValue={current.phone}
+                  name="phone"
                   type="text"
-                  defaultValue={current.paymentMethod}
-                  placeholder="PaymentMethod*"
+                  placeholder="Telefone"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <DefaultInput
+                  name="email"
+                  defaultValue={current.email}
+                  type="text"
+                  placeholder="Email"
+                />
+              </InputContainer>
+            </RowContainer>
+
+            <Divider>Datas do Serviço</Divider>
+
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="serviceDate"
+                  type="text"
+                  defaultValue={current.serviceDate}
+                  placeholder="Data do Serviço"
                 />
               </InputContainer>
 
               <InputContainer
                 style={{
-                  width: '200px',
-                  marginLeft: '15px',
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="executedDate"
+                  type="text"
+                  defaultValue={current.executedDate}
+                  placeholder="Data de Execução"
+                />
+              </InputContainer>
+            </RowContainer>
+            <Divider>Dados Financeiros</Divider>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
                   marginRight: '10px',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="paymentDate"
+                  type="text"
+                  defaultValue={current.paymentDate}
+                  placeholder="Data do Pagamento"
+                />
+              </InputContainer>
+              <Select
+                style={{
+                  width: '50%',
+                  marginLeft: '10px',
+                  marginRight: '5px',
+                }}
+                onChange={e => handleSelectPaymentMethod(e)}
+                value={paymentMethods.content}
+              >
+                {paymentMethods.map(method => (
+                  <option
+                    key={method.id}
+                    name={method.content}
+                    type="text"
+                    value={method.id}
+                  >
+                    {method.content}
+                  </option>
+                ))}
+              </Select>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
                 }}
               >
                 <Input
                   name="price"
                   type="text"
                   defaultValue={current.formatedPrice}
-                  placeholder="Preço*"
+                  placeholder="Preço"
                 />
               </InputContainer>
             </RowContainer>
+
             <RowContainer>
               {/* <InputContainer style={{ marginRight: '10px' }}>
                 <Input
@@ -164,7 +332,14 @@ function ServiceOrderDialog({ setOpen, current }) {
       ) : (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+            <Divider>Dados Ordem de Serviço</Divider>
             <RowContainer>
+              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
+                <Input name="code" type="text" placeholder="Code*" />
+              </InputContainer>
+              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
+                <Input name="serviceId" type="text" placeholder="ServiceId*" />
+              </InputContainer>
               <InputContainer style={{ width: '200px', marginRight: '15px' }}>
                 <Input
                   name="customerId"
@@ -172,28 +347,115 @@ function ServiceOrderDialog({ setOpen, current }) {
                   placeholder="CustomerId*"
                 />
               </InputContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input name="serviceId" type="text" placeholder="ServiceId*" />
-              </InputContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
+            </RowContainer>
+
+            <Divider>Contato</Divider>
+
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                }}
+              >
                 <Input
-                  name="paymentMethod"
+                  mask="99-99999-9999"
+                  name="phone"
                   type="text"
-                  placeholder="PaymentMethod*"
+                  placeholder="Telefone"
                 />
-              </InputContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input name="code" type="text" placeholder="Código*" />
               </InputContainer>
 
               <InputContainer
                 style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
                 }}
               >
-                <Input name="price" type="text" placeholder="Preço*" />
+                <DefaultInput name="email" type="text" placeholder="Email" />
+              </InputContainer>
+            </RowContainer>
+            <Divider>Datas do Serviço</Divider>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="serviceDate"
+                  type="text"
+                  placeholder="Data do Serviço"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="executedDate"
+                  type="text"
+                  placeholder="Data estimada da Execução"
+                />
+              </InputContainer>
+            </RowContainer>
+
+            <Divider>Dados Financeiros </Divider>
+            <RowContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                }}
+              >
+                <Input
+                  mask="99/99/9999"
+                  name="paymentDate"
+                  type="text"
+                  placeholder="Data do Pagamento"
+                />
+              </InputContainer>
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Select
+                  style={{
+                    width: '50%',
+                    marginLeft: '10px',
+                    marginRight: '5px',
+                  }}
+                  onChange={e => handleSelectPaymentMethod(e)}
+                  value={paymentMethod.content}
+                >
+                  {paymentMethods.map(method => (
+                    <option
+                      key={method.id}
+                      name={method.content}
+                      type="text"
+                      value={method.id}
+                    >
+                      {method.content}
+                    </option>
+                  ))}
+                </Select>
+              </InputContainer>
+
+              <InputContainer
+                style={{
+                  width: '50%',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <Input name="price" type="text" placeholder="Preço" />
               </InputContainer>
             </RowContainer>
             {/* <RowContainer>

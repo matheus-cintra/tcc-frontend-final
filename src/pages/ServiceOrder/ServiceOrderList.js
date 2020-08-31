@@ -43,9 +43,6 @@ function ServiceOrderList(props) {
                 <button type="button" onClick={() => handleOpen(item)}>
                   <SpanContainer>
                     <span>
-                      {item.code} - Metódo de pagamento: {item.paymentMethod}
-                    </span>
-                    <span>
                       <button type="button"> Dar Baixa</button>
                     </span>
                   </SpanContainer>

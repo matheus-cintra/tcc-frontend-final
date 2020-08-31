@@ -91,3 +91,19 @@ export const RowContainer = styled.div`
     width: 100%;
   }
 `;
+
+export const Select = styled.select`
+  padding: 10px;
+  margin: 10px;
+  border-radius: 4px;
+  border: none;
+  background: #f3f3f3;
+
+  option {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 4px;
+    border: none;
+    background: #f3f3f3;
+  }
+`;
