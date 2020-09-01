@@ -12,11 +12,7 @@ export function* signIn({ payload }) {
 
   try {
     const response = yield call(api.post, '/api/v1/login', { email, password });
-    console.warn('response > ', response);
-
     const { token, user } = response.data.data;
-
-    console.warn('user > ', user);
 
     api.defaults.headers['auth-token'] = token;
     api.defaults.headers['account-id'] = user._id;
@@ -31,10 +27,7 @@ export function* signIn({ payload }) {
 
 export function* signUp({ payload }) {
   try {
-    const response = yield call(api.post, '/api/v1/register', { ...payload }); //eslint-disable-line
-
-    console.warn('IMPLEMENTAR CHECAGEM DE REGISTRO'); // eslint-disable-line
-
+    yield call(api.post, '/api/v1/register', { ...payload });
     history.push('/confirmation');
   } catch (err) {
     toast.error(err.response.data.description);
@@ -42,8 +35,6 @@ export function* signUp({ payload }) {
 }
 
 export function* setToken({ payload }) {
-  console.warn('entrou no rehydrate');
-
   if (!payload) return;
 
   const { token } = payload.auth;
@@ -56,15 +47,9 @@ export function* setToken({ payload }) {
   if (!user) return;
 
   if (currTime > user.exp) {
-    console.warn('JWT Expirado');
-
-    // localStorage.removeItem('persist:sismei');
-
     yield put(logoutUser());
     return history.push('/');
   }
-
-  console.warn('Passou na validação do JWT');
 
   if (token && accountId) {
     api.defaults.headers['auth-token'] = token;

@@ -10,23 +10,30 @@ export default function Customer() {
   const [customerList, setCustomerList] = useState([]);
   const [open, setOpen] = useState(false);
   const [currentCustomer, setCurrentCustomer] = useState({});
+  const [registerCount, setRegisterCount] = useState(0);
 
-  const gerCustomers = async () => {
+  const getCustomers = async (initial, limit, skip) => {
     if (open) return;
+    let dataCustomers;
+    if (initial) {
+      dataCustomers = await methods.getRegisters('15', undefined);
+    } else {
+      dataCustomers = await methods.getRegisters(limit, skip);
+    }
 
-    const customers = await methods.getCustomersList();
-    setCustomerList(customers);
+    setCustomerList(dataCustomers.docs);
+    setRegisterCount(dataCustomers.docCount);
     setWorking(false);
   };
 
   useEffect(() => {
     setWorking(true);
-    gerCustomers();
+    getCustomers(true);
   }, []); //eslint-disable-line
 
   useEffect(() => {
     if (working) return;
-    gerCustomers();
+    getCustomers(true);
   }, [open]); //eslint-disable-line
 
   const handleOpen = customer => {
@@ -41,12 +48,14 @@ export default function Customer() {
   return (
     <>
       <DefaultList
-        title="Customers"
+        title="Clientes"
         handleOpen={handleOpen}
         toolbarIcon={mdiPlusCircle}
         iconTitle="Adicionar Cliente"
         working={working}
         itemList={customerList}
+        itemCount={registerCount}
+        decorator={methods}
       />
 
       <Modal open={open} setOpen={setOpen}>

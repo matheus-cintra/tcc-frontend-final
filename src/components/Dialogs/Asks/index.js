@@ -27,11 +27,9 @@ function Asks({ setAskOpen, customerId }) {
       fileName: files.name,
     });
 
-    console.warn('URL > ', result.data.url);
-
     fetch(result.data.url, { method: 'PUT', body: files })
-      .then(uploaded => {
-        console.warn('RESULT > ', uploaded);
+      .then(body => {
+        console.warn('Result > ', body);
       })
       .catch(err => {
         console.warn('ERRO > ', err);
@@ -73,5 +71,9 @@ export default Asks;
 
 Asks.propTypes = {
   setAskOpen: PropTypes.func.isRequired,
-  customerId: PropTypes.string.isRequired,
+  customerId: PropTypes.string,
+};
+
+Asks.defaultProps = {
+  customerId: undefined,
 };

@@ -6,6 +6,7 @@ export const Container = styled.div`
   top: 0; /* Position the navbar at the top of the page */
   width: calc(100vw - 240px); /* Full width */
   z-index: 10;
+  min-width: 350px;
 
   background: #fff;
   padding: 0 30px;

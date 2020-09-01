@@ -45,55 +45,90 @@ export default function Routes() {
         title="Dashboard"
         component={DashBoard}
         isPrivate
+        moduleName="dashboard"
+        moduleApi="/api/v1/home"
+        hasSearchBar={false}
       />
       <Route
         path="/my-company"
         title="Minha Empresa"
         component={MyCompany}
         isPrivate
+        moduleName="company"
+        moduleApi="/api/v1/company"
+        hasSearchBar={false}
       />
-      <Route path="/profile" title="Perfil" component={Profile} isPrivate />
+      <Route
+        path="/profile"
+        title="Perfil"
+        component={Profile}
+        isPrivate
+        moduleName="profile"
+        moduleApi="/api/v1/profile"
+        hasSearchBar={false}
+      />
       <Route
         path="/billing/:id?"
         title="Faturamento"
         component={Billing}
         isPrivate
+        moduleName="invoicing"
+        moduleApi="/api/v1/invoicing"
+        hasSearchBar
       />
       <Route
         path="/contract/:id?"
         title="Contratos"
         component={Contract}
         isPrivate
+        moduleName="contracts"
+        moduleApi="/api/v1/contracts"
+        hasSearchBar
       />
       <Route
         path="/customer/:id?"
         title="Clientes"
         component={Customer}
         isPrivate
+        moduleName="customers"
+        moduleApi="/api/v1/get-customer-by-search"
+        hasSearchBar
       />
       <Route
         path="/service/:id?"
         title="Serviços"
         component={Service}
         isPrivate
+        moduleName="services"
+        moduleApi="/api/v1/services"
+        hasSearchBar
       />
       <Route
         path="/service-order/:id?"
         title="Ordem de Serviço"
         component={ServiceOrder}
         isPrivate
+        moduleName="service-order"
+        moduleApi="/api/v1/service-order"
+        hasSearchBar
       />
       <Route
         path="/providers"
         title="Fornecedores"
         component={Providers}
         isPrivate
+        moduleName="providers"
+        moduleApi="/api/v1/providers"
+        hasSearchBar
       />
       <Route
         path="/attachments"
         title="Anexos"
         component={Attachments}
         isPrivate
+        moduleName="attachments"
+        moduleApi="/api/v1/attachments"
+        hasSearchBar
       />
 
       <Route

@@ -131,3 +131,34 @@ export const LoadingScreen = styled.div`
     }
   }
 `;
+
+export const CompanyImage = styled.div`
+  img {
+    max-width: 100px;
+    max-height: 100px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+    border-radius: 50%;
+  }
+`;
+
+export const UploadImage = styled.button`
+  margin-top: 10px;
+  height: 40px;
+  width: 150px;
+  border: none;
+  background-color: #455a64;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+`;
+
+export const RemoveButton = styled.button`
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-radius: 5px;
+  height: 30px;
+  width: 100px;
+`;

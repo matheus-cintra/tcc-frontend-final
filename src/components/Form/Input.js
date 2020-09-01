@@ -23,8 +23,6 @@ export default function Input({ name, ...rest }) {
     });
   }, [fieldName, registerField]);
 
-  console.warn('rest > ', defaultValue);
-
   return (
     <InputContainer>
       <ReactInputMask ref={inputRef} defaultValue={defaultValue} {...rest} />

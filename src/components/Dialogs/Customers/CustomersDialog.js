@@ -81,7 +81,6 @@ function CustomerDialog({ setOpen, current }) {
       const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
       if (result.data.sucess) {
         const addressResult = result.data.data;
-        console.warn('address > ', addressResult);
         formRef.current.setFieldValue('address.cep', addressResult.cep);
         formRef.current.setFieldValue('address.address', addressResult.address);
         formRef.current.setFieldValue('address.number', addressResult.number);
@@ -99,31 +98,28 @@ function CustomerDialog({ setOpen, current }) {
       setSearching(false);
     } catch (error) {
       setSearching(false);
-      console.warn('Error > ', error);
       return toast.error(error.response.data.data.message);
     }
   };
 
   async function handleSubmit(data) {
     setSubmitting(true);
-    let _cnpj;
-    let _cpf;
+
     data.entityType = entityType;
-    console.warn('oba', data);
     try {
       await schema.validate(data, {
         abortEarly: false,
       });
 
       if (data.cnpj) {
-        _cnpj = helpers.returnOnlyNumbers(data.cnpj);
+        data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
       } else {
-        _cpf = helpers.returnOnlyNumbers(data.cpf);
+        data.cpf = helpers.returnOnlyNumbers(data.cpf);
       }
 
-      const cpfCnpjIsValid = _cnpj
-        ? _cnpjCheck.isValid(_cnpj)
-        : _cpfCheck.isValid(_cpf);
+      const cpfCnpjIsValid = data.cnpj
+        ? _cnpjCheck.isValid(data.cnpj)
+        : _cpfCheck.isValid(data.cpf);
 
       if (!cpfCnpjIsValid) {
         setSubmitting(false);
@@ -155,12 +151,13 @@ function CustomerDialog({ setOpen, current }) {
         });
 
         formRef.current.setErrors(errorMessages);
+      } else {
+        return toast.error(error.response.data.data.message);
       }
     }
   }
 
   const handleOpenAskDialog = () => {
-    console.warn('ta no hadle open ask');
     setAskOpen(asking => !asking);
   };
 
@@ -184,40 +181,73 @@ function CustomerDialog({ setOpen, current }) {
       {customerId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <Divider>Dádos Básicos</Divider>
-            <RowContainer>
-              <InputContainer style={{ marginRight: '5px' }}>
-                <DefaultInput
-                  name="name"
-                  type="text"
-                  placeholder="Nome*"
-                  defaultValue={current.name}
-                  required
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <label>
-                <input
-                  type="radio"
-                  value="1"
-                  name="entityType"
-                  defaultChecked={current.entityType === '1'}
-                  onChange={() => handleOptionChange('1')}
-                />
-                Pessoa Física
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="entityType"
-                  value="2"
-                  defaultChecked={current.entityType === '2'}
-                  onChange={() => handleOptionChange('2')}
-                />
-                Pessoa Jurídica
-              </label>
-              {entityType === '1' ? (
+            <fieldset disabled={submitting}>
+              <Divider>Dádos Básicos</Divider>
+              <RowContainer>
+                <InputContainer style={{ marginRight: '5px' }}>
+                  <DefaultInput
+                    name="name"
+                    type="text"
+                    placeholder="Nome*"
+                    defaultValue={current.name}
+                    required
+                  />
+                </InputContainer>
+              </RowContainer>
+              <RowContainer>
+                <label>
+                  <input
+                    type="radio"
+                    value="1"
+                    name="entityType"
+                    defaultChecked={current.entityType === '1'}
+                    onChange={() => handleOptionChange('1')}
+                  />
+                  Pessoa Física
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="entityType"
+                    value="2"
+                    defaultChecked={current.entityType === '2'}
+                    onChange={() => handleOptionChange('2')}
+                  />
+                  Pessoa Jurídica
+                </label>
+                {entityType === '1' ? (
+                  <InputContainer
+                    style={{
+                      width: '49%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <Input
+                      mask="999.999.999-99"
+                      name="cpf"
+                      type="text"
+                      placeholder="CPF"
+                      defaultValue={current.cpf}
+                    />
+                  </InputContainer>
+                ) : (
+                  <InputContainer
+                    style={{
+                      width: '49%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <Input
+                      mask="99.999.999/9999-99"
+                      defaultValue={current.cnpj}
+                      name="cnpj"
+                      type="text"
+                      placeholder="CNPJ"
+                    />
+                  </InputContainer>
+                )}
+              </RowContainer>
+              <RowContainer>
                 <InputContainer
                   style={{
                     width: '50%',
@@ -225,189 +255,159 @@ function CustomerDialog({ setOpen, current }) {
                   }}
                 >
                   <Input
-                    mask="999.999.999-99"
-                    name="cpf"
+                    mask="99-99999-9999"
+                    defaultValue={current.phone}
+                    name="phone"
                     type="text"
-                    placeholder="CPF"
+                    placeholder="Telefone"
                   />
                 </InputContainer>
-              ) : (
+
                 <InputContainer
                   style={{
                     width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99.999.999/9999-99"
-                    defaultValue={current.cnpj}
-                    name="cnpj"
-                    type="text"
-                    placeholder="CNPJ"
-                  />
-                </InputContainer>
-              )}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                }}
-              >
-                <Input
-                  mask="99-99999-9999"
-                  defaultValue={current.phone}
-                  name="phone"
-                  type="text"
-                  placeholder="Telefone"
-                />
-              </InputContainer>
-
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="email"
-                  defaultValue={current.email}
-                  type="text"
-                  placeholder="Email"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="description"
-                  type="text"
-                  placeholder="Descrição"
-                  defaultValue={current.description}
-                />
-              </InputContainer>
-            </RowContainer>
-
-            <Divider>Endereço</Divider>
-
-            <RowContainer>
-              <SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '100%',
+                    marginLeft: '5px',
                     marginRight: '5px',
                   }}
                 >
                   <DefaultInput
-                    name="address.cep"
+                    name="email"
+                    defaultValue={current.email}
                     type="text"
-                    placeholder="CEP"
-                    defaultValue={current.address.cep}
+                    placeholder="Email"
                   />
                 </InputContainer>
-                <SearchButton onClick={handleCepSearch}>
-                  <Icon
-                    path={mdiAccountSearch}
-                    title="Buscar Cep"
-                    size="30px"
-                    color="#333"
+              </RowContainer>
+              <RowContainer>
+                <InputContainer
+                  style={{
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="description"
+                    type="text"
+                    placeholder="Descrição"
+                    defaultValue={current.description}
                   />
-                </SearchButton>
-              </SearchContainer>
-              <InputContainer
-                style={{
-                  width: '65%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.address"
-                  defaultValue={current.address.address}
-                  type="text"
-                  placeholder="Rua"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '15%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  maxLength="5"
-                  name="address.number"
-                  type="text"
-                  placeholder="Número"
-                  defaultValue={current.address.number}
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.neighborhood"
-                  type="text"
-                  placeholder="Bairro"
-                  defaultValue={current.address.neighborhood}
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.additional"
-                  type="text"
-                  placeholder="Complemento"
-                  defaultValue={current.address.additional}
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.city"
-                  type="text"
-                  placeholder="Cidade"
-                  defaultValue={current.address.city}
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.state"
-                  type="text"
-                  placeholder="Estado"
-                  defaultValue={current.address.state}
-                />
-              </InputContainer>
-            </RowContainer>
+                </InputContainer>
+              </RowContainer>
+
+              <Divider>Endereço</Divider>
+
+              <RowContainer>
+                <SearchContainer>
+                  <InputContainer
+                    style={{
+                      width: '100%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.cep"
+                      type="text"
+                      placeholder="CEP"
+                      defaultValue={current.address.cep}
+                    />
+                  </InputContainer>
+                  <SearchButton onClick={handleCepSearch}>
+                    <Icon
+                      path={mdiAccountSearch}
+                      title="Buscar Cep"
+                      size="30px"
+                      color="#333"
+                    />
+                  </SearchButton>
+                </SearchContainer>
+                <InputContainer
+                  style={{
+                    width: '65%',
+                    marginLeft: '5px',
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="address.address"
+                    defaultValue={current.address.address}
+                    type="text"
+                    placeholder="Rua"
+                  />
+                </InputContainer>
+              </RowContainer>
+              <RowContainer>
+                <InputContainer
+                  style={{
+                    width: '15%',
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    maxLength="5"
+                    name="address.number"
+                    type="text"
+                    placeholder="Número"
+                    defaultValue={current.address.number}
+                  />
+                </InputContainer>
+                <InputContainer
+                  style={{
+                    width: '42%',
+                    marginLeft: '5px',
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="address.neighborhood"
+                    type="text"
+                    placeholder="Bairro"
+                    defaultValue={current.address.neighborhood}
+                  />
+                </InputContainer>
+                <InputContainer
+                  style={{
+                    width: '42%',
+                    marginRight: '5px',
+                    marginLeft: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="address.additional"
+                    type="text"
+                    placeholder="Complemento"
+                    defaultValue={current.address.additional}
+                  />
+                </InputContainer>
+              </RowContainer>
+              <RowContainer>
+                <InputContainer
+                  style={{
+                    width: '50%',
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="address.city"
+                    type="text"
+                    placeholder="Cidade"
+                    defaultValue={current.address.city}
+                  />
+                </InputContainer>
+                <InputContainer
+                  style={{
+                    width: '50%',
+                    marginLeft: '5px',
+                    marginRight: '5px',
+                  }}
+                >
+                  <DefaultInput
+                    name="address.state"
+                    type="text"
+                    placeholder="Estado"
+                    defaultValue={current.address.state}
+                  />
+                </InputContainer>
+              </RowContainer>
+            </fieldset>
           </Form>
         </Container>
       ) : (

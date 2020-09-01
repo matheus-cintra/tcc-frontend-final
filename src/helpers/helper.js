@@ -4,7 +4,6 @@
  * @param  {String} str String to replace
  */
 function returnOnlyNumbers(str) {
-  console.warn('chegou aqui');
   if (!str) return;
   return str.replace(/[^0-9]/g, '');
 }

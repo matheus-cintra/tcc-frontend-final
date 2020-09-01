@@ -6,7 +6,7 @@ export default reducers => {
     {
       key: 'sismei',
       storage,
-      whitelist: ['auth', 'user'],
+      whitelist: ['auth', 'user', 'modules', 'company'],
     },
     reducers
   );

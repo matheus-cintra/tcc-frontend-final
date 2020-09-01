@@ -16,5 +16,5 @@ function Divider({ children }) {
 export default Divider;
 
 Divider.propTypes = {
-  children: PropTypes.element.isRequired,
+  children: PropTypes.string.isRequired,
 };
