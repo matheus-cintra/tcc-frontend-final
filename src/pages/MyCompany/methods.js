@@ -6,9 +6,9 @@ async function getCompanyInfo() {
 
   const result = await api.get(`api/v1/company/${user.profile._id}`);
   let companyImage;
-  if (result.data.data.company.documents.length > 0) {
+  if (result.data.data.company.logo) {
     companyImage = await api.get(
-      `api/v1/attachments/${result.data.data.company.documents[0]}`
+      `api/v1/attachments/${result.data.data.company.logo}`
     );
   }
   console.warn('companyImage > ', companyImage);

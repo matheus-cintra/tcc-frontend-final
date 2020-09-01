@@ -7,33 +7,26 @@ import api from '../../../services/api';
 
 import { Toolbar, Title, Container, AskText, BottomActions } from './styles';
 
-function Asks({ setAskOpen, customerId }) {
+function Asks({
+  setAskOpen,
+  registerId,
+  apiToCall,
+  forceReload = true,
+  closeReturn,
+}) {
   const handleClose = () => {
     setAskOpen(open => !open);
   };
 
   async function handleDelete() {
     try {
-      await api.delete(`/api/v1/customers/${customerId}`);
-      window.location.reload(false);
+      await api.delete(`${apiToCall}${registerId}`);
+      handleClose();
+      closeReturn();
+      if (forceReload) window.location.reload(false);
     } catch (error) {
       toast.error('Falha ao apagar cliente.');
     }
-  }
-
-  async function handleUpload(e) {
-    const files = e.target.files[0];
-    const result = await api.post('/api/v1/tools/get-signed-url', {
-      fileName: files.name,
-    });
-
-    fetch(result.data.url, { method: 'PUT', body: files })
-      .then(body => {
-        console.warn('Result > ', body);
-      })
-      .catch(err => {
-        console.warn('ERRO > ', err);
-      });
   }
 
   return (
@@ -60,7 +53,6 @@ function Asks({ setAskOpen, customerId }) {
           <button type="button" onClick={handleClose}>
             Não
           </button>
-          <input type="file" onChange={e => handleUpload(e)} />
         </BottomActions>
       </Container>
     </>
@@ -71,9 +63,15 @@ export default Asks;
 
 Asks.propTypes = {
   setAskOpen: PropTypes.func.isRequired,
-  customerId: PropTypes.string,
+  registerId: PropTypes.string,
+  apiToCall: PropTypes.string,
+  closeReturn: PropTypes.func,
+  forceReload: PropTypes.bool,
 };
 
 Asks.defaultProps = {
-  customerId: undefined,
+  registerId: undefined,
+  apiToCall: undefined,
+  closeReturn: undefined,
+  forceReload: true,
 };

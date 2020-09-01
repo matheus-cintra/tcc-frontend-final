@@ -162,7 +162,7 @@ function CustomerDialog({ setOpen, current }) {
   };
 
   const handleAskDialog = () => {
-    return <Asks setAskOpen={setAskOpen} customerId={customerId} />;
+    return <Asks setAskOpen={setAskOpen} registerId={customerId} />;
   };
 
   return (

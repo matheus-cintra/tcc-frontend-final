@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 import { getCompanyInfo } from './methods';
 import helper from '../../helpers/helper';
 import api from '../../services/api';
+import Modal from '../../components/Modals';
+import Asks from '../../components/Dialogs/Asks';
 
 import {
   Toolbar,
@@ -36,6 +38,8 @@ function MyCompany() {
   const [searching, setSearching] = useState(false);
   const [companyLogo, setCompanyLogo] = useState({});
   const [attachmentId, setAttachmentId] = useState(undefined);
+  const [askOpen, setAskOpen] = useState(false);
+  const [, setOpen] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -64,6 +68,8 @@ function MyCompany() {
   };
 
   async function handleUpload(e) {
+    const $el = document.getElementById('uploadElementButton');
+    console.warn('e > ', e);
     const files = e.target.files[0];
     const result = await api.post('/api/v1/tools/get-signed-url', {
       fileName: files.name,
@@ -72,9 +78,11 @@ function MyCompany() {
       .then(() => {
         setCompanyLogo(result.data.doc);
         setAttachmentId(result.data.doc.attachmentId);
+        $el.value = '';
       })
       .catch(() => {
         toast.error('Falha ao anexar arquivo. Tente novamente.');
+        $el.value = '';
       });
   }
 
@@ -93,7 +101,7 @@ function MyCompany() {
         number: data.address.number,
       };
 
-      if (attachmentId) data.documents = [attachmentId];
+      if (attachmentId) data.logo = attachmentId;
 
       await api.put(`/api/v1/company/${companyInfo._id}`, {
         ...data,
@@ -129,6 +137,29 @@ function MyCompany() {
       setSearching(false);
       return toast.error(err.response.data.data.message);
     }
+  };
+
+  function handleOpenAskDialog() {
+    setAskOpen(asking => !asking);
+  }
+
+  function handleCloseReturn() {
+    dispatch(setCompany(companyInfo.fantasyName, undefined));
+    setCompanyLogo({});
+  }
+
+  const handleAskDialog = () => {
+    return (
+      <Asks
+        setAskOpen={handleOpenAskDialog}
+        registerId={
+          companyLogo && companyLogo._id ? companyLogo._id : attachmentId
+        }
+        apiToCall="/api/v1/attachments/"
+        forceReload={false}
+        closeReturn={handleCloseReturn}
+      />
+    );
   };
 
   return (
@@ -270,7 +301,7 @@ function MyCompany() {
               {companyLogo.fileLink ? (
                 <CompanyImage>
                   <img src={companyLogo.fileLink} alt="Company Logo" />
-                  <RemoveButton type="button">
+                  <RemoveButton type="button" onClick={handleOpenAskDialog}>
                     <Icon
                       path={mdiDelete}
                       title="Buscar Cep"
@@ -288,6 +319,10 @@ function MyCompany() {
           </Form>
         )}
       </Container>
+
+      <Modal open={askOpen} setOpen={setOpen}>
+        <div>{handleAskDialog()}</div>
+      </Modal>
     </>
   );
 }
