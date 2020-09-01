@@ -28,8 +28,8 @@ function Asks({ setAskOpen, customerId }) {
     });
 
     fetch(result.data.url, { method: 'PUT', body: files })
-      .then(uploaded => {
-        console.warn('RESULT > ', uploaded);
+      .then(body => {
+        console.warn('Result > ', body);
       })
       .catch(err => {
         console.warn('ERRO > ', err);

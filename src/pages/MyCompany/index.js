@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useDispatch, connect } from 'react-redux';
 import Icon from '@mdi/react';
-import { mdiAccountSearch } from '@mdi/js';
+import { mdiAccountSearch, mdiDelete } from '@mdi/js';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import { getCompanyInfo } from './methods';
@@ -17,9 +18,14 @@ import {
   SubmitButton,
   SearchButton,
   LoadingScreen,
+  CompanyImage,
+  UploadImage,
+  RemoveButton,
 } from './styles';
 
 import DefaultInput from '../../components/DefaultInput/Input';
+
+import { setCompany } from '../../store/modules/company/actions';
 
 import { validateCompany } from '../../Schemas/globalSchemas';
 
@@ -28,10 +34,15 @@ function MyCompany() {
   const [working, setWorking] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({});
   const [searching, setSearching] = useState(false);
+  const [companyLogo, setCompanyLogo] = useState({});
+  const [attachmentId, setAttachmentId] = useState(undefined);
+
+  const dispatch = useDispatch();
 
   const getCompany = async () => {
-    const company = await getCompanyInfo();
+    const { company, companyImage } = await getCompanyInfo();
     setCompanyInfo(company);
+    setCompanyLogo(companyImage);
   };
 
   useEffect(() => {
@@ -46,6 +57,26 @@ function MyCompany() {
     if (companyInfo._id) console.warn('myForm > ', companyInfo); //eslint-disable-line
   });
   /** ************************************************************************ */
+
+  const handleClickToUpload = () => {
+    const $el = document.getElementById('uploadElementButton');
+    $el.click();
+  };
+
+  async function handleUpload(e) {
+    const files = e.target.files[0];
+    const result = await api.post('/api/v1/tools/get-signed-url', {
+      fileName: files.name,
+    });
+    fetch(result.data.doc.url, { method: 'PUT', body: files })
+      .then(() => {
+        setCompanyLogo(result.data.doc);
+        setAttachmentId(result.data.doc.attachmentId);
+      })
+      .catch(() => {
+        toast.error('Falha ao anexar arquivo. Tente novamente.');
+      });
+  }
 
   async function handleSubmit(data) {
     try {
@@ -62,9 +93,15 @@ function MyCompany() {
         number: data.address.number,
       };
 
+      if (attachmentId) data.documents = [attachmentId];
+
       await api.put(`/api/v1/company/${companyInfo._id}`, {
         ...data,
       });
+
+      dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
+
+      toast.success('Empresa Atualizada.');
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         const errorMessages = {};
@@ -219,6 +256,32 @@ function MyCompany() {
               />
             </Row>
             <Row>
+              <input
+                id="uploadElementButton"
+                hidden
+                type="file"
+                onChange={e => handleUpload(e)}
+              />
+              {!companyLogo.fileLink ? (
+                <UploadImage type="button" onClick={handleClickToUpload}>
+                  Adicionar Imagem
+                </UploadImage>
+              ) : null}
+              {companyLogo.fileLink ? (
+                <CompanyImage>
+                  <img src={companyLogo.fileLink} alt="Company Logo" />
+                  <RemoveButton type="button">
+                    <Icon
+                      path={mdiDelete}
+                      title="Buscar Cep"
+                      size="20px"
+                      color="#333"
+                    />
+                  </RemoveButton>
+                </CompanyImage>
+              ) : null}
+            </Row>
+            <Row>
               <p />
               <SubmitButton>Salvar</SubmitButton>
             </Row>
@@ -229,4 +292,4 @@ function MyCompany() {
   );
 }
 
-export default MyCompany;
+export default connect()(MyCompany);

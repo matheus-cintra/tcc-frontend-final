@@ -5,7 +5,13 @@ async function getCompanyInfo() {
   const user = JSON.parse(storage.user);
 
   const result = await api.get(`api/v1/company/${user.profile._id}`);
-
+  let companyImage;
+  if (result.data.data.company.documents.length > 0) {
+    companyImage = await api.get(
+      `api/v1/attachments/${result.data.data.company.documents[0]}`
+    );
+  }
+  console.warn('companyImage > ', companyImage);
   result.data.data.company._cnpj = result.data.data.company.cnpj.replace(
     /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,
     '$1.$2.$3/$4-$5'
@@ -19,7 +25,11 @@ async function getCompanyInfo() {
     result.data.data.company._phone = `(${phone1}) ${phone2}-${phone3}`;
   }
 
-  return result.data.data.company;
+  return {
+    company: result.data.data.company,
+    companyImage:
+      (companyImage && companyImage.data && companyImage.data.data) || {},
+  };
 }
 
 export { getCompanyInfo };

@@ -36,9 +36,12 @@ async function getRegisters(limit = undefined, skip = undefined) {
 
 async function getRegistersBySearch(search) {
   const result = await api.get(`/api/v1/get-customer-by-search/${search}`);
-  let customers = result.data.success ? result.data.results : [];
 
-  customers = customers.map(customer => {
+  let docs = result.data.success ? result.data.customers : [];
+  const docCount =
+    result.data.success && result.data.qty > 0 ? result.data.qty : 0;
+
+  docs = docs.map(customer => {
     return {
       ...customer,
       registerSince: moment(customer.createdAt, 'YYYY-MM-DD').format(
@@ -49,7 +52,7 @@ async function getRegistersBySearch(search) {
     };
   });
 
-  return customers;
+  return { docs, docCount };
 }
 
 export default {

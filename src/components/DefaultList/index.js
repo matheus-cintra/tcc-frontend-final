@@ -5,18 +5,24 @@ import Icon from '@mdi/react';
 import { mdiFile, mdiMagnify } from '@mdi/js';
 import {
   Toolbar,
-  ToolbarTitle,
   Scroll,
-  List,
-  SpanContainer,
-  CodeInfo,
-  TitleSubtitleContainer,
-  Title,
-  Subtitle,
+  DocumentList,
+  DocumentContainer,
+  DocumentCode,
+  DocumentTitleSubtitleContainer,
+  DocumentTitle,
+  DocumentSubtitle,
   RegisterSince,
   EmptyListContainer,
-  Text,
+  TextNoDocuments,
   SearchForm,
+  ToolbarTitle,
+  ToolbarActions,
+  SearchButton,
+  NewButton,
+  VerticalSeparator,
+  Title,
+  Subtitle,
 } from './styles';
 
 import DefaultInput from '../DefaultInput/Input';
@@ -62,9 +68,13 @@ function DefaultList(props) {
     <>
       <Toolbar>
         <ToolbarTitle>
+          <Title>{title}</Title>
+          <Subtitle>{itemCount} Documento(s)</Subtitle>
+        </ToolbarTitle>
+        <ToolbarActions>
           <SearchForm ref={formRef} onSubmit={handleSearch}>
             <DefaultInput name="searchContent" placeholder="Busca..." />
-            <button type="submit">
+            <SearchButton type="submit">
               <Icon
                 path={mdiMagnify}
                 title="Buscar"
@@ -72,42 +82,43 @@ function DefaultList(props) {
                 color="#FFF"
                 style={{ cursor: 'pointer' }}
               />
-            </button>
+            </SearchButton>
           </SearchForm>
 
-          {title}
-          <button type="button" onClick={handleOpen}>
+          <VerticalSeparator />
+
+          <NewButton type="button" onClick={handleOpen}>
             <Icon
               path={toolbarIcon}
               title={iconTitle}
               size="30px"
               color="#fff"
             />
-          </button>
-        </ToolbarTitle>
+          </NewButton>
+        </ToolbarActions>
       </Toolbar>
       {!working && list && list.length > 0 ? (
         <Scroll
           options={{ suppressScrollX: true }}
           onYReachEnd={handleLoadMore}
         >
-          <List>
+          <DocumentList>
             {list.map(item => (
               <li key={item._id}>
                 <button type="button" onClick={() => handleOpen(item)}>
-                  <SpanContainer>
-                    <CodeInfo>{item.code}</CodeInfo>
+                  <DocumentContainer>
+                    <DocumentCode>{item.code}</DocumentCode>
                     <Icon
                       path={item.icon}
                       title={item.subtitle}
                       size="30px"
                       color="#333"
                     />
-                    <TitleSubtitleContainer>
-                      <Title>{item.name}</Title>
-                      <Subtitle>{item.description}</Subtitle>
-                    </TitleSubtitleContainer>
-                  </SpanContainer>
+                    <DocumentTitleSubtitleContainer>
+                      <DocumentTitle>{item.name}</DocumentTitle>
+                      <DocumentSubtitle>{item.description}</DocumentSubtitle>
+                    </DocumentTitleSubtitleContainer>
+                  </DocumentContainer>
                   {item.formatedPrice ? (
                     <span>R$ {item.formatedPrice}</span>
                   ) : (
@@ -116,12 +127,12 @@ function DefaultList(props) {
                 </button>
               </li>
             ))}
-          </List>
+          </DocumentList>
         </Scroll>
       ) : (
         <EmptyListContainer>
           <Icon path={mdiFile} size={6} color="#CCC" />
-          <Text>Nenhum Documento</Text>
+          <TextNoDocuments>Nenhum Documento</TextNoDocuments>
         </EmptyListContainer>
       )}
     </>

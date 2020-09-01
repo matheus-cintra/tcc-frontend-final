@@ -1,22 +1,27 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import Icon from '@mdi/react';
+import { connect } from 'react-redux';
 import { Container } from './styles';
 import routes from './routesTemplate';
 import { store } from '../../store';
 
-export default function Sidenav() {
-  const account = store.getState();
-  const userName = account.user.profile.name;
+function Sidenav() {
+  const companyInfo = store.getState();
+  const { companyName } = companyInfo.company;
+  const { companyImage } = companyInfo.company;
 
   return (
     <Container>
       <header>
         <img
-          src="https://api.adorable.io/avatars/100/abott@adorable.png"
+          src={
+            companyImage ||
+            'https://api.adorable.io/avatars/100/abott@adorable.png'
+          }
           alt="Logo"
         />
-        <h2>{userName}</h2>
+        <h2>{companyName}</h2>
       </header>
       <ul>
         {routes.map(route => (
@@ -36,3 +41,7 @@ export default function Sidenav() {
     </Container>
   );
 }
+
+export default connect(state => ({
+  company: state.company,
+}))(Sidenav);

@@ -48,7 +48,7 @@ export default function Customer() {
   return (
     <>
       <DefaultList
-        title="Customers"
+        title="Clientes"
         handleOpen={handleOpen}
         toolbarIcon={mdiPlusCircle}
         iconTitle="Adicionar Cliente"
