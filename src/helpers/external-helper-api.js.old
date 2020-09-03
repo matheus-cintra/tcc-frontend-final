@@ -1,0 +1,224 @@
+(function() {
+  'use strict';
+
+  let uriAttachments = '/api/v1/attachments/:_id';
+
+  angular.module('app.helpers').
+      service('helpersApi', service);
+
+  /** @ngInject */
+  function service(jarvisApi, jvProfile, appService, $log) {
+
+    return {
+      postEmail: postSendEmail,
+      sendSms: getSendSms,
+      getS3url: getS3url,
+      postFileInfo: postFileInfo,
+      putFileInfo: putFileInfo,
+      deleteFile: deleteFile,
+      getAttachments: getAttachments,
+      getDatabaseSize: getDatabaseSize,
+      updateApol: updateApol,
+      getGoogleSpreadsheet: getGoogleSpreadsheet,
+    };
+
+    // ********************************************************************** //
+
+    /**
+     * @name getGoogleSpreadsheet
+     * @description
+     * get the google spreadsheet by id
+     *
+     * @param {Object} [mc] for mongo conditions
+     * @param {function} callback
+     */
+
+    function getGoogleSpreadsheet(mc = {}, callback) {
+      let uri = '/api/v1/tools/google-sheets/:spreadsheetId/:sheetTab';
+
+      let e = '181482: no \'spreadsheetId/sheetTab\' in getGoogleSpreadsheet function';
+      if (!mc.spreadsheetId || !mc.sheetTab) {
+        $log.error(e);
+        return callback(e);
+      }
+
+      mc.spreadsheetId = encodeURIComponent(mc.spreadsheetId);
+
+      return jarvisApi('getGoogleSheets', uri, {}, mc, {},
+          (e, data) => (callback(e, data)));
+    }
+
+    /**
+     * @name updateApol
+     * @description
+     * update customer on apol by plugin
+     *
+     * @param {string} customerId
+     * @param {function} callback
+     */
+
+    function updateApol(customerId, callback) {
+      let uri = '/api/v1/apol/:_id';
+
+      return jarvisApi('putApol', uri,
+          {}, customerId, {}, (e, data) => (callback(e, data)), true);
+    }
+
+    /**
+     * @name deleteFile
+     * @description
+     * get database size bu subscriptionId
+     *
+     * @param {function} callback to return (error, data)
+     */
+    function getDatabaseSize(callback) {
+      // average size for each document in database/collection
+      // around 3 Kb for each record on collection (database)
+      // considering the indexes (3 to 5) of collections
+      let kbForEachRecord = 1024 * 3;
+
+      let header = {
+        'jv-companyid': null,
+      };
+      let uri = '/api/tools/v1/get-database-size';
+
+      jarvisApi('get', uri, header, {}, {}, (e, dt) => {
+        if (e) return;
+
+        let size = 0;
+        if (dt && dt.doc && dt.doc.length > 0 && dt.doc[0].size) {
+          size = dt.doc[0].size;
+        }
+
+        let bytes = (size * kbForEachRecord) / 1024; // records value in bytes
+        callback(bytes);
+      });
+    }
+
+    /**
+     * @name deleteFile
+     * @description
+     * Delete the account access profile by _id or mongo condition
+     *
+     * @param {Object} mc object for query/mongo condition
+     * @param {function} callback to return (error, data)
+     * @param {Object} [header] for optional headers
+     * @param {string} [version] for api endpoint ex: 'v2.1', default 'v1'
+     */
+    function deleteFile(mc, callback, header = {}, version = 'v1') { // eslint-disable-line no-unused-vars
+
+      header = JSON.parse(JSON.stringify(header));
+      // header['jv-subscriptionid'] = null;
+      header['jv-companyid'] = null;
+
+      return jarvisApi('del', uriAttachments, header, mc, {}, (e, data) =>
+          callback(e, data));
+    }
+
+    /**
+     * @name putFileInfo
+     * @description
+     * Update the entity by _id or mongo condition
+     *
+     * @param {Object} mc object for query/mongo condition
+     * @param {Object} ds dataset object
+     * @param {function} callback to return (error, data)
+     * @param {Object} [header] for optional headers
+     * @param {string} [version] for api endpoint ex: 'v2.1', default 'v1'
+     */
+    function putFileInfo(mc, ds, callback, header = {}, version = 'v1') { // eslint-disable-line no-unused-vars
+
+      header = JSON.parse(JSON.stringify(header));
+      // header['jv-subscriptionid'] = null;
+      header['jv-companyid'] = null;
+
+      return jarvisApi('put', uriAttachments, header, mc, ds, (e, data) =>
+          callback(e, data));
+    }
+
+    /**
+     * @name postFileInfo
+     * @description
+     * insert information about file uploaded with success
+     *
+     * @param {Object} ds dataset object
+     * @param {function} callback to return (error, data)
+     * @param {Object} [header] for optional headers
+     * @param {string} [version] for api endpoint ex: 'v2.1', default 'v1'
+     */
+    function postFileInfo(ds, callback, header = {}, version = 'v1') { // eslint-disable-line no-unused-vars
+
+      header = JSON.parse(JSON.stringify(header));
+      // header['jv-subscriptionid'] = null;
+      header['jv-companyid'] = null;
+
+      jarvisApi('post', uriAttachments, header, {}, ds, (e, data) => {
+        if (e) return callback();
+        callback(data);
+      });
+    }
+
+    /**
+     * @name getAttachments
+     * @description
+     * get for core_attachments collection
+     *
+     * @param {Object} mc object for query/mongo condition
+     * @param {function} callback to return (error, data)
+     * @param {Object} [headers] for optional headers
+     * @param {string} [version] for api endpoint ex: 'v2.1', default 'v1'
+     */
+    function getAttachments(mc, callback, headers = {}, version = 'v1') { // eslint-disable-line no-unused-vars
+
+      return jarvisApi('get', uriAttachments, headers, mc, {}, (e, data) =>
+          callback(e, data));
+    }
+
+    /**
+     * @name getS3url
+     * @description
+     * api to generate the temporally url for s3 to upload file
+     *
+     * @param {string} fileName for upload file name
+     * @param {string} folder name as rootFolder's sub folder
+     * @param {string} [rootFolder] if supplied, will be used the subscriptionId instead of.
+     * @param {function} callback
+     */
+    function getS3url(fileName, folder, rootFolder, callback) { // eslint-disable-line no-unused-vars
+      let uri = '/api/v1/uploads/:filename';
+      let mc = {filename: fileName};
+
+      if (folder) uri += `?folder=${folder}&rootFolder=${rootFolder}`;
+
+      return jarvisApi('get', uri, {}, mc, {}, (e, data) =>
+          callback(e, data), false, ['filename']);
+    }
+
+    /**
+     * post the send email api
+     */
+    function postSendEmail(ds = {}, callback, header = {}) {
+      let uri = '/api/tools/sendemail/:application';
+
+      header['jv-subscriptionid'] = null;
+
+      ds.application = jvProfile.APP;
+      ds.templateLanguage = appService.getLanguage();
+
+      return jarvisApi('postSendEmail', uri,
+          header, {}, ds, (e, data) => (callback(e, data)), true);
+    }
+
+    /**
+     * get to send SMS by twilio
+     */
+    function getSendSms(qr = {}, callback, header = {}) {
+      let uri = '/api/tools/sendsms/:mobile/:message';
+
+      header['jv-subscriptionid'] = null;
+
+      return jarvisApi('getSendSms', uri,
+          header, qr, {}, (e, data) => (callback(e, data)), true);
+    }
+  }
+})();

@@ -1,0 +1,3251 @@
+(function () {
+
+
+  angular.module('app.helpers').service('helperService', helperService);
+
+  function helperService(
+    $rootScope,
+    $document,
+    $mdToast,
+    $log,
+    $translate,
+    $timeout,
+    $state,
+    $mdDialog,
+    jvProfile,
+    $mdTheming,
+    helperLocalStorageService,
+    APP_CONSTANT,
+    MaskService,
+    $http,
+    toastr,
+    $interval,
+    $filter,
+    $window,
+    msUtils,
+    $locale,
+    $cookies
+  ) {
+    const _locals = {
+      monthImageCache: undefined,
+      acIntervalCounter: 0,
+      screenY: 0,
+      screenX: 0,
+    };
+
+    activate();
+
+    return {
+      toast,
+      isObjectId,
+      isValidDate,
+      validateForm,
+      invalidLink,
+      // hasProperty: hasProperty,
+      loading,
+      generateJarvisId,
+      isObject,
+      copy,
+      returnOnlyNumbers,
+      getMyIp,
+      validateEmail,
+      mask,
+      maskDate,
+      clone,
+      showAlertDialog,
+      showConfirmDialog,
+      showCustomDialog,
+      substitution,
+      devlog,
+      checkDateFormat,
+      pick,
+      // formatEntityDataModel: formatEntityDataModel,
+      formatEntityContactsDataModel,
+      capitalize,
+      critical,
+      getLoadingImage,
+      translate,
+      apiFailed,
+      getAvatar,
+      formatDate,
+      formatVmPhone,
+      formatVmEmail,
+      generateDocumentLog,
+      formatAddressViewModel,
+      // formatEntityViewModel: formatEntityViewModel,
+      sort,
+      generateRandomName,
+      diff,
+      validateDate,
+      validatePartialDate,
+      freeze,
+      getColorsArray,
+      getTaToolbar,
+      getCurrentLanguage,
+      assign,
+      fixNumber,
+      getScreenSize,
+      getDateRange,
+      dateFormat,
+      urlExistsAsync,
+      gotoLink,
+      isEven,
+      toolbarOpacity,
+      focusAsync,
+      fixTextAreaHeight,
+      getMdColor,
+
+      percentageValueCalculate,
+      percentageValueAlternate,
+      percentageValueCookies,
+      percentageValueTooltip,
+
+      firstUpper,
+      generateMaterialColor,
+      normalize,
+      returnNgMask,
+      elementCounter,
+      validateCnpj,
+      validateCpf,
+      getPercentage,
+      getTemperatureColorClass,
+      guidGenerator,
+      daysOfWeek,
+      monthsOfYear,
+      addTime,
+      injector,
+      validateTag,
+      callTo,
+      emailTo,
+      whatsAppTo,
+      isObjectEquals,
+      exists,
+      validateInstallments,
+      getExchanges,
+      getExchangesLatest,
+      disableDatePickersInput,
+      getBackgroundSeasonByCountry,
+      getLocaleTimezone,
+      minutesToHours,
+      getWeekDay,
+      getDateTime,
+      getMonthName,
+      scrollToBottom,
+    };
+
+    // ********************************************************************** //
+
+    /**
+     * @name scrollToBottom
+     * @description
+     * Scroll the element content to the bottom
+     *
+     * @param {string} element
+     * @param {Number} [speed]
+     */
+    function scrollToBottom(element, speed = 400) {
+      let itvCount = 0;
+      const itv = $interval(() => {
+        itvCount++;
+        if (itvCount > 200) {
+          $interval.cancel(itv);
+          $log.error('scrollToBottomOfChat without element!');
+        }
+
+        const chatContent = angular.element($document.find(element));
+
+        if (chatContent && chatContent.length > 0) {
+          $interval.cancel(itv);
+          PerfectScrollbar.update(chatContent[0]);
+          chatContent.animate(
+            { scrollTop: chatContent[0].scrollHeight },
+            speed
+          );
+        }
+      });
+    }
+
+    /**
+     * @name getDateTime
+     * @description
+     * return the date with time according the parameters passed
+     *
+     * @param {Date|string} [date]
+     * @param {Date|string} [time] in the following format (12:22, 3:01, etc...)
+     * @param {Object} [formEl] element from DOM to invalidate
+     */
+    function getDateTime(date, time, formEl) {
+      if (!date && !time) return moment().format('YYYY-MM-DDThh:mm');
+      if (!date) date = moment().format('YYYY-MM-DD');
+      if (!time) time = moment().format('hh:mm').toString();
+
+      let timeParts; let h; let m;
+      let failed = false;
+
+      if (time.includes(':')) {
+        timeParts = time.split(':');
+        h = timeParts[0];
+        m = timeParts[1];
+      } else {
+        h = time;
+        m = '0';
+      }
+
+      h = Number(h);
+      m = Number(m);
+
+      if (isNaN(h || isNaN(m))) {
+        h = 0;
+        m = 0;
+        failed = true;
+      } else if (h > 23) {
+        h = 23;
+        failed = true;
+      } else if (h < 0) {
+        h = 0;
+        failed = true;
+      } else if (m > 59) {
+        m = 59;
+        failed = true;
+      } else if (m < 0) {
+        m = 0;
+        failed = true;
+      }
+
+      formEl && formEl.$setValidity && formEl.$setValidity('invalid', !failed);
+
+      return moment([
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        h,
+        m,
+      ]);
+    }
+
+    /**
+     * @name getWeekDay
+     * @description
+     * return the name of weekday of a specific date
+     *
+     * @param {Date|undefined} [date]
+     * @param {boolean} [translated]
+     * @param {string|number} [abbreviated] ('1': 'terça', '2': 'ter')
+     */
+    function getWeekDay(date, translated, abbreviated = '') {
+
+      if (!date) date = new Date();
+      if (typeof date === 'string') date = new Date(date);
+
+      let weekday = `TRANSLATE.WEEKDAY${abbreviated}_${date.getDay()}`;
+
+      if (translated) {
+        return $translate.instant(weekday);
+
+      }
+        return weekday;
+
+    }
+
+    /**
+     * @name getMonthName
+     * @description
+     * return the name of monthName of a specific date
+     *
+     * @param {Date|undefined} [date]
+     * @param {boolean} [translated]
+     * @param {string|number} [abbreviated] ('1': 'jul')
+     */
+    function getMonthName(date, translated, abbreviated = '') {
+
+      if (!date) date = new Date();
+      if (typeof date === 'string') date = new Date(date);
+
+      let monthName = `TRANSLATE.MONTH${abbreviated}_${date.getMonth()}`;
+
+      if (translated) {
+        return $translate.instant(monthName);
+
+      }
+        return monthName;
+
+    }
+
+    /**
+     * return the locale timezone UTC
+     */
+    function getLocaleTimezone() {
+      const localUTCtz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+      // let localGMT = minutesToHours(new Date().getTimezoneOffset());
+      // return 'UTC' + localGMT + ' ' + localUTCtz;
+
+      const idx = $rootScope.cache.parameters.timezones.findIndex(x =>
+        x.utc.includes(localUTCtz)
+      );
+
+      return (idx > -1 && $rootScope.cache.parameters.timezones[idx]) || {};
+    }
+
+    /**
+     * convert minutos to hours. ex: -120 = -02:00, +150 = +02:30
+     */
+    function minutesToHours(minutes) {
+      let signal = minutes.toString().substring(0, 1);
+
+      if (['+', '-'].indexOf(signal) > -1) {
+        minutes = parseInt(minutes.toString().substring(1, minutes.length));
+      } else {
+        signal = '+';
+      }
+      let h = Math.floor(minutes / 60);
+      let m = minutes % 60;
+      h = h < 10 ? `0${  h}` : h;
+      m = m < 10 ? `0${  m}` : m;
+      return signal === '-' ? `-${h}:${m}` : `+${h}:${m}`;
+    }
+
+    /**
+     * @name disableDatePickersInput
+     * @description
+     * disable all data pickers input if has the class name .disable-input
+     */
+    function disableDatePickersInput() {
+      const elDatePickers = $('md-datepicker.disable-input input');
+
+      for (let e = 0; e < elDatePickers.length; e++) {
+        $(elDatePickers[e])
+          .attr('tabindex', '-1')
+          .css('pointer-events', 'none');
+      }
+    }
+
+    /**
+     * @name percentageValueCalculate
+     * @description
+     * part 1 of 4 - calculate percentage to value and vice-versa
+     *
+     * @param {string} field representing the element id of html input tag
+     * @param {string} type 'percentage' or 'value'
+     * @param {Object} doc for object document
+     * @param {number} base number for math expression
+     * @param {number} [fp] for fixed percentage number
+     * @param {number} [fv] for fixed value number
+     * @param {string} [currencySymbol]
+     */
+    function percentageValueCalculate(
+      field,
+      type,
+      doc,
+      base,
+      fp = 3,
+      fv = 2,
+      currencySymbol
+    ) {
+      // if (isNaN(Number(base)) || base === 0) return;
+      if (!base || isNaN(Number(base))) base = 0;
+
+      let elTooltip;
+      let vmEditing; let vmPercentage; let vmValue;
+      let percentage; let value;
+
+      elTooltip = `${field}Tooltip`;
+      vmEditing = `vm${capitalize(field)}`; // field that is be editing
+      vmPercentage = `vm${capitalize(field)}Percentage`; // percentage value
+      vmValue = `vm${capitalize(field)}Value`; // money value
+      percentage = `${field}Percentage`;
+      value = `${field}Value`;
+
+      if (type === 'value') {
+        doc[vmValue] = doc[vmEditing];
+
+        doc.editing = fixNumber(doc[vmEditing], 'data', fp);
+        doc[value] = fixNumber(doc[vmValue], 'data', fp);
+
+        const v = doc[value] || 0;
+
+        doc[percentage] =
+          (base && v > 0 && Number(((v / base) * 100).toFixed(fp))) || 0;
+
+        doc[vmPercentage] = fixNumber(doc[percentage], 'view', fp);
+        doc[elTooltip] = `${doc[vmPercentage]}%`;
+      } else {
+        doc[vmPercentage] = doc[vmEditing];
+        doc.editing = fixNumber(doc[vmEditing], 'data', fp);
+        doc[percentage] = fixNumber(doc[vmPercentage], 'data', fp);
+
+        const p = doc[percentage] || 0;
+
+        doc[value] = (p > 0 && Number(((p / 100) * base).toFixed(fv))) || 0;
+        doc[vmValue] = fixNumber(doc[value], 'view', fv);
+        doc[elTooltip] = `${$filter('currency')(
+          doc[value],
+          `${currencySymbol} `,
+          fv
+        )}`;
+      }
+    }
+
+    /**
+     * @name percentageValueAlternate
+     * @description
+     * part 2 of 4 - alternate between 'value' and 'percentage'
+     *
+     * @param {string} field representing the element id of html input tag
+     * @param {string} typeBy 'percentage' or 'value'
+     * @param {Object} doc for object document
+     * @param {number} [fp] for fixed percentage number
+     * @param {number} [fv] for fixed value number
+     * @param {string} [currencySymbol]
+     */
+    function percentageValueAlternate(
+      field,
+      typeBy,
+      doc,
+      fp = 3,
+      fv = 2,
+      currencySymbol
+    ) {
+      let elTooltip; let editingFocus;
+      let vmEditingValue; let vmPercentage; let vmValue;
+      let editingValue; let percentage; let value;
+
+      // typeBy = `${field}By`;
+      elTooltip = `${field}Tooltip`;
+      editingFocus = `show${capitalize(field)}TooltipFocus`;
+      vmEditingValue = `vm${capitalize(field)}`;
+      vmPercentage = `vm${capitalize(field)}Percentage`;
+      vmValue = `vm${capitalize(field)}Value`;
+      editingValue = field;
+      percentage = `${field}Percentage`;
+      value = `${field}Value`;
+
+      if (!typeBy) typeBy = 'percentage';
+
+      if (typeBy === 'value') {
+        doc[vmEditingValue] = doc[vmPercentage];
+        doc[editingValue] = doc[percentage];
+        doc[elTooltip] = `${$filter('currency')(
+          doc[value],
+          `${currencySymbol} `,
+          fv
+        )}`;
+
+        $timeout(() => {
+          doc[editingFocus] = true;
+          angular.element(document.querySelector(`#${  field}`)).focus();
+        }, 300);
+      } else {
+        doc[vmEditingValue] = doc[vmValue];
+        doc[editingValue] = doc[value];
+        doc[elTooltip] = `${$filter('currency')(doc[percentage], '', fp)}%`;
+
+        $timeout(() => {
+          doc[editingFocus] = true;
+          angular.element(document.querySelector(`#${  field}`)).focus();
+        }, 300);
+      }
+    }
+
+    /**
+     * @name percentageValueCookies
+     * @description
+     * part 3 of 4 - set/get the last field type on/from cookie
+     *
+     * @param {string} field representing the element id of html input tag
+     * @param {string} [type] 'percentage' or 'value'
+     * @param {boolean} [set] to put on cookies instead of, get.
+     */
+    function percentageValueCookies(field, type, set) {
+      // save on cookies
+      const key = `${$rootScope.cache.selModule.code}.${field}`;
+
+      if (set) {
+        $cookies.put(key, type || 'percentage');
+      } else {
+        type = $cookies.get(key);
+
+        if (!type || !['percentage', 'value'].includes(type)) {
+          type = 'percentage';
+        }
+
+        return type;
+      }
+    }
+
+    /**
+     * @name percentageValueTooltip
+     * @description
+     * part 4 of 4 - validate the overflow value, if the value is grater than
+     * maximum, the tooltip with elClass name will be red
+     *
+     * @param {string} field class name from md-tooltip target class
+     * @param {number} value to compare
+     * @param {number} maximum to limit for value
+     * @param {Object} [fForm] representing the form to $setValidity ng-model (field)
+     */
+    function percentageValueTooltip(field, value, maximum, fForm) {
+      let itv = $interval(() => {
+        const el = $(`md-tooltip.${  field}`);
+
+        if (el && Object.keys(el).length > 0) {
+          $interval.cancel(itv);
+
+          if (value > maximum) {
+            el.addClass('overflow');
+          } else {
+            el.removeClass('overflow');
+          }
+
+          $validateModel();
+        }
+      }, 200);
+
+      function $validateModel() {
+        if (!fForm) return;
+
+        const el = fForm[field] || {};
+
+        if (value > maximum) {
+          if (el.$setValidity) {
+            el.$setDirty();
+            el.$setTouched();
+            el.$setValidity('invalid', false);
+          }
+        } else if (el.$setValidity) el.$setValidity('invalid', true);
+      }
+    }
+
+    // ********************************************************************** //
+
+    function getExchangesLatest() {
+      return {
+        base: $rootScope.cache.parameters.exchanges.base,
+        date: moment(
+          $rootScope.cache.parameters.exchanges.date,
+          'YYYY-MM-DD'
+        ).toISOString(),
+        rates: $rootScope.cache.parameters.exchanges.rates,
+      };
+    }
+
+    /**
+     * @name getExchanges
+     * @description
+     * return the price of money according date
+     *
+     * @param {string} currencyCodeBase base of conversion
+     * @param {string} currencyCodeResult for result
+     * @param {Number} [value] to multiply
+     */
+    function getExchanges(currencyCodeBase, currencyCodeResult, value) {
+
+      if (!currencyCodeBase || !currencyCodeResult) return;
+
+      currencyCodeBase = currencyCodeBase.toUpperCase();
+      currencyCodeResult = currencyCodeResult.toUpperCase();
+
+      // todo
+      // consolle.warn(
+      //     'SE A DATA FOR DIFERENTE DE HOJE OU ULTIMA, BUSCAR COTACAO ONLINE');
+      // caso a data for menor que 01/01/2000 retornar N/D
+      // caso a data for maior que hoje retornar N/D
+      // se nao tiver data, retornar a data atual da tabela (hoje ou ontem)
+
+      // today dollar rates
+      let rates = $rootScope.cache.parameters.exchanges.rates;
+
+      let a = rates[currencyCodeBase];
+      let b = rates[currencyCodeResult];
+
+      if (value) {
+        let result = a && b && b / a;
+
+        if (typeof value !== 'number') value = Number(value);
+        if (isNaN(value)) value = 0;
+
+        return (1 / result) * value;
+
+      }
+        return a && b && b / a;
+
+    }
+
+    /**
+     * @name validateInstallments
+     * @description
+     * validate and convert the installments from string to number and vice-versa
+     *
+     * @param {string} installment showed with bar splitting the current and total (ex: 1/3)
+     * @param {number|Object} [current] installment (ex: 1, or receive the field DOM f.installment)
+     * @param {number} [total] installments (ex: 3)
+     */
+    function validateInstallments(installment, current, total) {
+
+      let fElem, sToN = false; // string to number (installment to current and total)
+
+      if (installment) {
+
+        sToN = true;
+        if (isNaN(current) && isObject(current)) fElem = current;
+
+        if (!installment.includes('/')) return $fail();
+        let parts = installment.split('/');
+        if (parts.length !== 2) return $fail();
+
+        return $validate(parts[0], parts[1]);
+
+      } if (current && total) {
+
+        return $validate(current, total);
+
+      } else {
+
+        return $fail();
+      }
+
+      // validate current and total
+      function $validate(current, total) {
+
+        current = Number(current);
+        total = Number(total);
+
+        if (isNaN(current) || isNaN(total)) return $fail();
+        if (current > total) return $fail();
+
+        return $success(current, total);
+      }
+
+      // installment failed
+      function $fail() {
+
+        // set to invalid field
+        sToN && fElem && fElem.$setValidity &&
+        fElem.$setValidity('invalid', false);
+
+        return {
+          installment: '1/1',
+          current: 1,
+          total: 1,
+        };
+      }
+
+      // installment success
+      function $success(current, total) {
+
+        current = current.toString();
+        total = total.toString();
+
+        let len = current.length > total.length ? current.length : total.length;
+
+        current = current.padStart(len, '0');
+        total = total.padStart(len, '0');
+
+        installment = `${current}/${total}`;
+
+        // set to valid field
+        sToN && fElem && fElem.$setValidity &&
+        fElem.$setValidity('invalid', true);
+
+        return {
+          installment: installment,
+          current: Number(current) || 1,
+          total: Number(total) || 1,
+        };
+      }
+    }
+
+    /**
+     * @name exists
+     * @description
+     *
+     * @param {string} id representing the mongo _id
+     * @param {Array<string>} arrayIds of strings
+     *
+     * validate if id exists in arrayIds returning true or false
+     */
+    function exists(id, arrayIds) {
+      if (!id || !isObjectId(id) || !arrayIds || !Array.isArray(arrayIds)) {
+        return false;
+      }
+      return !!arrayIds.find(x => x === id);
+    }
+
+    function isObjectEquals(objectA, objectB) {
+      return _.chain(objectA)
+        .keys()
+        .every(
+          currentKey =>
+            _.has(objectB, currentKey) &&
+            _.isEqual(objectA[currentKey], objectB[currentKey])
+        )
+        .value();
+    }
+
+    /**
+     * @name callTo
+     * @description
+     * call to a phone number
+     *
+     * @param {Object} event DOM
+     * @param {string} phone number with dial code and area code
+     *                 ex: '+551132300666' = +55 (11) 3230-0666
+     */
+    function callTo(event, phone) {
+      const href = `tel:${phone}`;
+      $window.open(href, '_system');
+    }
+
+    /**
+     * @name whatsAppTo
+     * @description
+     * whatsApp to a phone number with pre-message
+     *
+     * @param {Object} event DOM
+     * @param {string} phone number with dial code and area code
+     *                 ex: '+551132300666' = +55 (11) 3230-0666
+     * @param {string} message
+     */
+    function whatsAppTo(event, phone, message) {
+      phone = phone.replace('+', '');
+
+      let href = `https://wa.me/${phone}`;
+
+      if (message) href += `?text=${encodeURIComponent(message)}}`;
+
+      $window.open(href, '_system');
+    }
+
+    /**
+     * @name emailTo
+     * @description
+     * send an email
+     *
+     * @param {Object} event DOM
+     * @param {string} email address
+     */
+    function emailTo(event, email) {
+      const href = `mailto:${email}`;
+      $window.open(href, '_system');
+    }
+
+    /**
+     * @name validateTag
+     * @description
+     * format the mask or place-holder
+     *
+     * @param {string} data to be format
+     * @param {string} mask format (ex: 99.999.999/9999-99)
+     * @param {string} type format ('mask' or 'place-holder'
+     */
+    function validateTag(data, mask, type) {
+
+      let wild = '*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?'; // 40 optionals numbers
+
+      if (!type || !['mask', 'place-holder'].includes(type)) {
+        return type === 'place-holder' ? '' : wild;
+
+      }
+        return (type === 'place-holder')
+            ? (mask.replace(/9/g, '0').replace(/\?/g, ''))
+            : mask || wild;
+
+    }
+
+    /**
+     * @name injector
+     * @description
+     * inject the angular method (service, constant, factory, etc...)
+     *
+     * @param {string} instance name of angular method (ex: 'entityService', 'SALES_QUOTATIONS', ...)
+     */
+    function injector(instance) {
+      return angular.element('*[ng-app]').injector().get(instance);
+    }
+
+    function activate() {
+      const itv = $interval(() => {
+        const toolbarEl = $('md-toolbar#toolbar');
+
+        if (toolbarEl && toolbarEl.length > 0) {
+          $interval.cancel(itv);
+
+          _locals.screenY = document.body.clientHeight - toolbarEl.height();
+          _locals.screenX = document.body.clientWidth;
+
+          $timeout(() => {
+            $rootScope.$broadcast('core:resize:window', _locals.screenX);
+          }, 1000);
+
+          $window.addEventListener('resize', () => {
+            _locals.screenY = document.body.clientHeight - toolbarEl.height();
+            _locals.screenX = document.body.clientWidth;
+
+            $rootScope.$broadcast('core:resize:window', _locals.screenX);
+          });
+        }
+      }, 200);
+    }
+
+    // ********************************************************************** //
+
+    function addTime(qty = 0, type = 'days', baseDate = moment()) {
+      return moment(baseDate).add(qty, type).format('L');
+    }
+
+    function daysOfWeek(index) {
+      let days = [
+        'TRANSLATE.SUNDAY',
+        'TRANSLATE.MONDAY',
+        'TRANSLATE.TUESDAY',
+        'TRANSLATE.WEDNESDAY',
+        'TRANSLATE.THURSDAY',
+        'TRANSLATE.FRIDAY',
+        'TRANSLATE.SATURDAY',
+      ];
+
+      if (typeof index !== 'undefined') {
+        return days[index];
+
+      }
+        return days;
+
+    }
+
+    function monthsOfYear(index) {
+
+      let months = [
+        'TRANSLATE.JANUARY',
+        'TRANSLATE.FEBRUARY',
+        'TRANSLATE.MARCH',
+        'TRANSLATE.APRIL',
+        'TRANSLATE.MAY',
+        'TRANSLATE.JUNE',
+        'TRANSLATE.JULY',
+        'TRANSLATE.AUGUST',
+        'TRANSLATE.SEPTEMBER',
+        'TRANSLATE.OCTOBER',
+        'TRANSLATE.NOVEMBER',
+        'TRANSLATE.DECEMBER',
+      ];
+
+      if (typeof index !== 'undefined') {
+        return months[index];
+
+      }
+        return months;
+
+    }
+
+    /**
+     * @name guidGenerator
+     * @description
+     * Generate a short guid code
+     *
+     * @param {number} part of long guid code
+     */
+    function guidGenerator(part = 1) {
+      const guid = msUtils.guidGenerator();
+      const short = guid.split('.');
+
+      return (part && short[part]) || short[1];
+    }
+
+    /**
+     * @name getPercentage
+     * @description
+     * return the percentage representing by base of total
+     *
+     * @param {Number} base value to get the percentage
+     * @param {Number} total value (100%)
+     */
+    function getPercentage(base, total) {
+      if (base >= total || total <= 0) return 100;
+      return (base * 100) / total;
+    }
+
+    /**
+     * @name getTemperatureColorClass
+     * @description
+     * return the class according the percentageOfUse
+     *
+     * @param {Number} percentage (0 - 100)
+     */
+    function getTemperatureColorClass(percentage) {
+      if (percentage >= 95) return 'md-red-900-bg';
+      if (percentage >= 90) return 'md-red-800-bg';
+      if (percentage >= 85) return 'md-red-700-bg';
+      if (percentage >= 80) return 'md-red-600-bg';
+      if (percentage >= 75) return 'md-red-500-bg';
+      if (percentage >= 70) return 'md-red-400-bg';
+      if (percentage >= 65) return 'md-yellow-900-bg';
+      if (percentage >= 60) return 'md-yellow-800-bg';
+      if (percentage >= 55) return 'md-yellow-700-bg';
+      if (percentage >= 50) return 'md-yellow-600-bg';
+      if (percentage >= 45) return 'md-yellow-500-bg';
+      if (percentage >= 40) return 'md-yellow-400-bg';
+      if (percentage >= 35) return 'md-green-200-bg';
+      if (percentage >= 30) return 'md-green-300-bg';
+      if (percentage >= 25) return 'md-green-400-bg';
+      if (percentage >= 20) return 'md-green-500-bg';
+      if (percentage >= 15) return 'md-green-600-bg';
+      if (percentage >= 10) return 'md-green-700-bg';
+      if (percentage >= 5) return 'md-green-800-bg';
+
+      return 'md-green-900-bg';
+    }
+
+    /**
+     * @name validateCpf
+     * @description
+     * validate if cpf is valid and set the element error if applied
+     *
+     * @param {string} cpf document
+     * @param {Object} fElement of DOM element
+     */
+    function validateCpf(cpf, fElement) {
+      let sum; let number;
+
+      if (!cpf) return false;
+      cpf = returnOnlyNumbers(cpf);
+
+      sum = 0;
+      if ($isRepeated(cpf)) return $failed();
+
+      for (let i = 1; i <= 9; i++) {
+        sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+      }
+      number = (sum * 10) % 11;
+
+      if (number === 10 || number === 11) number = 0;
+      if (number !== parseInt(cpf.substring(9, 10))) return false;
+
+      sum = 0;
+      for (let i = 1; i <= 10; i++) {
+        sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+      }
+      number = (sum * 10) % 11;
+
+      if (number === 10 || number === 11) number = 0;
+      const success = number === parseInt(cpf.substring(10, 11));
+
+      if (!success) return $failed();
+
+      if (fElement) {
+        fElement.$setValidity('uniqueId', success);
+        fElement.$setValidity('notExists', success);
+      }
+      return success;
+
+      // check if the numbers is repeated
+      function $isRepeated(str) {
+        const firstChar = str.charAt(0);
+        const regex = new RegExp(`^${firstChar}+$`);
+        return regex.test(str);
+      }
+
+      // validation failed
+      function $failed() {
+        fElement && fElement.$setValidity('uniqueId', false);
+        return false;
+      }
+    }
+
+    /**
+     * @name validateCnpj
+     * @description
+     * validate if cnpj is valid and set the element error if applied
+     *
+     * @param {string} cnpj document
+     * @param {Object} fElement of DOM element
+     */
+    function validateCnpj(cnpj, fElement) {
+      if (!cnpj) return false;
+      cnpj = returnOnlyNumbers(cnpj);
+
+      if ($isRepeated(cnpj)) return $failed();
+
+      // validate the digit verifier
+      let length = cnpj.length - 2;
+      let numbers = cnpj.substr(0, length);
+      const digits = cnpj.substr(length);
+      let sum = 0;
+      let col = length - 7;
+
+      for (let i = length; i >= 1; i--) {
+        sum += numbers.charAt(length - i) * col--;
+        if (col < 2) col = 9;
+      }
+
+      let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+
+      if (result.toString() !== digits.charAt(0)) return $failed();
+
+      length += 1;
+      numbers = cnpj.substr(0, length);
+      sum = 0;
+      col = length - 7;
+
+      for (let i = length; i >= 1; i--) {
+        sum += numbers.charAt(length - i) * col--;
+        if (col < 2) col = 9;
+      }
+
+      result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+
+      const success = result.toString() === digits.charAt(1);
+      if (!success) return $failed();
+
+      if (fElement) {
+        fElement.$setValidity('uniqueId', success);
+        fElement.$setValidity('notExists', success);
+      }
+      return success;
+
+      // check if the numbers is repeated
+      function $isRepeated(str) {
+        const firstChar = str.charAt(0);
+        const regex = new RegExp(`^${firstChar}+$`);
+        return regex.test(str);
+      }
+
+      // validation failed
+      function $failed() {
+        fElement && fElement.$setValidity('uniqueId', false);
+        return false;
+      }
+    }
+
+    /**
+     * @name elementCounter
+     * @description
+     * element counter for initResolvers
+     *
+     * @param {Object} itv for $interval variable
+     * @param {Number} counter for itvCounter loop variable
+     */
+    function elementCounter(itv, counter) {
+      if (counter > 400) {
+        $log.warn('element counter failed!');
+        $interval.cancel(itv);
+      }
+    }
+
+    /**
+     * @name normalize
+     * @description
+     * remove all accents from string
+     *
+     * @param {string} str with accents
+     * @param {string} [strCase] been 'lower' or 'upper'
+     *
+     * @returns {string} without accents
+     */
+    function normalize(str, strCase) {
+
+      if (!str) return;
+
+      let result = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+      if (strCase === 'lower') {
+        return result.toLowerCase();
+
+      } if (strCase === 'upper') {
+        return result.toUpperCase();
+
+      } else {
+        return result;
+      }
+    }
+
+    /**
+     * @name returnNgMask
+     * @description
+     * return the mask and placeholder for element tag
+     *
+     * @param {string} field from selectedCountry.masks object key ('phone', 'mobile', 'zip', etc...)
+     * @param {Object} selectedCountry with all detail in addiction the masks property
+     * @param {boolean} [placeholder] (false: for ng-mask, true: for placeholder)
+     * @param {boolean} [asSharp] return the # (sharp) char instead of '9'
+     *
+     * @returns {string|undefined}
+     */
+    function returnNgMask(field, selectedCountry, placeholder, asSharp) {
+      // let wild = '*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?*?'; // 20 optionals chars
+      const wild = '9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?9?'; // 20 optionals numbers
+      let r; // result
+
+      if (!field || !selectedCountry || !selectedCountry.defs) {
+        r = placeholder ? '' : wild;
+      } else {
+        const defs = selectedCountry.defs && selectedCountry.defs[field];
+
+        r = placeholder
+          ? defs && defs.replace(/9/g, '0').replace(/\?/g, '')
+          : defs || wild;
+      }
+
+      if (asSharp && r) r = r.replace(/9/g, '#').replace(/\?/g, '');
+      return r;
+    }
+
+    /**
+     * @name generateMaterialColor
+     * @description
+     * generate the random material color and return in class name
+     *
+     * @param {string} [paint] 'bg' to background and 'fg' for foreground
+     * @returns {string}
+     *
+     * return ex: "md-light-green-A700-bg"
+     */
+    function generateMaterialColor(paint) {
+      if (paint !== 'fg') paint = 'bg';
+
+      const colors = [
+        'red',
+        'pink',
+        'purple',
+        'deep-purple',
+        'indigo',
+        'blue',
+        'light-blue',
+        'cyan',
+        'teal',
+        'green',
+        'light-green',
+        'lime',
+        'yellow',
+        'amber',
+        'orange',
+        'deep-orange',
+        'brown',
+        // 'grey', // reserved for prospect customers
+        // 'blue-grey', // confuse with grey
+      ];
+
+      const hues = [
+        '400',
+        '500',
+        '600',
+        '700',
+        '800',
+        '900',
+        'A100',
+        'A200',
+        'A400',
+        'A700',
+      ];
+
+      return (
+        `md-${
+          colors[Math.floor(Math.random() * (colors.length))]  }-${
+          hues[Math.floor(Math.random() * (hues.length))]  }-${  paint}`;
+    }
+
+    /**
+     * @name firstUpper
+     * @description
+     * return the string with the first letter in upper case
+     *
+     * @param {string} str
+     * @returns {string}
+     */
+    function firstUpper(str) {
+      if (!str) return;
+
+      return str.charAt(0).toUpperCase() + str.substr(1);
+    }
+
+    /**
+     * @name getMdColor
+     * @description
+     * get the Hex, Contrast or RGB color from md-color-name
+     *
+     * @param {string} mdColorName (ex: md-deep-orange-700-gb)
+     * @param {string} [property] ('contrast', 'rgb' or 'hex' - default not specified)
+     */
+    function getMdColor(mdColorName, property) {
+      if (!mdColorName) return;
+
+      const palettes = $mdTheming.PALETTES;
+      const parts = mdColorName.split('-');
+      let color;
+
+      if (parts.length === 5) {
+        color = palettes[`${parts[1]}-${parts[2]}`][parts[3]] || {};
+      } else if (parts.length === 4) {
+        color = palettes[parts[1]][parts[2]] || {};
+      } else {
+        return;
+      }
+
+      if (color) {
+        if (property === 'contrast') return color.contrast;
+        if (property === 'rgb') return color.value;
+        return color.hex;
+      }
+    }
+
+    /**
+     * @name fixTextAreaHeight
+     * @description
+     * workaround for text-area html when has more then 1 line and it exists in
+     * a jv-stepper-form
+     *
+     * @param {string} elementId of html tag
+     * @param {string} model representing the angular ng-model
+     */
+    function fixTextAreaHeight(elementId, model) {
+      if (!model) return;
+
+      let attempt = 0;
+
+      const itv = $interval(() => {
+        const el = $(`#${  elementId}`);
+
+        if (el.length > 0) {
+          $interval.cancel(itv);
+          $done(el);
+        } else if (attempt > 1000) {
+          $interval.cancel(itv);
+        }
+
+        attempt++;
+      });
+
+      function $done(el) {
+        if (!el[0].attributes['max-rows']) return;
+
+        const elMaxRows = parseInt(el[0].attributes['max-rows'].value);
+        const modelLines = model.split(/\r*\n/).length;
+
+        if (elMaxRows <= 1 || modelLines <= 1) return;
+
+        const lines = modelLines > elMaxRows ? elMaxRows : modelLines;
+        const height = 26.5 * lines;
+
+        $timeout(() => el.css('height', height), 1000);
+      }
+    }
+
+    /**
+     * @name focusAsync
+     * @description
+     * got focus asynchronous
+     *
+     * @param {string} elementId without sharp (#)
+     * @param {number} [limit] of attempts in milliseconds (default 200)
+     */
+    function focusAsync(elementId, limit = 200) {
+      let attempts = 0;
+
+      const itv = $interval(() => {
+        attempts++;
+
+        const el = $(`#${  elementId}`);
+
+        if (Object.keys(el).length > 0) {
+          $interval.cancel(itv);
+          $timeout(() => el.focus(), 400);
+        }
+
+        if (attempts > limit) $interval.cancel(itv);
+      });
+    }
+
+    /**
+     * @name toolbarOpacity
+     * @description
+     * change the toolbar opacity according your level
+     *
+     * @param {Number} dialogLevel of dialog over dialog (start with 0)
+     */
+    function toolbarOpacity(dialogLevel) {
+      if (!dialogLevel) dialogLevel = 0;
+
+      return { opacity: (10 - (dialogLevel + 1)) * 0.1 };
+    }
+
+    /**
+     * @name isEven
+     * @description
+     * check if the number is even / par
+     *
+     * @param {string} number
+     */
+    function isEven(number) {
+      if (!number || isNaN(number)) return false;
+      return number % 2 === 0;
+    }
+
+    /**
+     * @name gotoLink
+     * @description
+     * go to link
+     *
+     * @param {Object} event DOM
+     * @param {string} link
+     */
+    function gotoLink(event, link) {
+      $window.open(link, '_blank');
+    }
+
+    /**
+     * @name urlExistsAsync
+     * @description
+     * validate if link (url) exists
+     *
+     * @param {string} url to be checked
+     * @returns {function} boolean under promise
+     */
+    function urlExistsAsync(url) {
+      return new Promise((resolve, reject) => {
+        $http.get(url).then(
+          () => resolve(true),
+          () => reject()
+        );
+      });
+    }
+
+    /**
+     * @name dateFormat
+     * @description
+     * return the date format options for moment
+     */
+    function dateFormat() {
+      return ['MM/DD/YYYY HH:mm', 'DD/MM/YYYY HH:mm'];
+    }
+
+    /**
+     * @name getDateRange
+     * @description
+     * Return a object with two properties, startDate and endDate according to
+     * options.range passed as parameters
+     *
+     * @param {Object} options with properties (dateRange, startDate and endDate)
+     *  dateRange = '0' for custom date, '1' for current month and '2' for last month
+     *
+     * @returns {Object}
+     */
+    function getDateRange(options) {
+      let startDate; let endDate;
+
+      switch (options.dateRange) {
+        case '1': {
+          // current month
+          const y = moment().format('YYYY');
+          const m = moment().format('MM');
+          const d = moment().endOf('month').format('DD');
+
+          const start = `${y  }-${  m  }01`;
+
+          startDate = moment(start, 'YYYY-MM-DD').format('YYYY-MM-DD');
+          endDate = moment([y, m - 1, d, 23, 59, 59]).format();
+          break;
+        }
+
+        case '2': {
+          // last month
+
+          const date = moment().subtract(1, 'months');
+
+          const y = date.format('YYYY');
+          const m = date.format('MM');
+          const d = date.endOf('month').format('DD');
+
+          const start = `${y  }-${  m  }01`;
+
+          startDate = moment(start, 'YYYY-MM-DD').format('YYYY-MM-DD');
+          endDate = moment([y, m - 1, d, 23, 59, 59]).format();
+          break;
+        }
+
+        case '3': {
+          // period
+          startDate = moment(options.startDate).format('YYYY-MM-DD');
+
+          const date = moment(options.endDate);
+          const y = date.format('YYYY');
+          const m = date.format('MM');
+          const d = date.format('DD');
+
+          endDate = moment([y, m - 1, d, 23, 59, 59]).format();
+          break;
+        }
+
+        case '0':
+        default:
+          startDate = undefined;
+          endDate = undefined;
+      }
+
+      return {
+        startDate,
+        endDate,
+      };
+    }
+
+    function getScreenSize() {
+      return {
+        height: _locals.screenY,
+        width: _locals.screenX,
+      };
+    }
+
+    /**
+     * @name fixNumber
+     * @description
+     * Validate and convert a Number to view or data
+     *
+     * @param {string|number} amount number (string or number)
+     * @param {string} [mode] if 'view' format to view, 'data' format to database, data is default
+     * @param {number} [decimals] for decimals numbers
+     * @param {boolean} [native] inform to function was invoked by command and
+     * not view (user) for assume the . (dot) as decimals separator
+     */
+    function fixNumber(amount, mode, decimals, native) {
+
+      let parts;
+      let decimalSep = $locale.NUMBER_FORMATS.DECIMAL_SEP;
+      let thousandSep = $locale.NUMBER_FORMATS.GROUP_SEP;
+
+      // if (!isFinite(amount)) amount = 0;
+
+      if (!mode) mode = 'data';
+
+      if (mode === 'data') {
+
+        if (!amount) return 0;
+        if (typeof amount !== 'string') amount = amount.toString();
+
+        let pointIndex = amount.lastIndexOf('.');
+        let commaIndex = amount.lastIndexOf(',');
+
+        if ((decimalSep !== '.' && commaIndex > -1 && commaIndex > pointIndex)
+            || !native) {
+
+          let thousandRegex = new RegExp(`\\${thousandSep}`, 'ig');
+          let decimalRegex = new RegExp(`\\${decimalSep}`, 'ig');
+
+          amount = amount.replace(thousandRegex, '').replace(decimalRegex, '.');
+        }
+
+        if (typeof decimals === 'undefined') {
+          parts = amount.split('.');
+
+          if (parts && parts.length > 1) {
+            decimals = parts[parts.length - 1].length;
+
+          } else {
+            decimals = 2;
+          }
+        }
+
+        amount = Number(amount).toFixed(decimals);
+
+        if (isNaN(Number(amount))) {
+          return 0;
+
+        }
+          return Number(amount);
+
+
+      } else {
+
+        if (!amount || isNaN(Number(amount))) {
+
+          if (typeof decimals === 'undefined') decimals = 2;
+
+          if (decimals > 0) {
+            return `0${decimalSep}`.padEnd(2 + decimals, '0');
+
+          } else {
+            return '0';
+          }
+        }
+
+        if (typeof decimals === 'undefined') {
+          parts = amount.toString().split('.');
+
+          if (parts && parts.length > 1) {
+            decimals = parts[parts.length - 1].length;
+            if (decimals < 2) decimals = 2;
+
+          } else {
+            decimals = 2;
+          }
+        }
+        return $filter('currency')(amount, '', decimals);
+      }
+    }
+
+    /**
+     * @name assign
+     * @description
+     * assign multiple objects
+     */
+    function assign(...args) {
+      if (args.length === 0) return;
+      if (!isObject(args[0])) return;
+
+      // matriz
+      const m = args[0];
+
+      for (let i = 1; i < args.length; i++) {
+        if (!isObject(args[i])) continue;
+        Object.keys(args[i]).map(k => (!m[k] ? (m[k] = args[i][k]) : false));
+      }
+      return m;
+    }
+
+    /**
+     * @name getCurrentLanguage
+     * @description
+     * Return the current language set from i18n
+     *
+     * @returns {string}
+     */
+    function getCurrentLanguage() {
+      return $translate.use();
+    }
+
+    /**
+     * @name getTaToolbar
+     * @description
+     * return the ta toolbar configuration for text-angular toolbar
+     */
+    function getTaToolbar() {
+      return [
+        [
+          'html',
+          'h1',
+          'h2',
+          'h3',
+          'h4',
+          'h5',
+          'h6',
+          'insertImage',
+          'insertLink',
+          'insertVideo',
+        ],
+        [
+          'bold',
+          'underline',
+          'strikeThrough',
+          'justifyLeft',
+          'justifyCenter',
+          'justifyRight',
+          'ul',
+          'ol',
+          'indent',
+          'outdent',
+        ],
+      ];
+    }
+
+    /**
+     * @getColorsArray
+     * @description
+     * return array of material design colors
+     *
+     * @returns {Array<string>}
+     */
+    function getColorsArray() {
+      return [
+        'amber-bg',
+        'blue-bg',
+        'blue-grey-bg',
+        'brown-bg',
+        'cyan-bg',
+        'deep-orange-bg',
+        'deep-purple-bg',
+        'green-bg',
+        // 'grey-bg', // reserved for prospect customers
+        'indigo-bg',
+        'light-blue-bg',
+        'light-green-bg',
+        'lime-bg',
+        'orange-bg',
+        'pink-bg',
+        'purple-bg',
+        'red-bg',
+        'teal-bg',
+        'yellow-bg',
+      ];
+    }
+
+    /**
+     * @name freeze
+     * @description
+     * Freeze the element for a determined time
+     *
+     * @param {Object} scope for reference, ex: vm
+     * @param {string} key name to be switched by true/false
+     * @param {number} [time] of milliseconds to do the switch between true and false
+     */
+    function freeze(scope, key, time = 1000) {
+      scope[key] = true; // button disable for 500 milliseconds.
+      $timeout(() => (scope[key] = false), time);
+    }
+
+    /**
+     * @name validateDate
+     * @description
+     * Validate and convert a string date
+     *
+     * @param {string} date in string
+     * @param {Object|boolean|string} [multi] 'formEl' reference, 'OnlyDate' or 'outFormat'
+     *            formEl: DOM element to invoke .$validate() AngularJS ng-messages
+     *            onlyDate: true for date without time to save on database
+     *            outFormat: moment referente format or defined format like 'YYYY-MM-DD'
+     *                          L    = 09/04/1986,
+     *                          LL   = September 4, 1986
+     *                          LLL  = September 4, 1986 8:30 PM
+     *                          LLLL = Thursday, September 4, 1986 8:30 PM
+     *                          LT   = 8:30 PM | 20:30
+     *                          LTS  = 8:30:25 PM | 20:30:25
+     * @param {string|boolean} [outFormat] optional for use with formEl argument
+     *                                     boolean: save in UTC ignoring local GMT
+     *
+     * @returns {string|undefined}
+     */
+    function validateDate(date, multi, outFormat) {
+      let formEl; let onlyDate;
+
+      const lf = moment.localeData().longDateFormat('L');
+
+      if (typeof multi === 'string') {
+        outFormat = multi;
+      } else if (typeof multi === 'boolean') {
+        onlyDate = multi;
+      } else if (multi) {
+        formEl = multi;
+      }
+
+      if (!date) {
+        formEl && formEl.$setValidity('invalid', true);
+        return;
+      }
+
+      let result = moment(date, lf);
+      let isValid = moment(date, lf, true).isValid();
+
+      if (!isValid) {
+        result = moment(date, 'YYYY-MM-DDTHH:mm:ss.SSSZ');
+        isValid = moment(date, 'YYYY-MM-DD', true).isValid();
+      }
+
+      if (formEl && formEl.$setValidity) {
+        formEl.$setValidity('invalid', isValid);
+        if (!isValid) return;
+      }
+
+      // set the maximum day hours for a date without defined time
+      // if add 'Z' in the end ('YYYY-MM-DDT23:59:59.999Z'), the date/time will
+      // be save on database in local time (ex: +3:00)
+      if (onlyDate) {
+        if (typeof outFormat === 'boolean') {
+          outFormat = 'YYYY-MM-DDT23:59:59.999';
+        } else {
+          outFormat = 'YYYY-MM-DDT23:59:59.999Z';
+        }
+      }
+
+      if (!result || (result && result.includes && result.includes('Invalid')))
+        return;
+
+      return result.format(outFormat);
+    }
+
+    /**
+     * @name validateDate
+     * @description
+     * Validate and convert a string date
+     *
+     * @param {string} date in string
+     * @param {string} mode if 'view' for view model (local) and 'data' for
+     * data model (utc format)
+     * @param {boolean} [forceUTC] no convert in local date
+     * @param {Object} [formEl] representing the ngModel controller
+     * @param {string} [previousLocale] if the language was changed
+     * @param {string} [outFormat]
+     *                          L    = 09/04/1986,
+     *                          LL   = September 4, 1986
+     *                          LLL  = September 4, 1986 8:30 PM
+     *                          LLLL = Thursday, September 4, 1986 8:30 PM
+     *                          LT   = 8:30 PM | 20:30
+     *                          LTS  = 8:30:25 PM | 20:30:25
+     *
+     * @returns {string|undefined}
+     */
+
+    /*
+        function validateDate(date, mode, forceUTC, formEl, previousLocale,
+                              outFormat = 'L') {
+
+          if (!date || date.length < 10) return;
+
+          let fullIsof = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
+          let pl, plf;
+
+          // local format
+          let lf = moment.localeData(pl).longDateFormat('L');
+
+          // format type
+          let ft = 'L';
+
+          // moment format type
+          let mft = ['L', 'LL', 'LLL', 'LLLL', 'LT', 'LTS'].includes(outFormat) &&
+              outFormat;
+
+          if (previousLocale) {
+            pl = previousLocale;
+            plf = moment.localeData(pl).longDateFormat('L');
+          }
+
+          if (mode === 'view') {
+
+            if (moment(date, fullIsof, true).isValid()) {
+              formEl && formEl.$setValidity('invalid', true);
+              if (forceUTC) return moment.utc(date).format(mft || ft);
+              return moment(date).format(mft || ft);
+
+            } else {
+
+              if (pl) { // language changes action
+
+                if (moment(date, plf).isValid()) {
+                  formEl && formEl.$setValidity('invalid', true);
+                  if (forceUTC) return moment.utc(date, plf).format(mft || ft);
+                  return moment(date, plf).format(mft || ft);
+
+                } else {
+                  formEl && formEl.$setValidity('invalid', false);
+                }
+
+              } else {
+
+                if (moment(date, lf).isValid()) {
+                  formEl && formEl.$setValidity('invalid', true);
+                  if (forceUTC) return moment.utc(date, lf).format(mft || ft);
+                  return moment(date, lf).format(mft || ft);
+
+                } else {
+                  formEl && formEl.$setValidity('invalid', false);
+                }
+              }
+            }
+
+          } else {
+
+            if (moment(date, lf).isValid()) {
+
+              formEl && formEl.$setValidity('invalid', true);
+              if (forceUTC) return moment(date, lf).
+                  format('YYYY-MM-DDTHH:mm:ss.SSSZ');
+              return moment(date, lf).format('YYYY-MM-DD');
+
+            } else {
+
+              // if (moment(date, 'YYYY-MM-DD').isValid()) {
+              //
+              //   formEl && formEl.$setValidity('invalid', true);
+              //   return date;
+              //
+              // } else {
+              formEl && formEl.$setValidity('invalid', false);
+              // }
+            }
+          }
+        }
+
+    */
+    /**
+     * @name validatePartialDate
+     * @description
+     * Validate and convert a partial date (month and day)
+     *
+     * @param {string} date in string
+     * @param {string} mode if 'view' for view model (local) and 'data' for
+     * data model (utc format)
+     * @param {Object} [formEl] representing the ngModel controller
+     * @param {string} [previousLocale] if the language was changed
+     */
+    function validatePartialDate(date, mode, formEl, previousLocale) {
+      if (!date || date.length !== 5) return;
+
+      let day, month;
+      let lf = moment.localeData().longDateFormat('L');
+      let plf = lf;
+
+      if (previousLocale) {
+        plf = moment.localeData(previousLocale).longDateFormat('L');
+      }
+
+      // catch the day and month regardless data format
+      if (plf.charAt(0) === 'D') {
+        day = date.slice(0, 2);
+        month = date.slice(-2);
+      } else {
+        day = date.slice(-2);
+        month = date.slice(0, 2);
+      }
+
+      if (mode === 'view') {
+
+        // detect the language changes action
+        if (lf.charAt(0) === plf.charAt(0)) {
+          return $done();
+
+        }
+
+          return lf.charAt(0) === 'D'
+              ? day + '/' + month
+              : month + '/' + day;
+
+
+      } else if (mode === 'data') {
+
+        date = month + '/' + day;
+        return $done();
+      }
+
+      // $done
+      function $done() {
+        // 2001 - no leap year
+        // 2000 - leap year
+        let fullDate = `2000-${month}-${day}`;
+
+        if (moment(fullDate, 'YYYY-MM-DD', true).isValid()) {
+          formEl && formEl.$setValidity('invalid', true);
+
+        } else {
+          formEl && formEl.$setValidity('invalid', false);
+        }
+
+        return date;
+      }
+    }
+
+    /**
+     * @name diff
+     * @description
+     * Verify the difference between two objects returning the an object with
+     * two keys, 'a' representing the object a and 'b' representing the object
+     * b.
+     *
+     * @param {Object} a for first object
+     * @param {Object} b for second object to compare with a
+     *
+     * @returns {Object}
+     */
+    function diff(a, b) {
+      if (!a || typeof a !== 'object') a = {};
+      if (!b || typeof b !== 'object') b = {};
+
+      const obj = {
+        a: {},
+        b: {},
+      };
+
+      // ** check removed or changed...
+      Object.keys(a).map(k => {
+        // force undefined if key a is not valid
+        if (a[k]) {
+          if (a[k] === '' || (Array.isArray(a[k]) && a[k].length === 0)) {
+            a[k] = undefined;
+          }
+        }
+
+        // force undefined if key b is not valid
+        if (b[k]) {
+          if (b[k] === '' || (Array.isArray(b[k]) && b[k].length === 0)) {
+            b[k] = undefined;
+          }
+        }
+
+        // was removed (had in a, not in b)
+        if (!b[k] && a[k]) {
+          obj.a[k] = typeof a[k] === 'string' ? a[k] : a[k];
+
+          // was changed (has in both, but with different values)
+        } else if (
+          a[k] &&
+          b[k] &&
+          a[k].toString().toUpperCase() !== b[k].toString().toUpperCase()
+        ) {
+          obj.a[k] = typeof a[k] === 'string' ? a[k] : a[k];
+          obj.b[k] = typeof b[k] === 'string' ? b[k] : b[k];
+        }
+      });
+
+      // ** check added...
+      Object.keys(b).map(k => {
+        // force undefined if key b is not valid
+        if (b[k]) {
+          if (b[k] === '' || (Array.isArray(b[k]) && b[k].length === 0)) {
+            b[k] = undefined;
+          }
+        }
+
+        // force undefined if key a is not valid
+        if (a[k]) {
+          if (a[k] === '' || (Array.isArray(a[k]) && a[k].length === 0)) {
+            a[k] = undefined;
+          }
+        }
+
+        // was added (not in a, has in b)
+        if (!a[k] && b[k]) {
+          obj.b[k] = typeof b[k] === 'string' ? b[k] : b[k];
+        }
+      });
+
+      return obj;
+    }
+
+    /**
+     * @description
+     * Sort an array in asc or desc order
+     *
+     * @param {Array} array to be sorted
+     * @param {string} k for key field in string
+     * @param {boolean} [asc] asc for ascendant order
+     */
+    function sort(array, k, asc = true) {
+      if (asc) {
+        array.sort((a, b) =>
+          a[k] > b[k] || (a[k] && !b[k])
+            ? 1
+            : a[k] < b[k] || (!a[k] && b[k] ? -1 : 0)
+        );
+      } else {
+        array.sort((b, a) =>
+          a[k] > b[k] || (a[k] && !b[k])
+            ? 1
+            : a[k] < b[k] || (!a[k] && b[k] ? -1 : 0)
+        );
+      }
+    }
+
+    /**
+     * @name generateRandomName
+     * @description
+     * Generate a random name with 4 or 5 characters
+     *
+     * @returns {string}
+     */
+    function generateRandomName() {
+      return (0 || Math.random() * 9e6).toString(36);
+    }
+
+    /**
+     * @name formatAddressViewModel
+     * @description
+     * Receipt the address array in database mode and convert to view model
+     *     with specifics objects as mainPhone, mainEmail, etc...
+     *
+     * @param {Array<Object>} address array
+     * @returns {Object} data object with address and vmMain<address>
+     */
+    function formatAddressViewModel(address) {
+      const data = {
+        address,
+        filteredAddress: {}, // without 'cpfAddress' and 'cnpjAddress'
+        vmMainAddress: {},
+        vmCnpjAddress: {},
+        vmCpfAddress: {},
+      };
+
+      data.address.map(x => {
+        if (!x.vmZipCode) {
+          const additional = x.additional ? ` ${  x.additional}` : '';
+
+          // short address
+          if (x.number) {
+            if (additional) {
+              x.shortAddress = `${x.address  }, ${  x.number  }${additional}`;
+            } else {
+              x.shortAddress = `${x.address  }, ${  x.number}`;
+            }
+          } else if (additional) {
+              x.shortAddress = x.address + ',' + additional;
+            } else {
+              x.shortAddress = x.address;
+            }
+
+          x.shortAddress = x.shortAddress.replace('AVENIDA ', 'AV. ');
+          x.shortAddress = x.shortAddress.replace('RUA ', 'R. ');
+          x.shortAddress = x.shortAddress.replace('RODOVIA ', 'ROD. ');
+
+          // long address
+          x.longAddress = `${x.shortAddress  }, ${  x.city  }-${  x.state}`;
+
+          // full address
+          x.fullAddress = `${x.longAddress  }, CEP: ${  x.zipCode}`;
+
+          // vmCityState
+          x.vmCityState = `${x.city  } - ${  x.state}`;
+
+          if (x.countryCode) x.countryCode = x.countryCode.toLowerCase();
+        }
+
+        if (x.viewModel === 'mainAddress') {
+          if (!x.identification) {
+            x.noIdentification = true;
+            x.identification = $translate.instant(
+              'TRANSLATE.REGISTERED_ADDRESS'
+            );
+          }
+          data.vmMainAddress = clone(x);
+        } else if (x.viewModel === 'cnpjAddress') {
+          data.vmCnpjAddress = clone(x);
+        } else if (x.viewModel === 'cpfAddress') {
+          data.vmCpfAddress = clone(x);
+        }
+      });
+
+      data.filteredAddress = data.address.filter(
+        x => x.viewModel !== 'cnpjAddress' && x.viewModel !== 'cpfAddress'
+      );
+
+      return data;
+    }
+
+    // TODO: ADD THE PERSON CONTACT IN THESE FUNCTIONS
+    /**
+     * format entity contacts array before persist data on database
+     *
+     * @param {object} obj Entity data object
+     * @param {function} callback finish the "promise"
+     */
+    function formatEntityContactsDataModel(obj, callback) {
+      if (!obj) return callback();
+
+      if (!obj.contacts) obj.contacts = [];
+      const {contacts} = obj; // c = contacts in, o = contacts out
+
+      new Promise(resolve =>
+        changeContact('vmMainPhone', obj.vmMainPhone, contacts, o => resolve(o))
+      )
+        .then(
+          contacts =>
+            new Promise(resolve =>
+              changeContact('vmMainEmail', obj.vmMainEmail, contacts, o =>
+                resolve(o)
+              )
+            )
+        )
+        .then(
+          contacts =>
+            new Promise(resolve =>
+              changeContact('vmMainSite', obj.vmMainSite, contacts, o =>
+                resolve(o)
+              )
+            )
+        )
+        .then(contacts => callback(contacts));
+    }
+
+    /**
+     * function to transform the entity contacts from ViewModel to DataModel
+     *
+     * @param {string} viewModel - ViewModel Name
+     * @param {Object} newContact - New contact view model object
+     * @param {Array<Object>} contacts - Entity Contact Objects Array
+     * @param {Function} callback - Callback returning Contact Object Array
+     */
+    function changeContact(viewModel, newContact, contacts, callback) {
+      let vmType; let type;
+
+      if (!newContact || !newContact.value) {
+        // remove the contact
+        const vm = `m${  viewModel.slice(3)}`;
+        const idx = contacts.findIndex(x => x.viewModel === vm);
+        if (idx > -1) contacts.splice(idx, 1);
+
+        return callback(contacts);
+      }
+
+      switch (viewModel) {
+        case 'vmMainPhone':
+          vmType = 'mainPhone';
+          type = 'phone';
+          // TODO: If need change the dialCode, need create the interface html
+          if (!newContact.dialCode) newContact.dialCode = '+55';
+          break;
+
+        case 'vmMainEmail':
+          vmType = 'mainEmail';
+          type = 'email';
+          break;
+
+        case 'vmMainSite':
+          vmType = 'mainSite';
+          type = 'site';
+          break;
+
+        default:
+          $log.error(`597638: '${viewModel}' not defined in helper.service.js`);
+          return callback(contacts);
+      }
+
+      const oldContact = contacts.find(x => x.viewModel === vmType);
+      const idx = contacts.findIndex(x => x.viewModel === vmType);
+
+      // non value
+      if (!newContact.value || newContact.value === '') {
+        if (idx > -1) contacts.splice(idx, 1);
+        callback(contacts);
+      } else {
+        newContact.manual = true;
+        newContact.type = type;
+        newContact.viewModel = vmType;
+
+        if (newContact.email) {
+          newContact.email = newContact.email.toLowerCase();
+        }
+        if (newContact.site) {
+          newContact.site = newContact.site.toLowerCase();
+        }
+
+        if (idx === -1) {
+          if (newContact._id) delete newContact._id;
+          if (newContact.createdOn) delete newContact.createdOn;
+
+          contacts.push({ ...newContact});
+        } else {
+          if (
+            oldContact.value === newContact.value &&
+            oldContact.dialCode === newContact.dialCode
+          ) {
+            return callback(contacts);
+          }
+
+          if (newContact._id) delete newContact._id;
+          if (newContact.createdOn) delete newContact.createdOn;
+
+          contacts.splice(idx, 1);
+          contacts.push({ ...newContact});
+        }
+
+        return callback(contacts);
+      }
+    }
+
+    /**
+     * format entity address array before persist data on database
+     *
+     * @param {object} obj Entity data object
+     * @param {function} callback finish the "promise"
+     */
+    /*
+        function formatEntityAddressDataModel(obj, callback) {
+          if (!obj) return callback();
+
+          let a = obj.address; // a = address in, o = address out
+
+          new Promise(r =>
+              changeAddress('vmMainAddress', obj.vmMainAddress, a, (o) => r(o)),
+          ).then(a => new Promise(r =>
+              changeAddress('vmCpfAddress', obj.vmCpfAddress, a, (o) => r(o))),
+          ).then(a => new Promise(r =>
+              changeAddress('vmCnpjAddress', obj.vmCnpjAddress, a,
+                  (o) => r(o))),
+          ).then(a => callback(a));
+        }
+    */
+
+    /**
+     * function to transform the entity address from ViewModel to DataModel
+     *
+     * @param {string} viewModel - ViewModel Name
+     * @param {Object} newAddress - New contact view model object
+     * @param {Array<Object>} address - Entity Contact Objects Array
+     * @param {Function} callback - Callback returning Contact Object Array
+     */
+
+    /*
+        function changeAddress(viewModel, newAddress, address, callback) {
+          let vmType;
+
+          if (!newAddress) return callback(address);
+
+          switch (viewModel) {
+            case 'vmMainAddress':
+              vmType = 'mainAddress';
+              break;
+
+            case 'vmCpfAddress':
+              vmType = 'cpfAddress';
+              break;
+
+            case 'vmCnpjAddress':
+              vmType = 'cnpjAddress';
+              break;
+
+            default:
+              $log.error(`613866: '${viewModel}' not defined in helper.service.js`);
+              return callback(address);
+          }
+
+          let oldAddress = address.find(x => x.viewModel === vmType);
+          let idx = address.findIndex(x => x.viewModel === vmType);
+
+          // if (!newAddress.zipCode && newAddress.vmZipCode) {
+          newAddress.zipCode = returnOnlyNumbers(newAddress.vmZipCode);
+          // }
+
+          // non value
+          if (!newAddress.zipCode || newAddress.zipCode === '') {
+
+            if (idx > -1) address.splice(idx, 1);
+            callback(address);
+
+          } else {
+            newAddress.viewModel = vmType;
+
+            if (newAddress.number) {
+              newAddress.number = newAddress.number.toUpperCase();
+            }
+            if (newAddress.additional) {
+              newAddress.additional = newAddress.additional.toUpperCase();
+            }
+
+            if (idx === -1) {
+              if (newAddress._id) delete newAddress._id;
+              if (newAddress.createdOn) delete newAddress.createdOn;
+              if (newAddress._metadata) delete newAddress._metadata;
+
+              address.push(Object.assign({}, newAddress));
+
+            } else {
+
+              if (oldAddress.zipCode === newAddress.zipCode &&
+                  oldAddress.number === newAddress.number &&
+                  oldAddress.additional === newAddress.additional &&
+                  oldAddress.foundAtPostOffice ===
+                  newAddress.foundAtPostOffice) {
+
+                return callback(address);
+              }
+
+              if (newAddress._id) delete newAddress._id;
+              if (newAddress._metadata) delete newAddress._metadata;
+              if (newAddress.createdOn) delete newAddress.createdOn;
+
+              address.splice(idx, 1);
+              address.push(Object.assign({}, newAddress));
+            }
+
+            return callback(address);
+          }
+        }
+    */
+
+    /**
+     * @name generateDocumentLog
+     * @description
+     * Generate the log on specific document thought the update api service
+     *     indicated on arguments
+     *
+     * @param {string} accountId for current logged user mongo object id
+     * @param {string} documentId from document in action
+     * @param {function} updateApi for update function api
+     * @param {string} action indicate the main action (update, delete...)
+     * @param {string} translateDescription (pre-defined) for this action
+     * @param {string} [description] for this action
+     * @param {string} [data] for data reference
+     * @param {string} [freeDescription] for user free description
+     * @param {function} [callback]
+     */
+    function generateDocumentLog(
+      accountId,
+      documentId,
+      updateApi,
+      action,
+      translateDescription,
+      description,
+      data,
+      freeDescription,
+      callback
+    ) {
+      const cb = callback || angular.noop;
+      const actions = ['CREATED', 'UPDATED', 'REMOVED', 'RESTORED', 'DELETED'];
+
+      if (!documentId) {
+        $log.error("629641: The 'documentId' argument was expected!");
+        return cb();
+      }
+
+      if (!actions.includes(action.toUpperCase())) {
+        $log.error(
+          `651977: The 'action' argument with some value as '${actions}' was expected!`
+        );
+        return cb();
+      }
+
+      const ds = {
+        $push: {
+          _logs: {
+            createdByAccountId: accountId,
+            action: action.toUpperCase(),
+            translateDescription,
+            description,
+            data,
+            freeDescription,
+          },
+        },
+      };
+
+      updateApi(documentId, ds, (e, dt) => cb(dt));
+    }
+
+    /**
+     * @name formatVmPhone
+     * @description
+     * Format Phone or Mobile object View Model
+     *
+     * @param {Object|string} phone object for mobile or phone
+     * @param {Object} [country] selected in basic info
+     */
+    function formatVmPhone(phone, country) {
+      if (!phone) return {};
+      if (!country) country = {};
+      if (typeof phone === 'string') phone = { vmValue: phone };
+
+      if (!phone.vmValue || phone.vmValue === '') {
+        phone.countryCode = undefined;
+        phone.vmValue = undefined;
+        phone.dialCode = undefined;
+        phone.value = undefined;
+        phone.vmValueToCall = undefined;
+        phone.type = undefined;
+      } else {
+        phone.dialCode = country.dialCode;
+        phone.countryCode = country.countryCode;
+        phone.value = returnOnlyNumbers(phone.vmValue);
+        phone.vmValueToCall = phone.dialCode + phone.value;
+        phone.type = 'phone';
+      }
+
+      return phone;
+    }
+
+    /**
+     * @name formatVmEmail
+     * @description
+     * Format Email object View Model
+     *
+     * @param {Object|string} email object
+     */
+    function formatVmEmail(email) {
+      if (!email) return {};
+
+      if (typeof email === 'string') email = { vmValue: email };
+
+      if (!email.vmValue || email.vmValue === '') {
+        email.vmValue = undefined;
+        email.value = undefined;
+      } else {
+        email.value = email.vmValue.toLowerCase();
+      }
+      email.type = 'email';
+
+      return email;
+    }
+
+    /**
+     * @name formatDate
+     * @description
+     * return only date or date with time
+     *
+     * @param {string} isoDate
+     * @param {string} type for 'dateTime' or 'any' (only 'date')
+     */
+    function formatDate(isoDate, type) {
+      if (type === 'dateTime') {
+        return moment(isoDate).format('LLL');
+
+      }
+        return moment(isoDate).format('L');
+
+    }
+
+    function getAvatar(gender) {
+      if (!gender) {
+        return 'generate';
+
+      } if (gender === '2') {
+        return jvProfile.FEMALE_AVATAR;
+
+      } else if (gender === '1') {
+        return jvProfile.MALE_AVATAR;
+
+      } else {
+        return 'generate';
+      }
+    }
+
+    function apiFailed(e, dt, apiVersion) {
+      if (dt && dt.code === 9005) {
+        toast(undefined, 'TRANSLATE.JARVIS_OUT_OF_SERVICE', undefined, 'e');
+        return true;
+      }
+
+      if (e) {
+        $log.error('Critical Jarvis Error:', e);
+        return 0;
+      }
+
+      if (apiVersion === 'v2') {
+        return !dt || !dt.docs || !dt.docs.length;
+
+      }   // 'v1'
+        return !dt || !dt.doc;
+
+    }
+
+    /**
+     * translate object
+     *
+     * @description
+     * Translate an object passed by parameters
+     *
+     * @param {Object} translateObj Translate Object with properties and
+     *     'translate keys' value
+     * @param {function} callback
+     *
+     * @returns Array with properties translated
+     */
+    function translate(translateObj, callback) {
+      const idsKeys = [];
+      const idsValues = [];
+
+      for (const [key, value] of Object.entries(translateObj)) {
+        idsKeys.push(key);
+        idsValues.push(value);
+      }
+
+      $translate(idsValues).then(
+        x => finish(x),
+        y => finish(y)
+      );
+
+      function finish(result) {
+        result = Object.values(result);
+
+        const t = {};
+
+        for (let i = 0; i < result.length; i++) t[idsKeys[i]] = result[i];
+
+        callback(t);
+      }
+    }
+
+    /**
+     * Get the loading image of month
+     */
+    function getLoadingImage(date) {
+      if (date) {
+        date = new Date(date);
+      } else {
+        date = new Date();
+      }
+
+      const currentMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+      return `assets/images/loading-${  currentMonth  }.gif`;
+    }
+
+    /**
+     * @name getBackgroundSeasonByCountry
+     * @description
+     * change the season background image according the countryCode
+     *
+     * @param {string} [countryCode]
+     * @param {Date|string} [date] for specific date season
+     */
+    function getBackgroundSeasonByCountry(countryCode, date) {
+      const pars = $rootScope.cache.parameters;
+      const account = $rootScope.cache.selAccount;
+
+      let dig = 0; // us
+      if (!countryCode)
+        countryCode =
+          (pars &&
+            pars.countryByConnection &&
+            pars.countryByConnection.countryCode) ||
+          (account && account.countryCode) ||
+          'us';
+
+      if (['br'].includes(countryCode)) dig = 6;
+
+      if (date) {
+        date = new Date(date);
+      } else {
+        date = new Date();
+      }
+
+      const m = (date.getMonth() + 1).toString().padStart(2, '0');
+      const mn = Number(m) + dig;
+      const cm = mn > 12 ? mn - 12 : mn;
+      const file = `${cm.toString().padStart(2, '0')  }.jpg`;
+
+      return `assets/images/backgrounds/${  file}`;
+    }
+
+    /**
+     * @description
+     * Critical error from jarvis application
+     */
+    function critical(err) {
+      $log.error('667454: JARVIS CRITICAL ERROR!', err);
+    }
+
+    /**
+     * Transform the string first letter in upper case and the least in lower
+     */
+    function capitalize(str, full) {
+      let regex = /(\b[a-z](?!\s))/g;
+
+      if (!str) return str;
+
+      str = str.toLowerCase();
+
+      if (full) {
+        return str.replace(regex, function(x) {
+          return x.toUpperCase();
+        });
+
+      }
+        return str.charAt(0).toUpperCase() + str.slice(1);
+
+    }
+
+    /**
+     * pick some properties from an object
+     * credits: @loverajoel
+     * http://www.jstips.co/en/javascript/picking-and-rejecting-object-properties/
+     */
+    function pick(obj, keys) {
+      return keys
+        .map(k => (k in obj ? { [k]: obj[k] } : {}))
+        .reduce((res, o) => Object.assign(res, o), {});
+    }
+
+    /**
+     * convert the date from browser (?) format to server format (YYYY-MM-DD)
+     *
+     * for each browser language, needs to input a moment locale file in
+     * bower.json overrides object
+     *
+     * @param {object | string} date Browser format date
+     *
+     * @example
+     *
+     * "moment": {
+     *   "main": [
+     *     "moment.js",
+     *     "locale/br.js",
+     *     "locale/en-ca.js"
+     *   ]
+     * }
+     */
+    function checkDateFormat(date) {
+      if (!date) return;
+      if (!moment(new Date(date)).isValid()) return;
+
+      return moment(new Date(date)).format('YYYY-MM-DD');
+    }
+
+    /**
+     * dev log on browser consolle
+     *
+     * @param {Object|string} options Data object with $log options or justa a
+     *     single text
+     * {
+     *   label: 'consolle log title'
+     *   data: object data if exists to show
+     *   method: $log method (log, error or warn)
+     */
+    function devlog(options) {
+      if (!$rootScope.cache.parameters.profile.DEV && !jvProfile.inSupportMode)
+        return;
+      if (typeof options === 'string') return $log.warn('\n', options);
+
+      // **** DEACTIVATES **** IF ACTIVATE STACKTRACE - THE APP NOT RUN IN IPAD
+      // from bower:     "stacktrace-js": "^2.0.0",
+
+      // let mainTraceIdx = 4;
+      // let tracker = new Error();
+      //
+      // StackTrace.fromError(tracker).then(stack => { //eslint-disable-line no-undef
+      //
+      //   let mainTrace = stack[mainTraceIdx];
+      //   let fileName = mainTrace.fileName.split('/');
+      //
+      //   let trace = 'n/d';
+      //
+      //   if (mainTrace.functionName) {
+      //     trace = mainTrace.functionName.replace('Object.', '') + '():' +
+      //         fileName[fileName.length - 1] + ':' +
+      //         mainTrace.lineNumber;
+      //
+      //   } else if (mainTrace.fileName) {
+      //
+      //     trace = 'n/d():' +
+      //         fileName[fileName.length - 1] + ':' +
+      //         mainTrace.lineNumber;
+      //   }
+      //
+      //   finish(stack, trace);
+      // });
+
+      if (options.data) {
+        if (options.data.error) options.method = 'error';
+      }
+
+      // function finish(stack, trace) {
+      if (options.single) {
+        if (options.data) {
+          $log[options.method](
+            '\n',
+            options.label,
+            options.data,
+            options.header
+          );
+        } else {
+          $log[options.method](options.label);
+        }
+      } else if (options.data) {
+          $log[options.method]('\n', options.label, options.data,
+              options.header);
+
+        } else {
+          $log[options.method](options.label);
+        }
+      // }
+    }
+
+    /**
+     * function to find and replace string in string
+     *
+     * @param {string} str text or sentence
+     * @param {string|Array} from text old to be replace for new (to)
+     * @param {string|Array} to text new to replace the old (from)
+     * @param {function} [callback]
+     */
+    function substitution(str, from, to, callback) {
+      const cb = callback || angular.noop;
+
+      if (!str || typeof from === 'undefined' || typeof to === 'undefined') {
+        return cb(str) || str;
+      }
+      if (!Array.isArray(from)) from = new Array(from);
+      if (!Array.isArray(to)) to = new Array(to.toString());
+      if (from.length !== to.length) return cb(str) || str;
+
+      for (let i = 0; i < from.length; i++) {
+        str = str.replace(from[i], to[i]);
+      }
+
+      return cb(str) || str;
+    }
+
+    /**
+     * show the simple alert dialog box with a customized message
+     *
+     * @param {object} [options = {}] - options object wity $mdDialog properties
+     * @param {function} [success] - success callback
+     * @param {function} [error] - error callback
+     */
+    function showAlertDialog(options = {}, success, error) {
+      const s = success || angular.noop;
+      const e = error || angular.noop;
+
+      const alert = $mdDialog
+        .alert()
+        .multiple(true)
+        .title(options.title || 'Title')
+        .textContent(options.text || 'Text Content')
+        .ok(options.ok || 'OK')
+        .targetEvent(options.targetEvent);
+
+      $mdDialog.show(alert).then(
+        x => s(x),
+        y => e(y)
+      );
+    }
+
+    /**
+     * show the simple alert dialog box with a customized message
+     *
+     * @param {object} [options = {}] - options object with $mdDialog properties
+     * @param {function} [success] - confirm callback
+     * @param {function} [cancel] - cancel callback
+     */
+    function showConfirmDialog(options = {}, success, cancel) {
+      const s = success || angular.noop;
+      const c = cancel || angular.noop;
+
+      const confirm = $mdDialog
+        .confirm()
+        .title(options.title || 'Title')
+        .textContent(options.text || 'Text Content')
+        .targetEvent(options.targetEvent)
+        .multiple(true)
+        .ok(options.ok || 'OK')
+        .cancel(options.cancel || 'Cancel');
+
+      $mdDialog.show(confirm).then(
+        x => s(x),
+        y => c(y)
+      );
+
+      // $mdDialog.show(confirm).then(() => execute(t), () => callback());
+
+      /*
+            let clickToClose = (typeof options.clickOutsideToClose === 'undefined') ||
+                options.clickOutsideToClose;
+            let escapeToClose = (typeof options.escapeToClose === 'undefined') ||
+                options.escapeToClose;
+            let multiple = (typeof options.multiple === 'undefined') ||
+                options.multiple;
+            let fullscreen = (typeof options.fullscreen === 'undefined') ||
+                options.fullscreen;
+
+            let alert = $mdDialog.confirm().
+                parent(options.parent || angular.element(document.body)).
+                clickOutsideToClose(clickToClose).
+                escapeToClose(escapeToClose).
+                title(options.title || 'Title').
+                textContent(options.textContent || 'Text Content').
+                ariaLabel(options.ariaLabel || options.title || 'Dialog Box').
+                targetEvent(options.targetEvent).
+                multiple(multiple).
+                fullscreen(fullscreen).
+                ok(options.confirm || options.ok || 'OK').
+                cancel(options.cancel || 'Cancel');
+
+            $mdDialog.show(alert).then(x => ok(x), y => c(y));
+      */
+    }
+
+    /**
+     * show the custom dialog box
+     *
+     * @param {Object} [options = {}] - options object wity $mdDialog properties
+     * @param {function} [success] - success callback
+     * @param {function} [cancel] - error callback
+     */
+    function showCustomDialog(options = {}, success, cancel) {
+      const s = success || angular.noop;
+      const c = cancel || angular.noop;
+
+      /*
+            let clickToClose = (typeof options.clickOutsideToClose === 'undefined') ||
+                options.clickOutsideToClose;
+            let escapeToClose = (typeof options.escapeToClose === 'undefined') ||
+                options.escapeToClose;
+            let multiple = (typeof options.multiple === 'undefined') ||
+                options.multiple;
+            let fullscreen = (typeof options.fullscreen === 'undefined') ||
+                options.fullscreen;
+      */
+
+      // let opt = {
+      // preserveScope: true,
+      // controller: undefined,
+      // controllerAs: 'vm',
+      // templateUrl: undefined,
+      // parent: undefined,
+      // targetEvent: undefined,
+      // clickOutsideToClose: clickToClose,
+      // escapeToClose: escapeToClose,
+      // fullscreen: (typeof options.fullscreen === 'undefined') ||
+      // options.fullscreen, multiple: multiple, locals: { DataForm: {}, }, };
+
+      // Object.assign(opt, options);
+
+      $mdDialog.show(options).then(
+        x => s(x),
+        y => c(y)
+      );
+    }
+
+    /**
+     * clone object and all yours subobjects
+     * ps: lodash _.clone and Object.assign clones only the main object
+     * maintain the subobjects references
+     *
+     * @param {object} obs - JSON object that will be cloned
+     */
+    function clone(obj) {
+
+      if (typeof obj === 'object') {
+        return JSON.parse(JSON.stringify(obj));
+
+      } if (typeof obj === 'string') {
+        return JSON.parse(obj);
+
+      } else {
+        return undefined;
+      }
+    }
+
+    /**
+     * @name mask
+     * @description
+     * return the str with mask by '#'
+     *
+     * @param {string} str to be formatted
+     * @param {string} mask representing each number by '#' (sharp)
+     */
+    function mask(str, mask) {
+      if (!str) return;
+
+      const maskService = MaskService.create();
+      maskService.generateRegex({ mask: mask });
+      return maskService.getViewValue(str).withDivisors();
+    }
+
+    /**
+     * format function to return number with mask
+     */
+    function maskDate(type) {
+      let mask;
+
+      if (moment.locale().slice(0, 2) === 'pt') {
+        mask = type === 'filter' ? 'dd/MM/yyyy' : '99/99/9999';
+      } else {
+        // en
+
+        mask = type === 'filter' ? 'MM/dd/yyyy' : '99/99/9999';
+      }
+
+      return mask;
+    }
+
+    /**
+     * validate email
+     */
+    function validateEmail(email) {
+      let regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/; // eslint-disable-line
+      return regex.test(email);
+    }
+
+    /**
+     * get only ip
+     * https://dev.maxmind.com/geoip/geoip2/geolite2/
+     */
+    function getMyIp(callback) {
+      // uri for client ip
+
+      const uriGetIp =
+        'https://cors-anywhere.herokuapp.com/http://api64.ipify.org?format=json';
+      // let uriGetIp = 'https://api64.ipify.org?format=json';
+      // let uriGetIp = 'https://extreme-ip-lookup.com/json/';
+      // let uriGetIp = 'https://wtfismyip.com/text';
+
+      const dataIp = {};
+
+      getDataByAjax(uriGetIp, 'GET', (e, response) => {
+        if (e) {
+          dataIp.localIp = null;
+          dataIp.internetIp = null;
+          callback(dataIp);
+        } else {
+          dataIp.internetIp = response;
+
+          // todo getLocalIp parou de funcionar na versao mais atual do chrome
+          dataIp.localIp = null;
+          callback(dataIp);
+          // temporario (sem pegar o ip da rede)
+
+          // dataIp.localIp = null;
+          // callback(dataIp);
+
+          // getLocalIP(localIp => {
+          //   dataIp.localIp = localIp;
+          //   callback(dataIp);
+          // });
+        }
+      });
+    }
+
+    /**
+     * get any data by jquery ajax
+     */
+    function getDataByAjax(uri, protocol, callback) {
+      $.ajax({
+        url: uri,
+        type: protocol,
+        success(data) {
+          callback(null, data.ip);
+        },
+        error(err) {
+          callback(err, null);
+        },
+      });
+    }
+
+    /**
+     * return only numbers from a string
+     */
+    function returnOnlyNumbers(str) {
+      if (typeof str === 'undefined') return;
+      if (str === null) return null;
+      return str.replace(/[^0-9]/g, '');
+    }
+
+    /**
+     * copy an object with JSON parse/stringfy ignoring the angular properties
+     */
+    function copy(o) {
+      return JSON.parse(JSON.stringify(o));
+    }
+
+    /**
+     * check if the variable is an valid object
+     */
+    function isObject(o) {
+      return o instanceof Object && o.constructor === Object;
+    }
+
+    /**
+     * generete jarvis Id based on timestamp and user logged id (if applied)
+     */
+    function generateJarvisId() {
+      const userId =
+        helperLocalStorageService.getSelAccountId() ||
+        '000000000000000000000000';
+
+      const timestamp = +new Date();
+      const jarvisId = `${  userId  }${timestamp}`;
+
+      return `jid.${  jarvisId.substring(jarvisId.length - 20)}`;
+    }
+
+    /**
+     * show and hide the loading screen by jvLoader Directive
+     */
+    function loading(show) {
+      $rootScope.working = show;
+      setTimeout(() => $rootScope.$apply());
+    }
+
+    /**
+     * check that property is exists and has any value
+     * todo need refactor to input this function in js-toolbelt
+     */
+    // function hasProperty(object, absoluteProperty) {
+    //   if (!absoluteProperty) {
+    //     let keysCount = 0;
+    //     for (let key in object) {
+    //       // if (object.hasOwnProperty(key)) return true;
+    //       if (object.hasOwnProperty(key)) keysCount++;
+    //     }
+    //     return keysCount === 0 ? false : keysCount;
+    //   }
+    //   let k = absoluteProperty.split('.');
+    //   return k.reduce((a, b) => (a || {})[b], object) !== undefined;
+    // }
+
+    /**
+     * change the state to mainState if the link was expired or invalid
+     */
+    function invalidLink(showToast, form) {
+      if (showToast) toast(null, 'TRANSLATE.INVALID_LINK', 3000, 'w');
+      $timeout(() => $state.transitionTo('app.page404', { form: form }), 300);
+      return false;
+    }
+
+    /**
+     * validate the form check valids and required fields
+     */
+    function validateForm(formName) {
+      if (formName.$invalid) {
+        let el = angular.element(
+            $document[0].querySelectorAll('input.ng-invalid'));
+        el.focus();
+        return false;
+      }
+        return true;
+
+    }
+
+    /**
+     * verifica se o id é um ObjectId do MongoDB válido
+     *
+     * @param ObjectId {string} : ObjectId
+     */
+    function isObjectId(ObjectId) {
+      const regex = /^[0-9a-fA-F]{24}$/;
+      return regex.test(ObjectId);
+    }
+
+    /**
+     * todo: alterar sistema de log (front e back) para receber um array com 2
+     * itens: ToastMessage, LogMessage exibe mensagens pré-definidas via toast
+     * conforme resposta da api
+     *
+     * @rfa: Response From Api (res.data)
+     * @message: mensagem definida (@rfa = null)
+     * @timeout: limite de tempo de exibição
+     * @flat: s = 'success', w = 'warning', e ='error' ou fe = 'force error'
+     */
+    function toast(rfa, message, timeout, flag, title, onTapFn) {
+      let code, flagged, rfaMessage, description;
+
+      if (!(message instanceof Array)) message = new Array(message);
+      if (message.length > 1) description = message[1];
+      message = message[0];
+
+      switch (flag) {
+        case 's':
+          flagged = 'success';
+          break;
+
+        case 'i':
+          flagged = 'info';
+          break;
+
+        case 'w':
+          flagged = 'warning';
+          break;
+
+        case 'e':
+          flagged = 'error';
+          break;
+
+        case 'fe':
+          flagged = 'error';
+          break;
+
+        default:
+          flagged = 'info';
+          break;
+
+      }
+
+      if (typeof rfa === 'undefined' || rfa === null) {
+
+        if (flag === 'fe') {
+          $log.error('685360: Jarvis Internal Error:', description);
+          showToast('error', message, timeout || 5000, flagged, title, onTapFn);
+          return;
+
+        }
+
+          return showToast(flagged, message, timeout || 5000, flagged, title,
+              onTapFn);
+
+      }
+
+      if (typeof rfa.code === 'undefined') {
+        $log.error('740558: internal error:', rfa);
+        return showToast('error',
+            'Error unknown by J.A.R.V.I.S.', 5000, flagged,
+            title, onTapFn);
+      }
+
+      code = rfa.code;
+      rfaMessage = rfa.message;
+
+      switch (code) {
+
+        case 0:
+          showToast(flagged || 'success', message || rfaMessage, timeout ||
+              5000, flagged, title, onTapFn);
+          break;
+
+        default:
+          showToast(flagged || 'warning', message || rfaMessage, 5000,
+              flagged, title, onTapFn);
+          break;
+      }
+    }
+
+    /**
+     * configura e exibe uma mensagem de toasted (material)
+     */
+    function showToast(flag, message, timeout, flagged, title, onTapFn) {
+      let translatedMsg;
+
+      if (message.indexOf('TRANSLATE.') > -1) {
+        $translate(message)
+          .then(translated => {
+            translatedMsg = translated;
+            show();
+          })
+          .catch(() => {
+            $log.error('783645: Jarvis Translated not exists for', message);
+            translatedMsg = message;
+            show();
+          });
+      } else {
+        translatedMsg = angular.UNDEFINED;
+        show();
+      }
+
+      function show() {
+        message = translatedMsg || message;
+
+        if (title) {
+          toasterV2(flag, title, message, timeout, onTapFn);
+        } else {
+          $translate(`TRANSLATE.TOAST_${  flagged.toUpperCase()}`)
+            .then(title => {
+              // let title = $translate.instant(
+              //     'TRANSLATE.TOAST_SUCCESS');
+              toasterV2(flag, title, message, timeout, onTapFn);
+            })
+            .catch(x => x);
+        }
+
+        /*
+        let last = {
+          bottom: false,
+          top: true,
+          left: false,
+          right: true,
+        };
+
+        $rootScope.toastPosition = angular.extend({}, last);
+
+        $rootScope.getToastPosition = function() {
+          sanitizePosition();
+
+          return Object.keys($rootScope.toastPosition).filter(function(pos) {
+            return $rootScope.toastPosition[pos];
+          }).join(' ');
+        };
+
+        function sanitizePosition() {
+          let current = $rootScope.toastPosition;
+
+          if (current.bottom && last.top) current.top = false;
+          if (current.top && last.bottom) current.bottom = false;
+          if (current.right && last.left) current.left = false;
+          if (current.left && last.right) current.right = false;
+
+          last = angular.extend({}, current);
+        }
+
+        let pinTo = $rootScope.getToastPosition();
+        let toast = $mdToast.simple().
+            textContent(message).
+            position(pinTo).
+            toastClass(flag).
+            hideDelay(timeout || 120000);
+        $mdToast.show(toast);
+        */
+      }
+
+      /*
+       $translate('HEADLINE_TEXT').then(function (translation) {
+       $scope.translatedText = translation;
+       });
+       */
+    }
+
+    /**
+     * @name toasterV2
+     * @description
+     * New toaster implemented by Ricardo Biruel on 2018-03-09 as version 2.0.
+     * The previous toaster function (showToast) as deprecated and need to be
+     *     replaced and discontinued
+     *
+     * @param {string} flag to set 's':success, 'w':warning, 'i':info or
+     *     'e':error
+     * @param {string} title for main text on toast
+     * @param {string|undefined} message for subtitle on toast
+     * @param {string} timeout limit for showing the toast
+     * @param {function} onTapFn onTap function to be execute if user click over toastr
+     */
+    function toasterV2(flag, title, message, timeout, onTapFn) {
+      const options = { timeOut: timeout || 5000 };
+
+      if (onTapFn) {
+        options.onTap = onTapFn;
+        options.progressBar = true;
+      }
+
+      toastr[flag](message, title, options);
+    }
+
+    /**
+     * Return false if dtToCheck is a invalid/inexisting date, otherwise,
+     * return date with full digits ex: 2017-1-1: return 2017-01-01
+     *
+     * @param dtToCheck   string date in format y-m-d, m-d-y or d-m-y. It can
+     *     be with any caracter between the parts, since it's equal one
+     *     another. ex: y/m/d, y m d, y.m.d (p.s. y/m-d not works)
+     * @param dtFormat    'mdy' for month (m or mm), day (d or dd) and year
+     *     (yyyy), 'dmy', 'ymd' or null if null = 'ymd' (default)
+     * @returns {*}
+     */
+    function isValidDate(dtToCheck, dtFormat) {
+
+      if (!dtFormat) {
+        if (moment.locale().slice(0, 2) === 'pt') {
+          dtFormat = 'dmy';
+
+        } else {
+          dtFormat = 'mdy';
+        }
+      }
+
+      let separator = dtToCheck.replace(/[0-9]/g, '').substr(0, 1);
+      let parts = dtToCheck.split(separator);
+
+      let y, m, d;
+
+      switch (dtFormat) {
+        case 'mdy':
+          m = parts[0];
+          d = parts[1];
+          y = parts[2];
+          break;
+
+        case 'dmy':
+          d = parts[0];
+          m = parts[1];
+          y = parts[2];
+          break;
+
+        default:
+          y = parts[0];
+          m = parts[1];
+          d = parts[2];
+      }
+
+      let dt = new Date(y, m - 1, d);
+
+      if (dt.getFullYear() !== parseInt(y)
+          || (dt.getMonth() + 1) !== parseInt(m)
+          || dt.getDate() !== parseInt(d)) {
+
+        return false;
+
+      }
+
+        y = dt.getFullYear();
+        m = ('0' + (dt.getMonth() + 1)).slice(-2);
+        d = ('0' + Number(d)).slice(-2);
+
+        switch (dtFormat) {
+          case 'mdy':
+            return m + separator + d + separator + y;
+
+          case 'dmy':
+            return d + separator + m + separator + y;
+
+          default:
+            return y + separator + m + separator + d;
+        }
+
+    }
+  }
+})();

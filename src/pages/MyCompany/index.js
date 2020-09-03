@@ -2,13 +2,20 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useDispatch, connect } from 'react-redux';
 import Icon from '@mdi/react';
 import { mdiAccountSearch, mdiDelete } from '@mdi/js';
-import * as Yup from 'yup';
-import { toast } from 'react-toastify';
-import { getCompanyInfo } from './methods';
-import helper from '../../helpers/helper';
-import api from '../../services/api';
+
 import Modal from '../../components/Modals';
 import Asks from '../../components/Dialogs/Asks';
+import DefaultInput from '../../components/DefaultInput/Input';
+
+import { setCompany } from '../../store/modules/company/actions';
+import { validateCompany } from '../../Schemas/globalSchemas';
+
+import {
+  getCompanyInfo,
+  handleUpload,
+  handleSubmit,
+  handleCepSearch,
+} from './methods';
 
 import {
   Toolbar,
@@ -25,19 +32,13 @@ import {
   RemoveButton,
 } from './styles';
 
-import DefaultInput from '../../components/DefaultInput/Input';
-
-import { setCompany } from '../../store/modules/company/actions';
-
-import { validateCompany } from '../../Schemas/globalSchemas';
-
 function MyCompany() {
   const formRef = useRef(null);
   const [working, setWorking] = useState(false);
   const [companyInfo, setCompanyInfo] = useState({});
-  const [searching, setSearching] = useState(false);
   const [companyLogo, setCompanyLogo] = useState({});
   const [attachmentId, setAttachmentId] = useState(undefined);
+  const [searching, setSearching] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [, setOpen] = useState(false);
 
@@ -55,89 +56,28 @@ function MyCompany() {
     getCompany();
   }, [working]);
 
-  /** ************************* PRINT FORM IN CONSOLE ************************ */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (companyInfo._id) console.warn('myForm > ', companyInfo); //eslint-disable-line
-  });
-  /** ************************************************************************ */
-
   const handleClickToUpload = () => {
     const $el = document.getElementById('uploadElementButton');
     $el.click();
   };
 
-  async function handleUpload(e) {
-    const $el = document.getElementById('uploadElementButton');
-    console.warn('e > ', e);
-    const files = e.target.files[0];
-    const result = await api.post('/api/v1/tools/get-signed-url', {
-      fileName: files.name,
-    });
-    fetch(result.data.doc.url, { method: 'PUT', body: files })
-      .then(() => {
-        setCompanyLogo(result.data.doc);
-        setAttachmentId(result.data.doc.attachmentId);
-        $el.value = '';
-      })
-      .catch(() => {
-        toast.error('Falha ao anexar arquivo. Tente novamente.');
-        $el.value = '';
-      });
-  }
+  const handleUploadMethod = e =>
+    handleUpload(e, setCompanyLogo, setAttachmentId);
 
-  async function handleSubmit(data) {
-    try {
-      formRef.current.setErrors({});
+  const handleSubmitMethod = data =>
+    handleSubmit(
+      data,
+      formRef,
+      validateCompany,
+      companyInfo,
+      attachmentId,
+      dispatch,
+      setCompany,
+      companyLogo
+    );
 
-      data.phone = helper.returnOnlyNumbers(data.phone);
-      data.cnpj = helper.returnOnlyNumbers(data.cnpj);
-
-      await validateCompany(data);
-
-      data.address = {
-        ...companyInfo.address,
-        additional: data.address.additional,
-        number: data.address.number,
-      };
-
-      if (attachmentId) data.logo = attachmentId;
-
-      await api.put(`/api/v1/company/${companyInfo._id}`, {
-        ...data,
-      });
-
-      dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
-
-      toast.success('Empresa Atualizada.');
-    } catch (error) {
-      if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
-
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
-
-        formRef.current.setErrors(errorMessages);
-      }
-    }
-  }
-
-  const handleCepSearch = async () => {
-    const data = formRef.current.getData();
-    if (!data.address.cep) return;
-    setSearching(true);
-    try {
-      const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
-      if (result.data.sucess) {
-        setCompanyInfo({ ...companyInfo, address: result.data.data });
-        setSearching(false);
-      }
-    } catch (err) {
-      setSearching(false);
-      return toast.error(err.response.data.data.message);
-    }
-  };
+  const handleCepSearchMethod = () =>
+    handleCepSearch(formRef, setSearching, setCompanyInfo, companyInfo);
 
   function handleOpenAskDialog() {
     setAskOpen(asking => !asking);
@@ -171,7 +111,7 @@ function MyCompany() {
         {searching ? (
           <LoadingScreen />
         ) : (
-          <Form ref={formRef} onSubmit={handleSubmit}>
+          <Form ref={formRef} onSubmit={handleSubmitMethod}>
             <Row>
               <DefaultInput
                 width="100"
@@ -205,6 +145,7 @@ function MyCompany() {
                 defaultValue={companyInfo.email}
               />
               <DefaultInput
+                maxLength="15"
                 name="phone"
                 type="text"
                 placeholder="Seu telefone"
@@ -222,7 +163,7 @@ function MyCompany() {
                     companyInfo.address ? companyInfo.address.cep : ''
                   }
                 />
-                <SearchButton onClick={handleCepSearch}>
+                <SearchButton onClick={handleCepSearchMethod}>
                   <Icon
                     path={mdiAccountSearch}
                     title="Buscar Cep"
@@ -291,7 +232,7 @@ function MyCompany() {
                 id="uploadElementButton"
                 hidden
                 type="file"
-                onChange={e => handleUpload(e)}
+                onChange={e => handleUploadMethod(e)}
               />
               {!companyLogo.fileLink ? (
                 <UploadImage type="button" onClick={handleClickToUpload}>

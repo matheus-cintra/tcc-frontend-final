@@ -4,7 +4,7 @@ import { Form as Unform } from '@unform/web';
 export const Toolbar = styled.div`
   background: #455a64;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   align-items: center;
 `;
 

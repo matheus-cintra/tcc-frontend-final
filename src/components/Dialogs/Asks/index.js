@@ -15,6 +15,7 @@ function Asks({
   closeReturn,
 }) {
   const handleClose = () => {
+    closeReturn();
     setAskOpen(open => !open);
   };
 
@@ -22,7 +23,6 @@ function Asks({
     try {
       await api.delete(`${apiToCall}${registerId}`);
       handleClose();
-      closeReturn();
       if (forceReload) window.location.reload(false);
     } catch (error) {
       toast.error('Falha ao apagar cliente.');
@@ -50,7 +50,7 @@ function Asks({
           <button type="button" onClick={handleDelete}>
             Sim
           </button>
-          <button type="button" onClick={handleClose}>
+          <button type="button" onClick={() => setAskOpen(open => !open)}>
             Não
           </button>
         </BottomActions>

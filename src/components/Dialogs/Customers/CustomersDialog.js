@@ -310,7 +310,7 @@ function CustomerDialog({ setOpen, current }) {
                       defaultValue={current.address.cep}
                     />
                   </InputContainer>
-                  <SearchButton onClick={handleCepSearch}>
+                  <SearchButton onClick={handleCepSearch} disabled={searching}>
                     <Icon
                       path={mdiAccountSearch}
                       title="Buscar Cep"
@@ -441,7 +441,7 @@ function CustomerDialog({ setOpen, current }) {
               {entityType === '1' ? (
                 <InputContainer
                   style={{
-                    width: '50%',
+                    width: '49%',
                     marginRight: '5px',
                   }}
                 >
@@ -455,7 +455,7 @@ function CustomerDialog({ setOpen, current }) {
               ) : (
                 <InputContainer
                   style={{
-                    width: '50%',
+                    width: '49%',
                     marginRight: '5px',
                   }}
                 >
@@ -472,6 +472,7 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '50%',
+                  marginRight: '5px',
                 }}
               >
                 <Input
@@ -514,7 +515,6 @@ function CustomerDialog({ setOpen, current }) {
                   style={{
                     width: '100%',
                     marginRight: '5px',
-                    marginLeft: '5px',
                   }}
                 >
                   <DefaultInput
@@ -528,7 +528,7 @@ function CustomerDialog({ setOpen, current }) {
                     path={mdiAccountSearch}
                     title="Buscar Cep"
                     size="30px"
-                    color={searching ? '#ccc' : '#000'}
+                    color="#333"
                   />
                 </SearchButton>
               </SearchContainer>
@@ -550,7 +550,6 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '15%',
-                  marginLeft: '5px',
                   marginRight: '5px',
                 }}
               >
@@ -592,7 +591,6 @@ function CustomerDialog({ setOpen, current }) {
               <InputContainer
                 style={{
                   width: '50%',
-                  marginLeft: '5px',
                   marginRight: '5px',
                 }}
               >
@@ -620,13 +618,17 @@ function CustomerDialog({ setOpen, current }) {
         </Container>
       )}
       <BottomActions>
-        <Icon
-          path={mdiTrashCan}
-          title="Remove"
-          size={1.2}
-          color="#333"
-          onClick={handleOpenAskDialog}
-        />
+        {customerId ? (
+          <Icon
+            path={mdiTrashCan}
+            title="Remove"
+            size={1.2}
+            color="#333"
+            onClick={handleOpenAskDialog}
+          />
+        ) : (
+          <p />
+        )}
         <button
           type="submit"
           form="editForm"

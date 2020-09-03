@@ -6,7 +6,6 @@ export function setCompanyInfo(companyInfo) {
 }
 
 export function setCompany(companyName, companyImage) {
-  console.warn('chegou no action setCompany > ', companyName, companyImage);
   return {
     type: '@company/SET_COMPANY',
     payload: { companyName, companyImage },
