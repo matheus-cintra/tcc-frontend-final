@@ -12,16 +12,26 @@ export function* signIn({ payload }) {
 
   try {
     const response = yield call(api.post, '/api/v1/login', { email, password });
-    const { token, user } = response.data.data;
+    const { token, userToFront } = response.data.data;
+    console.warn('userToFront > ', userToFront);
 
     api.defaults.headers['auth-token'] = token;
-    api.defaults.headers['account-id'] = user._id;
+    api.defaults.headers['account-id'] = userToFront._id;
 
-    yield put(signInSuccess(token, user));
+    if (userToFront.logo) {
+      const imageProfile = yield call(
+        api.get,
+        `api/v1/attachments/${userToFront.logo}`
+      );
+      userToFront.imageLink = imageProfile.data.data.fileLink;
+    }
+
+    yield put(signInSuccess(token, userToFront));
 
     history.push('/dashboard');
   } catch (err) {
-    toast.error(err.response.data.description);
+    console.warn('err > ', err.response);
+    toast.error(err.response.data.data.message);
   }
 }
 

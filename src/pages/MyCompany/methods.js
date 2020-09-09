@@ -15,6 +15,8 @@ async function getCompanyInfo() {
     );
   }
 
+  console.warn('data > ', result.data);
+
   result.data.data.company._cnpj = result.data.data.company.cnpj.replace(
     /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,
     '$1.$2.$3/$4-$5'
@@ -29,7 +31,7 @@ async function getCompanyInfo() {
     result.data.data.company._phone = `(${phone1}) ${phone2}-${phone3}`;
   }
 
-  const { cep } = result.data.data.company.address;
+  const cep = result.data.data.company && result.data.data.company.address;
   if (cep) {
     const cep1 = cep.slice(0, 5);
     const cep2 = cep.slice(5, 8);
@@ -48,6 +50,7 @@ async function handleUpload(e, setCompanyLogo, setAttachmentId) {
   const files = e.target.files[0];
   const result = await api.post('/api/v1/tools/get-signed-url', {
     fileName: files.name,
+    fileSize: files.size,
   });
   fetch(result.data.doc.url, { method: 'PUT', body: files })
     .then(() => {
@@ -81,8 +84,8 @@ async function handleSubmit(
 
     data.address = {
       ...companyInfo.address,
-      additional: data.address.additional,
-      number: data.address.number,
+      additional: data.address.additional || undefined,
+      number: data.address.number || undefined,
     };
 
     if (attachmentId) data.logo = attachmentId;

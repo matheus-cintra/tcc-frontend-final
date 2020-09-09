@@ -21,6 +21,7 @@ export default function RouteWrapper({
   ...rest
 }) {
   const { signed } = store.getState().auth;
+  // const signed = true;
   const account = store.getState();
   const { token } = account.auth;
   const currTime = new Date().getTime() / 1000;
