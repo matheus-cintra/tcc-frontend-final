@@ -5,7 +5,19 @@ export const Container = styled.div`
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   height: 100%;
   padding: 30px;
+
+  @media screen and (max-width: 1100px) {
+    height: calc(100vh + 470px);
+    padding: 15px;
+  }
+
+  @media screen and (max-width: 360px) {
+    height: calc(100vh + 800px);
+    padding: 15px;
+  }
 `;
+
+// CONTINUAR RESPONSIVIDADE DAQUI
 
 export const ProfileContainer = styled.div`
   display: flex;
@@ -16,9 +28,25 @@ export const ProfileContainer = styled.div`
   border: 1px solid #ccc;
   border-radius: 10px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  @media screen and (max-width: 1100px) {
+    flex-direction: column;
+  }
+
+  @media screen and (max-width: 720px) {
+    min-width: 550px;
+  }
+
+  @media screen and (max-width: 360px) {
+    min-width: 300px;
+  }
 `;
 
-export const ProfileImage = styled.div``;
+export const ProfileImage = styled.div`
+  @media screen and (max-width: 1100px) {
+    padding-top: 20px;
+  }
+`;
 
 export const UploadImage = styled.button`
   margin-top: 10px;
@@ -46,6 +74,18 @@ export const ProfileInfoContainer = styled.div`
   margin-top: 30px;
   height: calc(100% - 350px);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  @media screen and (max-width: 1100px) {
+    flex-direction: column;
+    height: initial;
+  }
+
+  @media screen and (max-width: 720px) {
+    min-width: 550px;
+
+    @media screen and (max-width: 360px) {
+    min-width: 300px;
+  }
 `;
 
 export const DBSize = styled.div`
@@ -54,6 +94,10 @@ export const DBSize = styled.div`
   border-radius: 10px;
   height: 100%;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  @media screen and (max-width: 360px) {
+    width: 250px;
+  }
 `;
 
 export const QtyAttachedValue = styled.span`
@@ -76,6 +120,10 @@ export const LastLoginPosition = styled.div`
   border-radius: 10px;
   height: 100%;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  @media screen and (max-width: 360px) {
+    width: 250px;
+  }
 `;
 
 export const LastLoginLat = styled.span`
@@ -134,6 +182,13 @@ export const Image = styled.div`
 export const FormContainer = styled(Unform)`
   display: flex;
   flex-direction: column;
+
+  @media screen and (max-width: 720px) {
+    & > div {
+      width: 250px;
+      text-align: center;
+    }
+  }
 `;
 
 export const DBUsageTitle = styled.span`
@@ -227,5 +282,31 @@ export const SubmitButton = styled.button.attrs({
 
   @media screen and (max-width: 768px) {
     margin: 30px 0 0 0;
+  }
+`;
+
+export const LoadingScreen = styled.div`
+  border: ${props =>
+    props.padding
+      ? `${props.padding}px solid  #f3f3f3`
+      : '16px solid #f3f3f3'}; /* Light grey */
+  border-top: ${props =>
+    props.padding
+      ? `${props.padding}px solid  #3498db`
+      : '16px solid #3498db'}; /* Blue */
+  border-radius: 50%;
+  width: ${props => (props.width ? props.width : '120px')};
+  height: ${props => (props.height ? props.height : '120px')};
+  animation: spin 2s linear infinite;
+  padding: ${props =>
+    props.totalPadding ? `${props.totalPadding}px` : '100px'};
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;

@@ -10,7 +10,6 @@ async function handleUpload(e, setProfileLogo, setAttachmentId) {
   });
   fetch(result.data.doc.url, { method: 'PUT', body: files })
     .then(() => {
-      console.warn('result > ', result.data);
       setProfileLogo(result.data.doc);
       setAttachmentId(result.data.doc.attachmentId);
       $el.value = '';
@@ -28,28 +27,32 @@ async function handleSubmit(
   attachmentId,
   dispatch,
   setProfile,
-  profileLogo
+  profileLogo,
+  retrieveAttachments
 ) {
   try {
     formRef.current.setErrors({});
 
-    if (attachmentId) data.imageId = attachmentId;
+    if (attachmentId) data.logo = attachmentId;
 
-    await api.put(`/api/v1/update-account/${profile._id}`, {
+    const userData = await api.put(`/api/v1/update-account/${profile._id}`, {
       ...data,
     });
 
     const profileInfo = {
-      name: data.name,
+      user: userData.data.data.result,
       imageLink: profileLogo.fileLink,
     };
 
-    console.warn('PROFILE INFO > ', profileInfo);
+    if (attachmentId) retrieveAttachments();
+
+    if (data.oldPassword) formRef.current.setFieldValue('oldPassword', '');
+    if (data.newPassword) formRef.current.setFieldValue('newPassword', '');
 
     dispatch(setProfile(profileInfo));
     toast.success('Perfil Atualizado.');
   } catch (error) {
-    console.warn('Error > ', error.response);
+    toast.error(error.response.data.data.message);
   }
 }
 

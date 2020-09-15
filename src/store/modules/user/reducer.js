@@ -8,7 +8,6 @@ const INITIAL_STATE = {
 export default function user(state = INITIAL_STATE, action) {
   switch (action.type) {
     case '@auth/SIGN_IN_SUCCESS': {
-      console.warn('action >>>> ', action);
       return produce(state, draft => {
         draft.profile = action.payload.user;
         draft.imageLink = action.payload.user.imageLink;
@@ -16,8 +15,8 @@ export default function user(state = INITIAL_STATE, action) {
     }
 
     case '@profile/SET_PROFILE_INFO': {
-      console.warn('action >>>> ', action.payload);
       return produce(state, draft => {
+        draft.profile = action.payload.profileInfo.user;
         draft.imageLink = action.payload.profileInfo.imageLink;
       });
     }

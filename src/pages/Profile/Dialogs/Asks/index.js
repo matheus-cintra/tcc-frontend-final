@@ -3,19 +3,13 @@ import Icon from '@mdi/react';
 import PropTypes from 'prop-types';
 import { mdiClose } from '@mdi/js';
 import { toast } from 'react-toastify';
-import api from '../../../services/api';
+import api from '../../../../services/api';
 
 import { Toolbar, Title, Container, AskText, BottomActions } from './styles';
 
-function Asks({
-  setAskOpen,
-  registerId,
-  apiToCall,
-  forceReload = true,
-  closeReturn,
-}) {
-  const handleClose = () => {
-    closeReturn();
+function Asks({ setAskOpen, accountId, attachmentId, closeReturn }) {
+  const handleClose = userUpdate => {
+    closeReturn(userUpdate);
     setAskOpen(open => !open);
   };
 
@@ -25,18 +19,27 @@ function Asks({
 
   async function handleDelete() {
     try {
-      await api.delete(`${apiToCall}${registerId}`);
-      handleClose();
-      if (forceReload) window.location.reload(false);
+      const s3Deleted = await api.delete(`/api/v1/attachments/${attachmentId}`);
+      if (!s3Deleted) throw new Error();
+
+      const dataset = {
+        logo: null,
+      };
+
+      const userUpdate = await api.put(`/api/v1/update-account/${accountId}`, {
+        ...dataset,
+      });
+
+      handleClose(userUpdate);
     } catch (error) {
-      toast.error('Falha ao apagar cliente.');
+      toast.error('Falha ao apagar imagem.');
     }
   }
 
   return (
     <>
       <Toolbar>
-        <Title>Editar Cliente</Title>
+        <Title>Remover Foto de Perfil</Title>
         <Icon
           path={mdiClose}
           title="Close"
@@ -47,8 +50,8 @@ function Asks({
       </Toolbar>
       <Container>
         <AskText>
-          Você tem certeza que deseja remover este cliente? Essa ação é
-          definitiva.
+          Você tem certeza que deseja remover sua foto de perfil? Essa ação é
+          definitiva e após a exclusão, você passará a utilizar uma foto padrão.
         </AskText>
         <BottomActions>
           <button type="button" onClick={handleDelete}>
@@ -67,15 +70,13 @@ export default Asks;
 
 Asks.propTypes = {
   setAskOpen: PropTypes.func.isRequired,
-  registerId: PropTypes.string,
-  apiToCall: PropTypes.string,
   closeReturn: PropTypes.func,
-  forceReload: PropTypes.bool,
+  accountId: PropTypes.string,
+  attachmentId: PropTypes.string,
 };
 
 Asks.defaultProps = {
-  registerId: undefined,
-  apiToCall: undefined,
+  accountId: undefined,
+  attachmentId: undefined,
   closeReturn: undefined,
-  forceReload: true,
 };

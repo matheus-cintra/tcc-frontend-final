@@ -9,13 +9,12 @@ async function getCompanyInfo() {
 
   const result = await api.get(`api/v1/company/${user.profile._id}`);
   let companyImage;
+
   if (result.data.data.company.logo) {
     companyImage = await api.get(
       `api/v1/attachments/${result.data.data.company.logo}`
     );
   }
-
-  console.warn('data > ', result.data);
 
   result.data.data.company._cnpj = result.data.data.company.cnpj.replace(
     /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,
@@ -33,8 +32,8 @@ async function getCompanyInfo() {
 
   const cep = result.data.data.company && result.data.data.company.address;
   if (cep) {
-    const cep1 = cep.slice(0, 5);
-    const cep2 = cep.slice(5, 8);
+    const cep1 = cep.cep.toString().slice(0, 5);
+    const cep2 = cep.cep.toString().slice(5, 8);
     result.data.data.company.address.cep = `${cep1}-${cep2}`;
   }
 

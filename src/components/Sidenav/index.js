@@ -10,7 +10,6 @@ function Sidenav() {
   const companyInfo = store.getState();
   const { companyName } = companyInfo.company;
   const { companyImage } = companyInfo.company;
-  console.warn('companyInfo :> ', companyInfo);
 
   return (
     <Container>

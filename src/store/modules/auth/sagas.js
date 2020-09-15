@@ -6,14 +6,14 @@ import history from '../../../services/history';
 import api from '../../../services/api';
 
 import { signInSuccess, logoutUser } from './actions';
+import { setCompany } from '../company/actions';
 
 export function* signIn({ payload }) {
   const { email, password } = payload;
 
   try {
     const response = yield call(api.post, '/api/v1/login', { email, password });
-    const { token, userToFront } = response.data.data;
-    console.warn('userToFront > ', userToFront);
+    const { token, userToFront, company } = response.data.data;
 
     api.defaults.headers['auth-token'] = token;
     api.defaults.headers['account-id'] = userToFront._id;
@@ -23,14 +23,18 @@ export function* signIn({ payload }) {
         api.get,
         `api/v1/attachments/${userToFront.logo}`
       );
-      userToFront.imageLink = imageProfile.data.data.fileLink;
+      userToFront.imageLink =
+        imageProfile.data.data && imageProfile.data.data.fileLink;
     }
+
+    yield put(
+      setCompany(company[0].fantasyName, company[0]._companyLogo.fileLink)
+    );
 
     yield put(signInSuccess(token, userToFront));
 
     history.push('/dashboard');
   } catch (err) {
-    console.warn('err > ', err.response);
     toast.error(err.response.data.data.message);
   }
 }
