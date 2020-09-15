@@ -2,6 +2,7 @@ import produce from 'immer';
 
 const INITIAL_STATE = {
   profile: null,
+  imageLink: null,
 };
 
 export default function user(state = INITIAL_STATE, action) {
@@ -9,6 +10,14 @@ export default function user(state = INITIAL_STATE, action) {
     case '@auth/SIGN_IN_SUCCESS': {
       return produce(state, draft => {
         draft.profile = action.payload.user;
+        draft.imageLink = action.payload.user.imageLink;
+      });
+    }
+
+    case '@profile/SET_PROFILE_INFO': {
+      return produce(state, draft => {
+        draft.profile = action.payload.profileInfo.user;
+        draft.imageLink = action.payload.profileInfo.imageLink;
       });
     }
 

@@ -1,23 +1,42 @@
+import moment from 'moment';
+import { mdiFileDocument } from '@mdi/js';
 import api from '../../services/api';
 import helpers from '../../helpers/helper';
 
-async function getServiceList() {
-  const result = await api.get('/api/v1/registration-service/');
+async function getRegisters(limit = undefined, skip = undefined) {
+  let uri;
 
-  if (result.data && result.data.data && result.data.data.services) {
-    let { services } = result.data.data;
-    services = services.map(service => {
-      const _price = helpers.formatPrice(service.price);
-      return {
-        ...service,
-        formatedPrice: _price,
-      };
-    });
-
-    return services;
+  if (limit && skip) {
+    uri = `/api/v1/registration-service?limit=${limit}&skip=${skip}`;
+  } else if (limit && !skip) {
+    uri = `/api/v1/registration-service?limit=${limit}`;
+  } else if (!limit && skip) {
+    uri = `/api/v1/registration-service?skip=${skip}`;
+  } else {
+    uri = `/api/v1/registration-service`;
   }
+
+  const result = await api.get(uri);
+
+  let docs = result.data.success ? result.data.data.services : [];
+  const docCount = result.data.success ? result.data.data.qty : 0;
+
+  docs = docs.map(service => {
+    const _price = helpers.formatPrice(service.price);
+    return {
+      ...service,
+      registerSince: moment(service.createdAt, 'YYYY-MM-DD').format(
+        'DD/MM/YYYY'
+      ),
+      icon: mdiFileDocument,
+      subtitle: 'Serviço',
+      formatedPrice: _price,
+    };
+  });
+
+  return { docs, docCount };
 }
 
 export default {
-  getServiceList,
+  getRegisters,
 };

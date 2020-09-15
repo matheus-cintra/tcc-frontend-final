@@ -6,22 +6,36 @@ import history from '../../../services/history';
 import api from '../../../services/api';
 
 import { signInSuccess, logoutUser } from './actions';
+import { setCompany } from '../company/actions';
 
 export function* signIn({ payload }) {
   const { email, password } = payload;
 
   try {
     const response = yield call(api.post, '/api/v1/login', { email, password });
-    const { token, user } = response.data.data;
+    const { token, userToFront, company } = response.data.data;
 
     api.defaults.headers['auth-token'] = token;
-    api.defaults.headers['account-id'] = user._id;
+    api.defaults.headers['account-id'] = userToFront._id;
 
-    yield put(signInSuccess(token, user));
+    if (userToFront.logo) {
+      const imageProfile = yield call(
+        api.get,
+        `api/v1/attachments/${userToFront.logo}`
+      );
+      userToFront.imageLink =
+        imageProfile.data.data && imageProfile.data.data.fileLink;
+    }
+
+    yield put(
+      setCompany(company[0].fantasyName, company[0]._companyLogo.fileLink)
+    );
+
+    yield put(signInSuccess(token, userToFront));
 
     history.push('/dashboard');
   } catch (err) {
-    toast.error(err.response.data.description);
+    toast.error(err.response.data.data.message);
   }
 }
 

@@ -5,11 +5,19 @@ export const Form = styled(Unform)`
   input {
     width: 250px;
   }
+
+  fieldset {
+    border: none;
+  }
 `;
 
 export const LoginContainer = styled.div`
   img {
     margin-bottom: 30px;
+  }
+
+  fieldset {
+    border: none;
   }
 `;
 

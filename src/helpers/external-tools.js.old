@@ -1,0 +1,1860 @@
+(function() {
+  'use strict';
+
+  let _toTranslate = {
+    uploadFileError: 'TRANSLATE.UPLOAD_FILE_ERROR',
+    base64exceeded: 'TRANSLATE.UPLOAD_FILE_BASE64_EXCEEDED_10MB',
+  };
+  let _translated = {};
+
+  angular.module('app.helpers').service('toolsService', service);
+
+  function service($translate, jvProfile, helpersApi, helperService, $log,
+                   $crypto, jarvisBrainApi, $rootScope, loadingService,
+                   appService, $mdToast, $mdDialog) {
+
+    helperService.translate(_toTranslate, x => _translated = x);
+    initOns();
+
+    return {
+      sendEmail: sendEmail,
+      showAlert: showAlert,
+      showToast: showToast,
+      generateSupportCode: generateSupportCode,
+      showSubscriptionLink: showSubscriptionLink,
+      getCep: getCep,
+      generateReferenceLog: generateReferenceLog,
+      generateMaterialColor: generateMaterialColor,
+      uploadFile: uploadFile(),
+      showSimpleToast: showSimpleToast,
+      validateEmailConfiguration: validateEmailConfiguration,
+      sendByEmail: sendByEmail,
+      uploadBase64: uploadBase64,
+      validateStateRegistration: validateStateRegistration,
+    };
+
+    // ********************************************************************** //
+
+    function validateStateRegistration(ie, uf) {
+
+      uf = uf.toLowerCase();
+
+      switch (uf) {
+        case 'ac':
+          return validateAC(ie, uf);
+        case 'al':
+          return validateAL(ie, uf);
+        case 'ap':
+          return validateAP(ie, uf);
+        case 'am':
+          return validateAM(ie, uf);
+        case 'ba':
+          return validateBA(ie, uf);
+        case 'ce':
+          return validateCE(ie, uf);
+        case 'df':
+          return validateDF(ie, uf);
+        case 'es':
+          return validateES(ie, uf);
+        case 'go':
+          return validateGO(ie, uf);
+        case 'ma':
+          return validateMA(ie, uf);
+        case 'mt':
+          return validateMT(ie, uf);
+        case 'ms':
+          return validateMS(ie, uf);
+        case 'mg':
+          return validateMG(ie, uf);
+        case 'pa':
+          return validatePA(ie, uf);
+        case 'pb':
+          return validatePB(ie, uf);
+        case 'pr':
+          return validatePR(ie, uf);
+        case 'pe':
+          return validatePE(ie, uf);
+        case 'pi':
+          return validatePI(ie, uf);
+        case 'rj':
+          return validateRJ(ie, uf);
+        case 'rn':
+          return validateRN(ie, uf);
+        case 'rs':
+          return validateRS(ie, uf);
+        case 'ro':
+          return validateRO(ie, uf);
+        case 'rr':
+          return validateRR(ie, uf);
+        case 'sc':
+          return validateSC(ie, uf);
+        case 'se':
+          return validateSE(ie, uf);
+        case 'to':
+          return validateTO(ie, uf);
+        case 'sp':
+          return validateSP(ie, uf);
+        default:
+          $log.log('invalid state \'' + uf +
+              '\' on tools.service.js:validateStateRegistration()');
+          return false;
+      }
+
+      /*****************************************************
+       * Acre IE Validator
+       *****************************************************/
+      function validateAC(ie, uf) {
+        if (!uf) return false;
+        if (!ie) return false;
+
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 13) return false;
+        if (ie.slice(0, 2) !== '01') return false;
+
+        return weightCalculatorAC(ie);
+      }
+
+      function weightCalculatorAC(ie, firstDigit) {
+        let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 2).split('');
+
+        if (typeof firstDigit === 'undefined') {
+          weights.shift();
+        } else {
+          block.push(firstDigit);
+        }
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) base += weights[i] * block[i];
+
+        let resto = base % 11;
+        let dig = 11 - resto;
+
+        if (dig === 10 || dig === 11) dig = 0;
+        if (typeof firstDigit === 'undefined') return weightCalculatorAC(ie,
+            dig);
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Alagoas IE Validator
+       *****************************************************/
+      function validateAL(ie, uf) {
+        if (!uf) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (!ie) return false;
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '24') return false;
+
+        return weightCalculatorAL(ie);
+      }
+
+      function weightCalculatorAL(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let a = base * 10;
+        let b = a / 11;
+        let c = Math.floor(b);
+        let d = c * 11;
+        let e = a - d;
+
+        let f = block.join().replace(/,/g, '');
+
+        if (e === 10) {
+          return f + 0;
+        } else {
+          return f + e;
+        }
+      }
+
+      /*****************************************************
+       * Amapá IE Validator
+       *****************************************************/
+      function validateAP(ie, uf) {
+        if (!uf) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (!ie) return false;
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '03') return false;
+
+        return weightCalculatorAP(ie);
+      }
+
+      function weightCalculatorAP(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+        let part1 = ie.substring(0, ie.length - 1);
+        if (block.length !== weights.length) return false;
+
+        let parameters = check_IE(part1);
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let a = base + parameters.p;
+        let b = a / 11;
+        let c = b.toFixed(2);
+        let d = c.toString().slice(-2);
+        let e = d / 10;
+        let f = Math.ceil(e).toString().charAt(0);
+        let g = 11 - f;
+        let j = block.join().replace(/,/g, '');
+
+        if (g === 10) {
+          return j + 0;
+        } else if (g === 11) {
+          return j + part1.d;
+        } else {
+          return j + g;
+        }
+      }
+
+      function check_IE(ie) {
+        let p;
+        let d;
+        ie = Number(ie);
+
+        if (ie >= 3000001 && ie <= 3017000) {
+          p = 5;
+          d = 0;
+
+        } else if (ie >= 3017001 && ie <= 3019022) {
+          p = 9;
+          d = 1;
+
+        } else {
+          p = 0;
+          d = 0;
+        }
+        return {
+          p: p,
+          d: d,
+        };
+      }
+
+      /*****************************************************
+       * Amazonas IE Validator
+       *****************************************************/
+      function validateAM(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'am') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+        if (!ie) return false;
+        if (ie.length !== 9) return false;
+        return weightCalculatorAM(ie);
+      }
+
+      function weightCalculatorAM(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let dig;
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        //if(block.lenght !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+        if (base < 11) {
+          dig = 11 - base;
+        } else {
+          let quo = base % 11;
+
+          if (quo <= 1) {
+            dig = 0;
+          } else {
+            dig = 11 - quo;
+
+          }
+        }
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Bahia IE Validator
+       *****************************************************/
+      function validateBA(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'ba') return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        let temp = ie.replace('-', '');
+        if (!temp) return false;
+
+        if ((temp.length !== 9) && (temp.length !== 8)) return false;
+
+        return weightCalculatorBA(temp);
+      }
+
+      function weightCalculatorBA(ie) {
+        let hasNineDigits = (ie.length === 9);
+        let charinicial = ie.startsWith('6') || ie.startsWith('7') ||
+            ie.startsWith('9');
+
+        let weights;
+        let weights2;
+        let modulo;
+        if (hasNineDigits) {
+          if (charinicial) {
+            modulo = 11;
+          } else {
+            modulo = 10;
+          }
+          weights = [8, 7, 6, 5, 4, 3, 2];
+          weights2 = [9, 8, 7, 6, 5, 4, 3, 2];
+        } else {
+          if (charinicial) {
+            modulo = 11;
+          } else {
+            modulo = 10;
+          }
+          weights = [7, 6, 5, 4, 3, 2];
+          weights2 = [8, 7, 6, 5, 4, 3, 2];
+        }
+
+        let base = 0;
+
+        let block = (ie.toString().substring(0, ie.length - 2)).split('');
+        let block2 = ((ie.toString().substring(0, ie.length - 2)) +
+            ie.substring(ie.length - 1)).split('');
+
+        let digito1 = ie.substring(ie.length - 2, ie.length - 1);
+        let digito2 = ie.substring(ie.length - 1);
+        // let i = null;
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        if (digito2 === 0) {
+          switch (base % modulo) {
+            case 0:
+              block.push(digito1);
+              block.push(digito2);
+              return block.join().replace(/,/g, '');
+            case 1:
+              block.push(digito1);
+              block.push(digito2);
+              return block.join().replace(/,/g, '');
+          }
+        }
+
+        if ((modulo - (base % modulo)).toString() !== digito2) return false;
+
+        base = 0;
+        for (let i = 0; i < block2.length; i++) {
+          base += weights2[i] * block2[i];
+        }
+
+        if (digito1 === 0 && hasNineDigits) {
+          switch (base % modulo) {
+            case 0:
+              block.push(digito1);
+              block.push(digito2);
+              return block.join().replace(/,/g, '');
+            case 1:
+              block.push(digito1);
+              block.push(digito2);
+              return block.join().replace(/,/g, '');
+          }
+        }
+
+        if ((modulo - (base % modulo)).toString() !== digito1) return false;
+
+        block.push(digito1);
+        block.push(digito2);
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Ceará IE Validator
+       *****************************************************/
+      function validateCE(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'ce') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        return weightCalculatorCE(ie);
+      }
+
+      function weightCalculatorCE(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let dig;
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        dig = 11 - resto;
+        if (dig === 10 || dig === 11) dig = 0;
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Distrito Federal IE Validator
+       *****************************************************/
+      function validateDF(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'df') return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (!ie) return false;
+        if (ie.length !== 13) return false;
+        if (ie.slice(0, 2) !== '07') return false;
+
+        return weightCalculatorDF(ie);
+      }
+
+      function weightCalculatorDF(ie, firstDigit) {
+        let weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 2).split('');
+
+        if (typeof firstDigit === 'undefined') {
+          weights.shift();
+        } else {
+          block.push(firstDigit);
+        }
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) base += weights[i] * block[i];
+
+        let resto = base % 11;
+        let dig = 0;
+        dig = 11 - resto;
+
+        if (dig === 10 || dig === 11) dig = 0;
+        if (typeof firstDigit === 'undefined') return weightCalculatorDF(ie,
+            dig);
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Espírito Santo IE Validator
+       *****************************************************/
+      function validateES(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'es') return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (!ie) return false;
+        if (ie.length !== 9) return false;
+
+        return weightCalculatorES(ie);
+      }
+
+      function weightCalculatorES(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        let dig = 0;
+        if (resto < 2) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        block.push((dig).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Goiás IE Validator
+       *****************************************************/
+      function validateGO(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'go') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        if ((ie.slice(0, 2) !== '10') && (ie.slice(0, 2) !== '11') &&
+            (ie.slice(0, 2) !== '15')) return false;
+
+        return weightCalculatorGO(ie);
+      }
+
+      function weightCalculatorGO(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        // let maiorDiv = base / 11;
+        // let maior = Math.floor(maiorDiv);
+        let resto = base % 11;
+
+        let dig = null;
+
+        if ((block === 11094402) && (resto === 0)) dig = 0;
+        if ((block === 11094402) && (resto === 1)) dig = 1;
+        if (resto === 0) dig = 0;
+        if ((resto === 1) && (block >= 10103105) &&
+            (block <= 10119997)) dig = 1;
+        if ((resto === 1) && (10103105 > block) && (block > 10119997)) dig = 1;
+        if ((resto !== 1) && (resto !== 0)) dig = 11 - resto;
+
+        block.push((dig).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Maranhão IE Validator
+       *****************************************************/
+      function validateMA(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'ma') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '12') return false;
+
+        return weightCalculatorMA(ie);
+      }
+
+      function weightCalculatorMA(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let dig;
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        // let maior = Math.floor(base / 11);
+        let resto = base % 11;
+
+        if ((resto == 1) || (resto == 0)) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Mato Grosso IE Validator
+       *****************************************************/
+      function validateMT(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'mt') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 11) return false;
+
+        return weightCalculatorMT(ie);
+      }
+
+      function weightCalculatorMT(ie) {
+        let weights = [3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        let dig = 0;
+
+        if (resto == 0 || resto == 1) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+
+      }
+
+      /*****************************************************
+       * Mato Grosso do Sul IE Validator
+       *****************************************************/
+      function validateMS(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'ms') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '28') return false;
+
+        return weightCalculator(ie);
+      }
+
+      function weightCalculator(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        let dig = 0;
+        let t = 0;
+
+        if (resto == 0) dig = 0;
+
+        if (resto > 0) t = 11 - resto;
+        if (t > 9) dig = 0;
+        if (t < 10) dig = t;
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Minas Gerais IE Validator
+       *****************************************************/
+      function validateMG(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'mg') return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        if (!ie) return false;
+        let temp = helperService.returnOnlyNumbers(ie);
+
+        if (temp.length !== 13) return false;
+
+        return weightCalculatorMG(temp);
+      }
+
+      function weightCalculatorMG(ie) {
+        let weights = [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2];
+        let weights2 = [3, 2, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = '';
+        let base2 = 0;
+        let soma = 0;
+        let block = ie.toString().substring(0, ie.length - 2).split('');
+        block.splice(3, 0, '0');
+
+        let digito1 = ie.substring(ie.length - 2, ie.length - 1);
+        let digito2 = ie.substring(ie.length - 1);
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += (weights[i] * block[i]).toString();
+        }
+        for (let char of base) {
+          soma += parseInt(char);
+        }
+
+        if ((Math.ceil(soma / 10) * 10 - soma).toString() !==
+            digito1) return false;
+
+        block.splice(3, 1);
+
+        block.push(digito1);
+
+        for (let i = 0; i < block.length; i++) {
+          base2 += weights2[i] * block[i];
+        }
+        if (digito2 === 0) {
+          if (base2 % 11 === 0 || base2 % 11 === 1) {
+            block.push(digito2);
+            return block.join().replace(/,/g, '');
+          } else {
+            return false;
+          }
+        }
+
+        if ((11 - (base2 % 11)).toString() !== digito2) return false;
+        block.push(digito2);
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Pará IE Validator
+       *****************************************************/
+      function validatePA(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'pa') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '15') return false;
+
+        return weightCalculatorPA(ie);
+      }
+
+      function weightCalculatorPA(ie) {
+        let weight = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let dig;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weight.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weight[i] * block[i];
+        }
+
+        let resto = base % 11;
+
+        if (resto <= 1) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Paraíba IE Validator
+       *****************************************************/
+      function validatePB(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'pb') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        return weightCalculatorPB(ie);
+      }
+
+      function weightCalculatorPB(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = (ie.substring(0, ie.length - 1).split(''));
+        let digito = 0;
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+        let resto = base % 11;
+        if (resto === 10 || resto === 11) {
+          digito = 0;
+        } else {
+          digito = 11 - resto;
+        }
+
+        block.push((digito).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Paraná IE Validator
+       *****************************************************/
+      function validatePR(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'pr') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (!ie) return false;
+        if (ie.length !== 10) return false;
+
+        return weightCalculatorPR(ie);
+      }
+
+      function weightCalculatorPR(ie, firstDigit) {
+        let weights = [4, 3, 2, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 2).split('');
+
+        if (typeof firstDigit === 'undefined') {
+          weights.shift();
+        } else {
+          block.push(firstDigit);
+        }
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += block[i] * weights[i];
+        }
+
+        // let div = base / 11; //12.54
+        // let maior = Math.floor(div); //12
+        let resto = base % 11; //6
+        let dig;
+
+        if (resto <= 1) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        if (typeof firstDigit === 'undefined') return weightCalculatorPR(ie,
+            dig);
+
+        block.push((dig).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Pernambuco IE Validator
+       *****************************************************/
+      function validatePE(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'pe') ;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (ie.length !== 9) return false;
+        return weightCalculatorPE(ie);
+      }
+
+      function weightCalculatorPE(ie, firstDigit) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let dig, resto;
+        // let maior;
+        let block = ie.substring(0, ie.length - 2).split('');
+
+        if (typeof firstDigit === 'undefined') {
+          weights.shift();
+        } else {
+          block.push(firstDigit);
+        }
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        // maior = Math.floor((base / 11));
+        resto = base % 11;
+
+        if ((resto === 1) || (resto === 0)) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        if (!firstDigit) return weightCalculatorPE(ie, dig);
+
+        block.push((dig).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Piauí IE Validator
+       *****************************************************/
+      function validatePI(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'pi') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (ie.length !== 9) return false;
+
+        return weightCalculatorPI(ie);
+      }
+
+      function weightCalculatorPI(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+        let digito = 0;
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        if ((11 - resto) === 10 || (11 - resto) === 11) {
+          digito = 0;
+        } else {
+          digito = 11 - resto;
+        }
+
+        block.push((digito).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Rio de Janeiro IE Validator
+       *****************************************************/
+      function validateRJ(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'rj') return false;
+        if (!ie) return false;
+        ie = helperService.returnOnlyNumbers(ie);
+        if (typeof ie !== 'string') ie = ie.toString();
+        if (ie.length !== 8) return false;
+        return weightCalculatorRJ(ie);
+      }
+
+      function weightCalculatorRJ(ie) {
+        let weights = [2, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+        let digito = 0;
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        if (resto <= 1) {
+          digito = 0;
+        } else {
+          digito = 11 - resto;
+        }
+
+        block.push((digito).toString());
+
+        return block.join().replace(/,/g, '');
+
+      }
+
+      /*****************************************************
+       * Rio Grande do Norte IE Validator
+       *****************************************************/
+      function validateRN(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'rn') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (ie.length !== 9 && ie.length !== 10) return false;
+
+        if (ie.slice(0, 2) !== '20') return false;
+
+        return weightCalculatorRN(ie);
+      }
+
+      function weightCalculatorRN(ie) {
+        let weights = [10, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (ie.length === 9) weights.shift();
+        if (block.length !== weights.length) return false;
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let dig = 0;
+        base = base * 10;
+        let resto = base % 11;
+        dig = resto;
+
+        if (resto == 10) dig = 0;
+
+        block.push(dig.toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Rio Grande do Sul IE Validator
+       *****************************************************/
+      function validateRS(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'rs') return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        if (!ie) return false;
+        if (ie.length !== 10) return false;
+        return weightCalculatorRS(ie);
+      }
+
+      function weightCalculatorRS(ie) {
+        let weights = [2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.toString().
+            replace('/', '').
+            substring(0, ie.length - 1).
+            split('');
+
+        let digito = ie.substring(ie.length - 1);
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        if ((11 - (base % 11)).toString() !== digito) {
+          return false;
+        }
+
+        block.push(digito);
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Rondônia IE Validator
+       *****************************************************/
+      function validateRO(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'ro') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 14) return false;
+        return weightCalculatorRO(ie);
+      }
+
+      function weightCalculatorRO(ie) {
+        let weights = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let dig, resto;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) base += weights[i] * block[i];
+
+        resto = base % 11;
+        dig = 11 - resto;
+
+        if (dig == 10 || dig == 11) {
+          dig -= 10;
+        }
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Roraima IE Validator
+       *****************************************************/
+      function validateRR(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'rr') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+        if (ie.slice(0, 2) !== '24') return false;
+
+        return weightCalculatorRR(ie);
+      }
+
+      function weightCalculatorRR(ie) {
+        let weights = [1, 2, 3, 4, 5, 6, 7, 8];
+        let base = 0;
+        // let resto;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < weights.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        // let dig = (resto = base % 9);
+        let dig = (base % 9);
+
+        block.push((dig).toString());
+        return block.join().replace(/,/g, '');
+
+      }
+
+      /*****************************************************
+       * Santa Catarina IE Validator
+       *****************************************************/
+      function validateSC(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'sc') return false;
+        if (!ie) return false;
+        if (ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 9) return false;
+
+        return weightCalculatorSC(ie);
+      }
+
+      function weightCalculatorSC(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+        let digito = 0;
+
+        if (block.length !== weights.length) {
+          return false;
+        }
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+
+        if (resto == 0 || resto == 1) {
+          digito = 0;
+        } else {
+          digito = 11 - resto;
+        }
+
+        block.push((digito).toString());
+        return block.join().replace(/,/g, '');
+      }
+
+      /*****************************************************
+       * Sergie IE Validator
+       *****************************************************/
+      function validateSE(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'se') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+
+        if (ie.length !== 9) return false;
+        return weightCalculatorSE(ie);
+      }
+
+      function weightCalculatorSE(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let block = ie.substring(0, ie.length - 1).split('');
+
+        if (block.length !== weights.length) return false;
+        for (let i = 0; i < block.length; i++) {
+          base += weights[i] * block[i];
+        }
+
+        let resto = base % 11;
+        let dig = 0;
+
+        if (resto == '10' || resto == '11') {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+
+        block.push(dig).toString();
+        return block.join().replace(/,/g, '');
+
+      }
+
+      /*****************************************************
+       * Tocantins IE Validator
+       *****************************************************/
+      function validateTO(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'to') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 11) return false;
+        return weightCalculatorTO(ie);
+      }
+
+      function weightCalculatorTO(ie) {
+        let weights = [9, 8, 7, 6, 5, 4, 3, 2];
+        let base = 0;
+        let dig;
+        let temp = ie.substring(2, 4).split('');
+        let block1 = ie.substring(0, 2).split();
+        let block2 = ie.substring(4, ie.length - 1).split();
+        let block = (block1 + block2).substring().split('');
+
+        for (let i = 0; i < weights.length; i++) {
+          base += weights[i] * block[i];
+        }
+        let resto = base % 11;
+
+        if (resto < 2) {
+          dig = 0;
+        } else {
+          dig = 11 - resto;
+        }
+        block.push((dig).toString());
+        block = (block1 + temp + block2 + dig).substring().split();
+
+        return block.join().replace(/,/g, '');
+      }
+
+      /************************************************
+       * SP - IE validator for São Paulo state
+       ************************************************/
+
+      function validateSP(ie, uf) {
+        if (!uf) return false;
+        if (uf !== 'sp') return false;
+        if (!ie) return false;
+        if (typeof ie !== 'string') ie = ie.toString();
+        ie = helperService.returnOnlyNumbers(ie);
+        if (ie.length !== 12) return false;
+        return weightCalculatorSP(ie);
+      }
+
+      function weightCalculatorSP(ie) {
+        let weights1 = [1, 3, 4, 5, 6, 7, 8, 10];
+        let weights2 = [3, 2, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+        let ietemp = ie.substring(9, 10).split('');
+        let ietemp2 = ie.substring(10, 11).split('');
+        let base = 0;
+        let block = ie.substring(0, ie.length - 4).split('');
+        for (let i = 0; i < block.length; i++) {
+          base += weights1[i] * block[i];
+        }
+
+        let resto = base % 11;
+        resto = resto.toString().slice(-1);
+        block.push((resto).toString());
+        block.push((ietemp).toString());
+        block.push((ietemp2).toString());
+        base = 0;
+        for (let i = 0; i < block.length; i++) {
+          base += weights2[i] * block[i];
+        }
+        let resto2 = base % 11;
+        resto = resto.toString().slice(-1);
+        block.push((resto2).toString());
+
+        return block.join().replace(/,/g, '');
+      }
+
+    }
+
+    /**
+     * @name initOns
+     * @description
+     * Initialize all on listeners
+     */
+    function initOns() {
+      // update date fields like appropriate language
+      $rootScope.$on('core:refresh:app-language', () => {
+        helperService.translate(_toTranslate, x => _translated = x);
+      });
+    }
+
+    /**
+     * @name uploadBase64
+     * @description
+     * Insert the fileInfo by options keys
+     *
+     // * @param {string} fileName
+     // * @param {string} fileType
+     // * @param {string} fileSize
+     // * @param {string} fileLink
+     // * @param {string} dataBase64
+     */
+    function uploadBase64(options) {
+      const {fileName, fileType, fileSize, link, image} = options;
+
+      let am = $rootScope.cache.selModule;
+
+      return new Promise(resolve => {
+
+        if (!fileName || !fileType || !fileSize || !link || !image) {
+          return resolve();
+        }
+
+        let ds = {
+          moduleCode: am.code,
+          fileName: fileName,
+          fileType: fileType,
+          fileSize: fileSize,
+          fileLink: link,
+          fileBase64: image,
+        };
+
+        helpersApi.postFileInfo(ds, dt => {
+          resolve(dt.doc[0]);
+        });
+      });
+    }
+
+    /**
+     * @name sendByEmail
+     * @description
+     * open dialog with attachment (optional) to send by email
+     *
+     * @param {Object} event DOM
+     * @param {Object} data with document properties to sent
+     * @param {Object} [toastMessages] with 3 properties to translate
+     *  sending: 'TRANSLATE.SENDING_QUOTATION'
+     *  success: 'TRANSLATE.QUOTATION_SENT_WITH_SUCCESS'
+     *  failed:  'TRANSLATE.SMTP_PROBLEM'
+     */
+    function sendByEmail(event, data, toastMessages) {
+
+      // toast messages
+      if (!toastMessages) toastMessages = {};
+      if (!toastMessages.sending) toastMessages.sending = 'TRANSLATE.SENDING_EMAIL';
+      if (!toastMessages.success) toastMessages.success = 'TRANSLATE.EMAIL_SENT_WITH_SUCCESS';
+      if (!toastMessages.failed) toastMessages.failed = 'TRANSLATE.FAILED_TO_SEND_EMAIL';
+
+      let options = {
+        preserveScope: false,
+        clickOutsideToClose: false,
+        escapeToClose: false,
+        fullscreen: true,
+        controller: 'EmailSenderController',
+        controllerAs: 'vm',
+        templateUrl: 'app/core/components/email-sender/email-sender.html',
+        targetEvent: event,
+        locals: {
+          DataDialog: {
+            level: 0,
+            event: event,
+            data: data,
+          },
+        },
+      };
+
+      $mdDialog.show(options).then(data => {
+        if (!data) return;
+
+        $translate(toastMessages.sending).then(text => {
+
+          // show black toast with 'ok' (sending quotation...)
+          let toast = $mdToast.simple().
+              textContent(text + '...').
+              position('top right').
+              action('OK').
+              actionKey('esc').
+              highlightAction(true).
+              highlightClass('md-accent').
+              hideDelay(0);
+          $mdToast.show(toast).then(x => x).catch(c => c);
+
+          data.doc.attachments = data.doc.attachments.map(x => {
+            return {
+              file: x.file,
+              fileLink: x.fileLink,
+            };
+          });
+
+          // send email
+          sendEmail(data.doc, undefined, (dt) => {
+
+            // hide the black toast
+            $mdToast.hide();
+
+            // show successful custom toast
+            if (dt.success) {
+              showToast(toastMessages.success, 's', 3000);
+            } else {
+              showToast(toastMessages.failed, 'w', 3000);
+            }
+          });
+        });
+      }, c => c);
+    }
+
+    /**
+     * @name uploadFile
+     * @description
+     * Upload files to s3 bucket
+     *
+     */
+    function uploadFile() {
+      let $el, $folder, $rootFolder, $base64 = false;
+
+      // upload api options
+      return {
+
+        init: (base64, folder, rootFolder) => {
+          $base64 = base64;
+          $folder = folder;
+          $rootFolder = rootFolder;
+        },
+
+        selectFile: (elemId, vm) => {
+          $el = document.querySelector(`#${elemId}`);
+          vm && helperService.freeze(vm, 'freezeMe');
+
+          if ($base64 && $el && $el.files) {
+            let files = $el.files;
+            let failed = false;
+
+            for (let i = 0; i < files.length; i++) {
+              if (files[i] && files[i].size > 10000000) failed = true;
+            }
+
+            if (failed) {
+              showToast(_translated.base64exceeded, 'e', 5000);
+
+            } else {
+              $el.click();
+            }
+
+          } else {
+            $el.click();
+          }
+        },
+
+        submit: $submit,
+      };
+
+      // init the submitting
+      function $submit(loadingElementId, callback, origin = {}) {
+        if (loadingElementId) loadingService.visible(true, loadingElementId,
+            'TRANSLATE.ATTACHING');
+        let files = $el.files;
+        for (let i = 0; i < files.length; i++) {
+          let file = files[i];
+          $s3(file, loadingElementId, callback, origin);
+        }
+      }
+
+      // save on aws s3
+      function $s3(file, loadingElementId, callback, origin) {
+        let am = $rootScope.cache.selModule;
+
+        helpersApi.getS3url(file.name, $folder, $rootFolder, (e, dt) => {
+          if (e || !dt || !dt.success) return callback();
+
+          let s3 = dt.doc[0];
+
+          // upload file to s3 bucket according to s3options
+          fetch(s3.url, {method: 'PUT', body: file}).then(result => {
+
+            // save file details on database (core_attachments)
+            if (result && result.ok) {
+              let ds = {
+                moduleCode: am.code,
+                fileName: s3.fileName,
+                fileType: s3.fileType,
+                fileSize: file.size,
+                fileLink: s3.fileLink,
+                bucket: s3.bucket,
+                acl: s3.acl,
+                rootFolder: s3.rootFolder,
+                folder: s3.folder,
+                file: s3.file,
+                key: s3.key,
+                url: s3.url,
+                documentsIds: origin,
+                fileBase64: $base64 ? btoa(file) : null,
+              };
+
+              helpersApi.postFileInfo(ds, dt => {
+                loadingService.visible(false, loadingElementId);
+                callback(dt.doc[0]);
+              });
+            }
+
+          }).catch(e => {
+            loadingService.visible(false, loadingElementId);
+            callback();
+
+            showToast(_translated.uploadFileError, 'e', 3000);
+            $log.error(`932011: error during upload the file '${file.name}' ->`,
+                e);
+          });
+        });
+      }
+    }
+
+    /**
+     * @name generateMaterialColor
+     * @description
+     * generate the random material color and return in class name
+     *
+     * @param {string} [paint] 'bg' to background and 'fg' for foreground
+     * @returns {string}
+     *
+     * return ex: "md-light-green-A700-bg"
+     */
+    function generateMaterialColor(paint) {
+      if (paint !== 'fg') paint = 'bg';
+
+      let colors = [
+        'red',
+        'pink',
+        'purple',
+        'deep-purple',
+        'indigo',
+        'blue',
+        'light-blue',
+        'cyan',
+        'teal',
+        'green',
+        'light-green',
+        'lime',
+        'yellow',
+        'amber',
+        'orange',
+        'deep-orange',
+        'brown',
+        // 'grey', // reserved for prospect customers
+        'blue-grey',
+      ];
+      let hues = [
+        '400',
+        '500',
+        '600',
+        '700',
+        '800',
+        '900',
+        'A100',
+        'A200',
+        'A400',
+        'A700',
+      ];
+
+      return 'md-' +
+          colors[Math.floor(Math.random() * (colors.length))] + '-' +
+          hues[Math.floor(Math.random() * (hues.length))] + '-' + paint;
+    }
+
+    /**
+     * @name generateReferenceLog
+     * @description
+     * generate reference logs to entity _logs
+     *
+     * @param {Object} _fBefore
+     * @param {Object} _fAfter
+     *
+     * @returns {Object}
+     */
+    function generateReferenceLog(_fBefore, _fAfter) {
+
+      let dataBefore = {};
+      let dataAfter = {};
+      let keys = Object.keys(_fBefore);
+      let a, b;
+
+      // join all forms if applied
+      for (let i = 0; i < keys.length; i++) {
+
+        if (typeof _fBefore[keys[i]] === 'object' &&
+            _fBefore[keys[i]] !== null) {
+
+          dataBefore = Object.assign(dataBefore, _fBefore[keys[i]]);
+          dataAfter = Object.assign(dataAfter, _fAfter[keys[i]]);
+        }
+      }
+
+      if (typeof dataBefore === 'object' && dataBefore !== null &&
+          typeof dataAfter === 'object' && dataAfter !== null) {
+
+        a = helperService.diff(dataBefore, dataAfter).a;
+        b = helperService.diff(dataBefore, dataAfter).b;
+
+      } else {
+        a = dataBefore;
+        b = dataAfter;
+      }
+
+      dataBefore = (typeof a === 'object' && a !== null)
+          ? JSON.stringify(a)
+          : a;
+      dataAfter = (typeof b === 'object' && b !== null)
+          ? JSON.stringify(b)
+          : b;
+
+      return {
+        dataBefore: dataBefore,
+        dataAfter: dataAfter,
+      };
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name getCep
+     * @description
+     * Get cep from Jarvis Brain (office post api)
+     *
+     * @param {Object} event DOM
+     * @param {string} cep with mask or only numbers
+     * @param {string} loadingElementId for binding to show progress on view
+     * @param {function} callback
+     *
+     * @returns {object|undefined}
+     */
+    function getCep(event, cep, loadingElementId, callback) {
+      let cb = callback || angular.noop;
+
+      if (!cep) return cb();
+
+      let zc = helperService.returnOnlyNumbers(cep);
+      if (zc.length !== 8) return cb();
+
+      loadingService.visible(true, loadingElementId,
+          'TRANSLATE.SEARCHING_ADDRESS');
+
+      // do search by api
+      jarvisBrainApi.getCep({cep: zc}, (e, dt) => {
+        if (helperService.apiFailed(e, dt, 'v1') || dt.records === 0) {
+          loadingService.visible(false);
+
+          return cb();
+        }
+
+        let doc = dt.doc[0];
+        let city = doc.city;
+        let state = doc.state;
+
+        if (doc.zipCode && !doc.vmZipCode) {
+          doc.vmZipCode = helperService.mask(doc.zipCode, '99999-999');
+        } else if (doc.vmZipCode && !doc.zipCode) {
+          doc.zipCode = helperService.returnOnlyNumbers(doc.zipCode);
+        }
+
+        doc.vmCityState = city + ', ' + state;
+        doc.country = $translate.instant(doc.countryTranslate);
+        doc.foundAtPostOffice = true;
+
+        loadingService.visible(false, undefined, undefined, () => cb(doc));
+      });
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name showSubscriptionLink
+     *
+     * @description
+     * Show the subscription link on login page for register new user on
+     *     private application
+     *
+     * @param {boolean} [official] for oficial url or for non-oficial (qaserver or localhost)
+     * @returns {string}
+     */
+    function showSubscriptionLink(official) {
+
+      let expiration = moment(new Date()).local().add(1, 'months');
+      let code = $crypto.encrypt(expiration.toString());
+      let url = official ? jvProfile.APP_APPLICATION_SITE : jvProfile.fullHost;
+
+      return url + '/subscription-mode?code=' + encodeURIComponent(code);
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name generateSupportCode
+     *
+     * @description
+     * Generate support code for /support-module?code=???
+     *
+     * @param {boolean} [official] for oficial url or for non-oficial (qaserver or localhost)
+     * @returns {string}
+     */
+    function generateSupportCode(official) {
+
+      let expiration = moment(new Date()).local().add(1, 'h');
+      let code = $crypto.encrypt(expiration.toString());
+      let url = official ? jvProfile.APP_APPLICATION_SITE : jvProfile.fullHost;
+
+      return url + '/support-mode?code=' + encodeURIComponent(code);
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name sendEmail
+     *
+     * @description
+     * Format the email with needs data fields before send it
+     *
+     * @param {object} doc - body and meta fields
+     * @param {string} [templateName] of html file on backend apps for nodemailer
+     * engine
+     * @param {function} [callback]
+     */
+    function sendEmail(doc, templateName, callback) {
+      let cb = callback || angular.noop;
+
+      doc.application = jvProfile.APP;
+      doc.templateName = templateName;
+      doc.appTitle = jvProfile.APP_TITLE;
+      doc.appSite = jvProfile.APP_APPLICATION_SITE;
+      doc.accentBackgroundColor = jvProfile.THEME.ACCENT_COLOR_500;
+      doc.accentTextColor = jvProfile.THEME.ACCENT_COLOR_500_CONTRAST;
+
+      // if not exitst the emailLogo and/or jarvisLogo, it will be get the default in nodemailer api.
+      // doc.emailLogo = jvProfile.APP_APPLICATION_SITE + '/app/apps/' +
+      //     jvProfile.APP + '/assets/images/logo-email.png';
+      //
+      // doc.jarvisLogo = jvProfile.APP_APPLICATION_SITE +
+      //     '/assets/images/icon-jarvis-24x24-opacity-50.png';
+
+      let toTranslate = {
+        appDescription: 'TRANSLATE.' + jvProfile.APP.toUpperCase() +
+            '_DESCRIPTION',
+      };
+
+      helperService.translate(toTranslate, t => {
+        doc.appDescription = t.appDescription;
+
+        helpersApi.postEmail(doc, (e, dt) => {
+          cb(dt);
+        });
+      });
+    }
+
+    /**
+     * @name validateEmailConfiguration
+     * @description
+     * validate the email configuration
+     *
+     * @param {Object} emailConfiguration with name string, email string and
+     * smtp object property
+     *
+     * @return {boolean}
+     */
+    function validateEmailConfiguration(emailConfiguration, callback) {
+      let cb = callback || angular.noop;
+
+      emailConfiguration = helperService.clone(emailConfiguration);
+      emailConfiguration.testing = true; // just to test the smtp email configuration
+
+      let doc = {
+        toEmail: emailConfiguration.email,
+        emailConfiguration: emailConfiguration,
+      };
+
+      helpersApi.postEmail(doc, (e, dt) => {
+        if (e || !dt || !dt.success) {
+          showToast('TRANSLATE.EMAIL_CONFIGURATION_ERROR', 'e', 3000);
+          dt && dt.doc && dt.doc.length > 0 &&
+          $log.error('Email Configuration Error:', dt.doc[0]);
+          cb(false);
+
+        } else {
+          showToast('TRANSLATE.EMAIL_CONFIGURATION_SUCCESS', 's', 3000);
+          cb(true);
+        }
+      });
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name showAlert
+     *
+     * @description
+     * Show an alert in a dialog box
+     *
+     * @param {object} event - DOM event
+     * @param {string} title of dialog box
+     * @param {string} text of dialog box
+     * @param {function} [callback] function
+     */
+    function showAlert(event, title, text, callback) {
+      let cb = callback || angular.noop;
+
+      let options = {
+        title: title,
+        text: text,
+        targetEvent: event,
+      };
+
+      helperService.showAlertDialog(options, ok => cb(ok));
+    }
+
+    /**
+     * @jvdoc tools service
+     * @name showToast
+     *
+     * @description
+     * Show a success or fail toast
+     *
+     * @param {string} message for toast
+     * @param {string} [flag] 's' for success, 'w' for warning and 'e' for error
+     * @param {number} [time] in milliseconds
+     * @param {string} [title] for custom title
+     * @param {function} [onTapFn] toastr onTap function to be run if user click over toastr
+     */
+    function showToast(message, flag, time = 2000, title, onTapFn) {
+      helperService.toast(null, message, time, flag && flag.toLowerCase(),
+          title, onTapFn);
+    }
+
+    /**
+     * @jsdoc tools service
+     * @name showToast
+     *
+     * @description
+     * Show a success or fail toast
+     *
+     * @param {string} message for toast
+     * @param {number} [hideDelay] in milliseconds (0 = no hide)
+     */
+    function showSimpleToast(message, hideDelay = 3000) {
+      $mdToast.show(
+          $mdToast.simple().
+              textContent(message).
+              position('top right').
+              hideDelay(hideDelay)).then(x => x).catch(y => y);
+    }
+  }
+})();

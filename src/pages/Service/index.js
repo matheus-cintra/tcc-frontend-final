@@ -10,23 +10,31 @@ export default function Service() {
   const [serviceList, setServicesList] = useState([]);
   const [open, setOpen] = useState(false);
   const [currentService, setCurrentService] = useState({});
+  const [registerCount, setRegisterCount] = useState(0);
 
-  const getServices = async () => {
+  const getServices = async (initial, limit, skip) => {
     if (open) return;
-    const services = await methods.getServiceList();
-    setServicesList(services);
+    let dataServices;
+    if (initial) {
+      dataServices = await methods.getRegisters('15', undefined);
+    } else {
+      dataServices = await methods.getRegisters(limit, skip);
+    }
+
+    setServicesList(dataServices.docs);
+    setRegisterCount(dataServices.docCount);
     setWorking(false);
   };
 
   useEffect(() => {
     setWorking(true);
-    getServices();
-  }, []);
+    getServices(true);
+  }, []); //eslint-disable-line
 
   useEffect(() => {
     if (working) return;
-    getServices();
-  }, [open]);
+    getServices(true);
+  }, [open]); //eslint-disable-line
 
   const handleOpen = service => {
     setCurrentService(service);
@@ -40,12 +48,14 @@ export default function Service() {
   return (
     <>
       <DefaultList
-        title="Services"
+        title="Serviços"
         handleOpen={handleOpen}
         toolbarIcon={mdiPlusCircle}
         iconTitle="Adicionar Serviço"
         working={working}
         itemList={serviceList}
+        itemCount={registerCount}
+        decorator={methods}
       />
 
       <Modal open={open} setOpen={setOpen}>
@@ -54,38 +64,3 @@ export default function Service() {
     </>
   );
 }
-
-/** ************************** Não apagar por enquanto ************************ */
-
-// <Toolbar>
-//         <ServiceTitle>
-//           Serviços
-//           <button type="button" onClick={handleOpen}>
-//             <Icon
-//               path={mdiPlusCircle}
-//               title="Adicionar Serviço"
-//               size="30px"
-//               color="#fff"
-//             />
-//           </button>
-//         </ServiceTitle>
-//       </Toolbar>
-// {!working && serviceList.length > 0 ? (
-//   <Scroll>
-//     <ServiceList>
-//       {serviceList.map(service => (
-//         <li key={service._id}>
-//           <button type="button" onClick={() => handleOpen(service)}>
-//             <SpanContainer>
-//               <span>
-//                 {service.code} - {service.name}
-//               </span>
-//               <span>{service.description}</span>
-//             </SpanContainer>
-//             <span>R$ {service.formatedPrice}</span>
-//           </button>
-//         </li>
-//       ))}
-//     </ServiceList>
-//   </Scroll>
-// ) : null}

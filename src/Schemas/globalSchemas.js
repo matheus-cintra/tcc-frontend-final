@@ -39,7 +39,7 @@ const companySchema = Yup.object().shape({
     .min(4, 'Nome muito curto')
     .required('Nome fantasia necessário'),
   email: Yup.string().email('E-mail inválido'),
-  phone: Yup.string().min(11, 'Telefone Inválido').max(11, 'Telefone Inválido'),
+  phone: Yup.string().min(10, 'Telefone Inválido').max(11, 'Telefone Inválido'),
   cep: Yup.string().max(8, 'Cep Inválido'),
   address: Yup.string(),
   number: Yup.string(),

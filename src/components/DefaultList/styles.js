@@ -19,12 +19,7 @@ export const DocumentList = styled.ul`
   text-decoration: none;
 
   li {
-    border: 1px solid #d3d3d3;
-    border-bottom: none;
-
-    &:last-child {
-      border-bottom: 1px solid #333;
-    }
+    border-bottom: 0.4px solid #bdbdbd;
 
     button {
       display: flex;
@@ -92,7 +87,7 @@ export const DocumentTitle = styled.span`
 export const DocumentSubtitle = styled.span`
   font-size: 13px;
   max-width: 550px;
-  color: #b3aaaa;
+  color: #969696;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -151,7 +146,7 @@ export const SearchForm = styled(Unform)`
     border: none;
     background: #f3f3f3;
     background-color: transparent;
-    border-bottom: 1px solid #000;
+    border-bottom: 0.8px solid #8e8b8b;
     color: #fff;
 
     ::placeholder {

@@ -54,10 +54,6 @@ export const Form = styled(Unform)`
   input {
     width: 250px;
   }
-
-  fieldset {
-    border: none;
-  }
 `;
 
 export const BottomActions = styled.div`

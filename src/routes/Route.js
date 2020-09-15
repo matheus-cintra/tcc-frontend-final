@@ -21,12 +21,15 @@ export default function RouteWrapper({
   ...rest
 }) {
   const { signed } = store.getState().auth;
+  // const signed = true;
   const account = store.getState();
   const { token } = account.auth;
   const currTime = new Date().getTime() / 1000;
   const decoded = jwt.decode(token);
   const expired = decoded && currTime > decoded.exp;
+
   const dispatch = useDispatch();
+
   const moduleInfo = {
     moduleName,
     moduleApi,
@@ -65,8 +68,11 @@ export default function RouteWrapper({
 
 RouteWrapper.propTypes = {
   isPrivate: PropTypes.bool,
-  component: PropTypes.oneOfType([PropTypes.element, PropTypes.func])
-    .isRequired,
+  component: PropTypes.oneOfType([
+    PropTypes.element,
+    PropTypes.func,
+    PropTypes.any,
+  ]).isRequired,
   title: PropTypes.string.isRequired,
   moduleName: PropTypes.string,
   moduleApi: PropTypes.string,

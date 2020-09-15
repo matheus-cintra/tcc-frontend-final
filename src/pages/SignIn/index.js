@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
@@ -9,6 +9,8 @@ import Input from '../../components/Form/Input';
 import { signInRequest } from '../../store/modules/auth/actions';
 
 export default function SignIn() {
+  const [submitting, setSubmitting] = useState(false);
+
   const dispatch = useDispatch();
 
   const schema = Yup.object().shape({
@@ -23,6 +25,7 @@ export default function SignIn() {
   const formRef = useRef(null);
 
   async function handleSubmit(data) {
+    setSubmitting(true);
     try {
       const { email, password } = data;
       await schema.validate(data, {
@@ -37,7 +40,6 @@ export default function SignIn() {
         error.inner.forEach(err => {
           errorMessages[err.path] = err.message;
         });
-
         formRef.current.setErrors(errorMessages);
       }
     }
@@ -47,10 +49,20 @@ export default function SignIn() {
     <>
       <LoginContainer>
         <img src={logo} alt="Sis - MEI" />
+
         <Form ref={formRef} onSubmit={handleSubmit}>
           <Input name="email" type="email" placeholder="Seu e-mail" />
           <Input name="password" type="password" placeholder="Sua senha" />
-          <button type="submit">Acessar</button>
+
+          <button
+            type="submit"
+            style={{
+              cursor: submitting ? 'default' : 'pointer',
+              background: submitting ? '#bdbdbd' : 'null',
+            }}
+          >
+            Acessar
+          </button>
         </Form>
       </LoginContainer>
       <RegisterContainer>
