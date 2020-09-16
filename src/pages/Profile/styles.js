@@ -12,7 +12,12 @@ export const Container = styled.div`
   }
 
   @media screen and (max-width: 360px) {
-    height: calc(100vh + 800px);
+    height: calc(100vh + 825px);
+    padding: 15px;
+  }
+
+  @media screen and (max-width: 30px) {
+    height: calc(100vh + 825px);
     padding: 15px;
   }
 `;
@@ -35,6 +40,10 @@ export const ProfileContainer = styled.div`
 
   @media screen and (max-width: 720px) {
     min-width: 550px;
+  }
+
+  @media screen and (max-width: 411px) {
+    min-width: 300px;
   }
 
   @media screen and (max-width: 360px) {
@@ -97,6 +106,7 @@ export const DBSize = styled.div`
 
   @media screen and (max-width: 360px) {
     width: 250px;
+    margin-bottom: 24px;
   }
 `;
 
@@ -182,8 +192,16 @@ export const Image = styled.div`
 export const FormContainer = styled(Unform)`
   display: flex;
   flex-direction: column;
+  text-align: center;
 
   @media screen and (max-width: 720px) {
+    & > div {
+      width: 480px;
+      text-align: center;
+    }
+  }
+
+  @media screen and (max-width: 320px) {
     & > div {
       width: 250px;
       text-align: center;
