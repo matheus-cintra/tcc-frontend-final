@@ -17,7 +17,7 @@ export function* signIn({ payload }) {
 
     api.defaults.headers['auth-token'] = token;
     api.defaults.headers['account-id'] = userToFront._id;
-
+    console.warn('oba', company);
     if (userToFront.logo) {
       const imageProfile = yield call(
         api.get,
@@ -27,15 +27,20 @@ export function* signIn({ payload }) {
         imageProfile.data.data && imageProfile.data.data.fileLink;
     }
 
-    yield put(
-      setCompany(company[0].fantasyName, company[0]._companyLogo.fileLink)
-    );
+    const fantasyName = company[0] && company[0].fantasyName;
+    const companyLogo =
+      company[0] &&
+      company[0]._companyLogo[0] &&
+      company[0]._companyLogo[0].fileLink;
+
+    yield put(setCompany(fantasyName, companyLogo));
 
     yield put(signInSuccess(token, userToFront));
 
     history.push('/dashboard');
   } catch (err) {
-    toast.error(err.response.data.data.message);
+    console.warn('passouaq', err);
+    toast.error(err.response.data.message);
   }
 }
 
