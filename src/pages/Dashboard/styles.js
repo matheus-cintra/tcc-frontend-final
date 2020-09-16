@@ -81,7 +81,7 @@ export const BigGraph = styled.div`
 
   @media screen and (max-width: 374px) and (min-width: 360px) {
     height: 58%;
-    margin-top: 97px;
+    margin-top: 25px;
   }
 
   @media screen and (max-width: 359px) {

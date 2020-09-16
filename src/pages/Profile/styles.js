@@ -9,16 +9,22 @@ export const Container = styled.div`
   @media screen and (max-width: 1100px) {
     height: calc(100vh + 470px);
     padding: 15px;
+    margin-bottom: 14px;
+  }
+
+  @media screen and (max-width: 768px) {
+  }
+
+  @media screen and (max-width: 411px) {
+    height: calc(100vh + 755px);
+    padding: 15px;
+    margin-bottom: 14px;
   }
 
   @media screen and (max-width: 360px) {
     height: calc(100vh + 825px);
     padding: 15px;
-  }
-
-  @media screen and (max-width: 30px) {
-    height: calc(100vh + 825px);
-    padding: 15px;
+    margin-bottom: 14px;
   }
 `;
 
@@ -30,7 +36,7 @@ export const ProfileContainer = styled.div`
   justify-content: space-around;
   align-items: center;
   padding: 20px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   border-radius: 10px;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
@@ -78,7 +84,7 @@ export const ProfileInfoContainer = styled.div`
   justify-content: space-around;
   align-items: center;
   padding: 30px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   border-radius: 10px;
   margin-top: 30px;
   height: calc(100% - 350px);
@@ -91,20 +97,30 @@ export const ProfileInfoContainer = styled.div`
 
   @media screen and (max-width: 720px) {
     min-width: 550px;
+  }
 
-    @media screen and (max-width: 360px) {
+  @media screen and (max-width: 360px) {
+    min-width: 300px;
+  }
+
+  @media screen and (max-width: 411px) {
     min-width: 300px;
   }
 `;
 
 export const DBSize = styled.div`
   width: 300px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   border-radius: 10px;
   height: 100%;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
   @media screen and (max-width: 360px) {
+    width: 250px;
+    margin-bottom: 24px;
+  }
+
+  @media screen and (max-width: 411px) {
     width: 250px;
     margin-bottom: 24px;
   }
@@ -126,12 +142,16 @@ export const SizeAttached = styled.span`
 
 export const LastLoginPosition = styled.div`
   width: 300px;
-  border: 1px solid #ccc;
+  /* border: 1px solid #ccc; */
   border-radius: 10px;
   height: 100%;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
   @media screen and (max-width: 360px) {
+    width: 250px;
+  }
+
+  @media screen and (max-width: 411px) {
     width: 250px;
   }
 `;
@@ -194,16 +214,16 @@ export const FormContainer = styled(Unform)`
   flex-direction: column;
   text-align: center;
 
-  @media screen and (max-width: 720px) {
+  @media screen and (min-width: 360px) {
     & > div {
-      width: 480px;
+      width: 250px;
       text-align: center;
     }
   }
 
-  @media screen and (max-width: 320px) {
+  @media screen and (min-width: 720px) {
     & > div {
-      width: 250px;
+      width: 480px;
       text-align: center;
     }
   }

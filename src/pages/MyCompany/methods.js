@@ -30,12 +30,12 @@ async function getCompanyInfo() {
     result.data.data.company._phone = `(${phone1}) ${phone2}-${phone3}`;
   }
 
-  const cep = result.data.data.company && result.data.data.company.address;
-  if (cep) {
-    const cep1 = cep.cep.toString().slice(0, 5);
-    const cep2 = cep.cep.toString().slice(5, 8);
-    result.data.data.company.address.cep = `${cep1}-${cep2}`;
-  }
+  // const cep = result.data.data.company && result.data.data.company.address;
+  // if (cep) {
+  //   const cep1 = cep.cep.toString().slice(0, 5);
+  //   const cep2 = cep.cep.toString().slice(5, 8);
+  //   result.data.data.company.address.cep = `${cep1}-${cep2}`;
+  // }
 
   return {
     company: result.data.data.company,
