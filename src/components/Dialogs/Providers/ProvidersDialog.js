@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan, mdiAccountSearch } from '@mdi/js';
 import * as Yup from 'yup';
-import { cpf as _cpfCheck, cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
+import { cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import Input from '../../InputMask/Input';
@@ -28,18 +28,20 @@ import {
 function ProviderDialog({ setOpen, current }) {
   const providerId = current._id;
   const formRef = useRef(null);
-  const [entityType, setEntityType] = useState(
-    current.entityType ? current.entityType : '1'
-  );
   const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
 
   const schema = Yup.object().shape({
     name: Yup.string().required('Nome Obrigatório'),
-    cpf: Yup.string().min(14, 'CPF Inválido').max(14, 'CPF Inválido'),
     cnpj: Yup.string().min(18, 'CNPJ Inválido').max(18, 'CNPJ Inválido'),
-    phone: Yup.string(),
+    phone: Yup.string().when('email', {
+      is: email => !!email,
+      then: Yup.string('Telefone Inválido'),
+      otherwise: Yup.string('Telefone Inválido').required(
+        'Telefone Obrigatório'
+      ),
+    }),
     email: Yup.string().email('Email inválido'),
     description: Yup.string(),
 
@@ -67,10 +69,6 @@ function ProviderDialog({ setOpen, current }) {
   const handleClose = () => {
     if (submitting || searching) return;
     setOpen(open => !open);
-  };
-
-  const handleOptionChange = type => {
-    setEntityType(type);
   };
 
   const handleCepSearch = async () => {
@@ -105,25 +103,18 @@ function ProviderDialog({ setOpen, current }) {
   async function handleSubmit(data) {
     setSubmitting(true);
 
-    data.entityType = entityType;
     try {
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      if (data.cnpj) {
-        data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
-      } else {
-        data.cpf = helpers.returnOnlyNumbers(data.cpf);
-      }
+      data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
 
-      const cpfCnpjIsValid = data.cnpj
-        ? _cnpjCheck.isValid(data.cnpj)
-        : _cpfCheck.isValid(data.cpf);
+      const cpfCnpjIsValid = _cnpjCheck.isValid(data.cnpj);
 
       if (!cpfCnpjIsValid) {
         setSubmitting(false);
-        return toast.error('CPF ou CNPJ inválido');
+        return toast.error('CNPJ inválido');
       }
 
       const result = providerId
@@ -195,57 +186,15 @@ function ProviderDialog({ setOpen, current }) {
                 </InputContainer>
               </RowContainer>
               <RowContainer>
-                <label>
-                  <input
-                    type="radio"
-                    value="1"
-                    name="entityType"
-                    defaultChecked={current.entityType === '1'}
-                    onChange={() => handleOptionChange('1')}
+                <InputContainer>
+                  <Input
+                    mask="99.999.999/9999-99"
+                    defaultValue={current.cnpj}
+                    name="cnpj"
+                    type="text"
+                    placeholder="CNPJ"
                   />
-                  Pessoa Física
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="entityType"
-                    value="2"
-                    defaultChecked={current.entityType === '2'}
-                    onChange={() => handleOptionChange('2')}
-                  />
-                  Pessoa Jurídica
-                </label>
-                {entityType === '1' ? (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <Input
-                      mask="999.999.999-99"
-                      name="cpf"
-                      type="text"
-                      placeholder="CPF"
-                      defaultValue={current.cpf}
-                    />
-                  </InputContainer>
-                ) : (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <Input
-                      mask="99.999.999/9999-99"
-                      defaultValue={current.cnpj}
-                      name="cnpj"
-                      type="text"
-                      placeholder="CNPJ"
-                    />
-                  </InputContainer>
-                )}
+                </InputContainer>
               </RowContainer>
               <RowContainer>
                 <InputContainer
@@ -420,53 +369,14 @@ function ProviderDialog({ setOpen, current }) {
               </InputContainer>
             </RowContainer>
             <RowContainer>
-              <label>
-                <input
-                  type="radio"
-                  value="1"
-                  checked={entityType === '1'}
-                  onChange={() => handleOptionChange('1')}
+              <InputContainer>
+                <Input
+                  mask="99.999.999/9999-99"
+                  name="cnpj"
+                  type="text"
+                  placeholder="CNPJ"
                 />
-                Pessoa Física
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="2"
-                  checked={entityType === '2'}
-                  onChange={() => handleOptionChange('2')}
-                />
-                Pessoa Jurídica
-              </label>
-              {entityType === '1' ? (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="999.999.999-99"
-                    name="cpf"
-                    type="text"
-                    placeholder="CPF"
-                  />
-                </InputContainer>
-              ) : (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99.999.999/9999-99"
-                    name="cnpj"
-                    type="text"
-                    placeholder="CNPJ"
-                  />
-                </InputContainer>
-              )}
+              </InputContainer>
             </RowContainer>
             <RowContainer>
               <InputContainer

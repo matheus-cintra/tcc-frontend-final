@@ -25,6 +25,7 @@ import Service from '../pages/Service';
 import ServiceOrder from '../pages/ServiceOrder';
 import ConfirmationRegister from '../pages/ConfirmationRegister';
 import Attachments from '../pages/Attachments';
+import RecoveryPassword from '../pages/RecoveryPassword';
 
 /* ****************************************************************************
 Definição das rotas de navegação
@@ -33,6 +34,18 @@ export default function Routes() {
   return (
     <Switch>
       <Route path="/" title="SisMEI - SaaS" exact component={SignIn} />
+      <Route
+        path="/forgot-password"
+        title="SisMEI - SaaS"
+        exact
+        component={RecoveryPassword}
+      />
+      <Route
+        path="/forgot-password/:token"
+        title="SisMEI - SaaS"
+        exact
+        component={RecoveryPassword}
+      />
       <Route path="/register" title="Registro" component={SignUp} />
       <Route
         path="/confirmation"

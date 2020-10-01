@@ -63,6 +63,22 @@ export default function SignIn() {
           >
             Acessar
           </button>
+
+          <Link
+            style={{
+              margin: 0,
+              marginTop: 10,
+              fontSize: 12,
+              fontWeight: 'lighter',
+              background: 'none',
+              padding: 0,
+              // width: 100,
+              height: 30,
+            }}
+            to="/forgot-password"
+          >
+            Esqueci minha senha
+          </Link>
         </Form>
       </LoginContainer>
       <RegisterContainer>
