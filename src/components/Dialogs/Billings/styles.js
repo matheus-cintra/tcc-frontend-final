@@ -17,16 +17,16 @@ export const InputContainer = styled.div`
 
   input {
     padding: 10px;
-    margin: 10px;
+    margin: 5px;
     border-radius: 4px;
     border: none;
     background: #f3f3f3;
   }
 
   span {
-    font-size: 11px;
-    margin-left: 15px;
-    margin-top: -5px;
+    font-size: 12px;
+    margin-left: 10px;
+    margin-top: 0;
   }
 `;
 
@@ -41,7 +41,6 @@ export const Toolbar = styled.div`
 
   svg {
     margin-right: 15px;
-    cursor: pointer;
   }
 `;
 
@@ -52,10 +51,6 @@ export const Title = styled.span`
 `;
 
 export const Form = styled(Unform)`
-  fieldset {
-    border: none;
-  }
-
   input {
     width: 250px;
   }
@@ -79,10 +74,13 @@ export const BottomActions = styled.div`
     min-width: 90px;
     padding: 10px;
     margin-right: 15px;
-    background: #333;
+    background: ${props =>
+      props.searching || props.submitting ? '#ccc' : '#333'};
     color: #fff;
     border: none;
     border-radius: 4px;
+    cursor: ${props =>
+      props.searching || props.submitting ? 'default' : 'pointer'};
   }
 `;
 
@@ -93,5 +91,54 @@ export const RowContainer = styled.div`
 
   input {
     width: 100%;
+  }
+
+  label {
+    align-self: center;
+    margin-left: 25px;
+  }
+`;
+
+export const SearchButton = styled.button.attrs({
+  type: 'button',
+})`
+  border: none;
+  background: transparent;
+  padding: 4px;
+  cursor: ${props => (props.disabled ? 'default' : 'pointer')};
+`;
+
+export const SearchContainer = styled.div`
+  display: flex;
+  width: 41%;
+  justify-content: space-between;
+
+  @media screen and (max-width: 768px) {
+    input {
+      margin-left: 0;
+    }
+
+    button {
+      margin-left: 5px;
+    }
+  }
+`;
+
+export const LoadingScreen = styled.div`
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+  padding: 100px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;

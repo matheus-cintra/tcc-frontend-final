@@ -37,6 +37,30 @@ async function getRegisters(limit = undefined, skip = undefined) {
   return { docs, docCount };
 }
 
+async function getRegistersBySearch(search) {
+  const result = await api.get(`/api/v1/get-service-by-search/${search}`);
+
+  let docs = result.data.success ? result.data.services : [];
+  const docCount =
+    result.data.success && result.data.qty > 0 ? result.data.qty : 0;
+
+  docs = docs.map(service => {
+    const _price = helpers.formatPrice(service.price);
+    return {
+      ...service,
+      registerSince: moment(service.createdAt, 'YYYY-MM-DD').format(
+        'DD/MM/YYYY'
+      ),
+      icon: mdiFileDocument,
+      subtitle: 'Serviço',
+      formatedPrice: _price,
+    };
+  });
+
+  return { docs, docCount };
+}
+
 export default {
   getRegisters,
+  getRegistersBySearch,
 };

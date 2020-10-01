@@ -23,6 +23,10 @@ import {
   VerticalSeparator,
   Title,
   Subtitle,
+  LoadingScreen,
+  LoadingContainer,
+  TextLoadingDocuments,
+  ListButton,
 } from './styles';
 
 import DefaultInput from '../DefaultInput/Input';
@@ -41,27 +45,33 @@ function DefaultList(props) {
 
   const formRef = useRef();
   const [list, setList] = useState([]);
+  const [filtered, setFiltered] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     setList(itemList);
   }, [itemList]);
 
   const handleLoadMore = async () => {
-    if (list.length === itemCount) return;
+    if (list.length === itemCount || filtered) return;
     const result = await decorator.getRegisters('15', list.length);
     setList([...list, ...result.docs]);
   };
 
   const handleSearch = async data => {
+    setSearching(true);
     const { searchContent } = data;
     let result;
     if (searchContent === '') {
-      result = await decorator.getRegisters('15');
+      result = await decorator.getRegisters('15', undefined);
+      setFiltered(false);
     } else {
       result = await decorator.getRegistersBySearch(searchContent);
+      setFiltered(true);
     }
 
     setList(result.docs);
+    setSearching(false);
   };
 
   return (
@@ -100,12 +110,16 @@ function DefaultList(props) {
       {!working && list && list.length > 0 ? (
         <Scroll
           options={{ suppressScrollX: true }}
-          onYReachEnd={handleLoadMore}
+          onYReachEnd={() => !searching && handleLoadMore()}
         >
           <DocumentList>
-            {list.map(item => (
+            {list.map((item, idx) => (
               <li key={item._id}>
-                <button type="button" onClick={() => handleOpen(item)}>
+                <ListButton
+                  type="button"
+                  onClick={() => handleOpen(item)}
+                  color={idx % 2 === 0 ? 'even' : 'odd'}
+                >
                   <DocumentContainer>
                     <DocumentCode>{item.code}</DocumentCode>
                     <Icon
@@ -124,11 +138,16 @@ function DefaultList(props) {
                   ) : (
                     <RegisterSince>{item.registerSince}</RegisterSince>
                   )}
-                </button>
+                </ListButton>
               </li>
             ))}
           </DocumentList>
         </Scroll>
+      ) : working ? (
+        <LoadingContainer>
+          <TextLoadingDocuments>Carregando Documentos</TextLoadingDocuments>
+          <LoadingScreen />
+        </LoadingContainer>
       ) : (
         <EmptyListContainer>
           <Icon path={mdiFile} size={6} color="#CCC" />

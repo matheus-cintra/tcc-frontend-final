@@ -25,8 +25,8 @@ import {
   SearchButton,
 } from './styles';
 
-function CustomerDialog({ setOpen, current }) {
-  const customerId = current._id;
+function ProviderDialog({ setOpen, current }) {
+  const providerId = current._id;
   const formRef = useRef(null);
   const [entityType, setEntityType] = useState(
     current.entityType ? current.entityType : '1'
@@ -126,18 +126,18 @@ function CustomerDialog({ setOpen, current }) {
         return toast.error('CPF ou CNPJ inválido');
       }
 
-      const result = customerId
-        ? await api.put(`/api/v1/customers/${customerId}`, { ...data })
-        : await api.post('/api/v1/customers/', { ...data });
+      const result = providerId
+        ? await api.put(`/api/v1/providers/${providerId}`, { ...data })
+        : await api.post('/api/v1/providers/', { ...data });
 
       if (!result.data.success) {
-        return toast.error('Eror ao atualizar cliente.');
+        return toast.error('Eror ao atualizar fornecedor.');
       }
 
-      if (customerId) {
-        toast.success('Cliente Atualizado.');
+      if (providerId) {
+        toast.success('Fornecedor Atualizado.');
       } else {
-        toast.success('Cliente Criado.');
+        toast.success('Fornecedor Criado.');
       }
 
       handleClose();
@@ -162,13 +162,13 @@ function CustomerDialog({ setOpen, current }) {
   };
 
   const handleAskDialog = () => {
-    return <Asks setAskOpen={setAskOpen} registerId={customerId} />;
+    return <Asks setAskOpen={setAskOpen} registerId={providerId} />;
   };
 
   return (
     <>
       <Toolbar>
-        <Title>{customerId ? 'Editar Cliente' : 'Novo Cliente'}</Title>
+        <Title>{providerId ? 'Editar Fornecedor' : 'Novo Fornecedor'}</Title>
         <Icon
           path={mdiClose}
           title="Close"
@@ -178,7 +178,7 @@ function CustomerDialog({ setOpen, current }) {
           style={{ cursor: searching || submitting ? 'default' : 'pointer' }}
         />
       </Toolbar>
-      {customerId ? (
+      {providerId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <fieldset disabled={submitting}>
@@ -307,7 +307,7 @@ function CustomerDialog({ setOpen, current }) {
                       name="address.cep"
                       type="text"
                       placeholder="CEP"
-                      defaultValue={current.address && current.address.cep}
+                      defaultValue={current.address.cep}
                     />
                   </InputContainer>
                   <SearchButton onClick={handleCepSearch} disabled={searching}>
@@ -328,7 +328,7 @@ function CustomerDialog({ setOpen, current }) {
                 >
                   <DefaultInput
                     name="address.address"
-                    defaultValue={current.address && current.address.address}
+                    defaultValue={current.address.address}
                     type="text"
                     placeholder="Rua"
                   />
@@ -346,7 +346,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.number"
                     type="text"
                     placeholder="Número"
-                    defaultValue={current.address && current.address.number}
+                    defaultValue={current.address.number}
                   />
                 </InputContainer>
                 <InputContainer
@@ -360,9 +360,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.neighborhood"
                     type="text"
                     placeholder="Bairro"
-                    defaultValue={
-                      current.address && current.address.neighborhood
-                    }
+                    defaultValue={current.address.neighborhood}
                   />
                 </InputContainer>
                 <InputContainer
@@ -376,7 +374,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.additional"
                     type="text"
                     placeholder="Complemento"
-                    defaultValue={current.address && current.address.additional}
+                    defaultValue={current.address.additional}
                   />
                 </InputContainer>
               </RowContainer>
@@ -391,7 +389,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.city"
                     type="text"
                     placeholder="Cidade"
-                    defaultValue={current.address && current.address.city}
+                    defaultValue={current.address.city}
                   />
                 </InputContainer>
                 <InputContainer
@@ -405,7 +403,7 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.state"
                     type="text"
                     placeholder="Estado"
-                    defaultValue={current.address && current.address.state}
+                    defaultValue={current.address.state}
                   />
                 </InputContainer>
               </RowContainer>
@@ -620,7 +618,7 @@ function CustomerDialog({ setOpen, current }) {
         </Container>
       )}
       <BottomActions>
-        {customerId ? (
+        {providerId ? (
           <Icon
             path={mdiTrashCan}
             title="Remove"
@@ -651,9 +649,9 @@ function CustomerDialog({ setOpen, current }) {
   );
 }
 
-export default CustomerDialog;
+export default ProviderDialog;
 
-CustomerDialog.propTypes = {
+ProviderDialog.propTypes = {
   setOpen: PropTypes.func.isRequired,
   current: PropTypes.oneOfType([PropTypes.object]).isRequired,
 };

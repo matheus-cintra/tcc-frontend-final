@@ -3,11 +3,12 @@ import { Form as Unform } from '@unform/web';
 
 export const Container = styled.div`
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  height: 100%;
+  /* height: 100%; */
   padding: 30px;
+  margin-bottom: 10px;
 
   @media screen and (max-width: 1100px) {
-    height: calc(100vh + 470px);
+    /* height: calc(100vh + 470px); */
     padding: 15px;
     margin-bottom: 14px;
   }
@@ -16,13 +17,13 @@ export const Container = styled.div`
   }
 
   @media screen and (max-width: 411px) {
-    height: calc(100vh + 755px);
+    /* height: calc(100vh + 755px); */
     padding: 15px;
     margin-bottom: 14px;
   }
 
   @media screen and (max-width: 360px) {
-    height: calc(100vh + 825px);
+    /* height: calc(100vh + 825px); */
     padding: 15px;
     margin-bottom: 14px;
   }
@@ -87,12 +88,12 @@ export const ProfileInfoContainer = styled.div`
   /* border: 1px solid #ccc; */
   border-radius: 10px;
   margin-top: 30px;
-  height: calc(100% - 350px);
+  /* height: calc(100% - 350px); */
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
   @media screen and (max-width: 1100px) {
     flex-direction: column;
-    height: initial;
+    /* height: initial; */
   }
 
   @media screen and (max-width: 720px) {
@@ -114,6 +115,11 @@ export const DBSize = styled.div`
   border-radius: 10px;
   height: 100%;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  @media screen and (max-width: 1100px) {
+    margin-bottom: 24px;
+    /* height: initial; */
+  }
 
   @media screen and (max-width: 360px) {
     width: 250px;

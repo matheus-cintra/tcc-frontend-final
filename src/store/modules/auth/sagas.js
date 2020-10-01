@@ -28,7 +28,7 @@ export function* signIn({ payload }) {
     }
 
     yield put(
-      setCompany(company[0].fantasyName, company[0]._companyLogo.fileLink)
+      setCompany(company[0].fantasyName, company[0]._companyLogo[0].fileLink)
     );
 
     yield put(signInSuccess(token, userToFront));

@@ -11,30 +11,28 @@ export const Toolbar = styled.div`
 
 export const Scroll = styled(PerfectScrollbar)`
   max-height: calc(100vh - 170px);
+  height: 100%;
   margin: 0 0 25px 0;
 `;
 
 export const DocumentList = styled.ul`
   list-style: none;
   text-decoration: none;
+`;
 
-  li {
-    border-bottom: 0.4px solid #bdbdbd;
+export const ListButton = styled.button`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  align-items: center;
+  padding: 20px;
+  background-color: ${props =>
+    props.color === 'even' ? '#f3f0f0' : '#dedcdc'};
+  transition: background 0.3s;
 
-    button {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      border: none;
-      align-items: center;
-      padding: 20px;
-      background: #e0e0e0;
-      transition: background 0.3s;
-
-      &:hover {
-        background: #bdbdbd;
-      }
-    }
+  &:hover {
+    background: #bdbdbd;
   }
 `;
 
@@ -203,4 +201,40 @@ export const Subtitle = styled.span`
   font-weight: normal;
   font-size: 10px;
   color: #fff;
+`;
+
+export const LoadingScreen = styled.div`
+  border: 10px solid #f3f3f3;
+  border-top: 10px solid #455a64;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  animation: spin 2s linear infinite;
+  padding: 60px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+export const LoadingContainer = styled.div`
+  max-height: calc(100vh - 170px);
+  height: 100%;
+  margin: 0 0 25px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+
+export const TextLoadingDocuments = styled.span`
+  font-size: 16px;
+  color: #455a64;
+  margin-bottom: 15px;
+  font-weight: 600;
 `;
