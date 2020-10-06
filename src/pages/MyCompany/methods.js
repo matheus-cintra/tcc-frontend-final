@@ -3,6 +3,93 @@ import * as Yup from 'yup';
 import api from '../../services/api';
 import helper from '../../helpers/helper';
 
+function handleInitialFlotaingLabels(formRef) {
+  setTimeout(() => {
+    const eventFocus = new Event('focus');
+    const eventBlur = new Event('blur');
+    const _info = formRef.current.getData();
+
+    const companyNameEl = document.getElementById('companyName');
+    companyNameEl.dispatchEvent(eventFocus);
+
+    const cnpjEl = document.getElementById('cnpj');
+    cnpjEl.dispatchEvent(eventFocus);
+
+    const fantasyNameEl = document.getElementById('fantasyName');
+    fantasyNameEl.dispatchEvent(eventFocus);
+
+    if (_info.email && _info.email !== '') {
+      const emailEl = document.getElementById('email');
+      emailEl.dispatchEvent(eventFocus);
+    } else {
+      const emailEl = document.getElementById('email');
+      emailEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.phone && _info.phone !== '') {
+      const phoneEl = document.getElementById('phone');
+      phoneEl.dispatchEvent(eventFocus);
+    } else {
+      const phoneEl = document.getElementById('phone');
+      phoneEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.address && _info.address.cep !== '') {
+      const cepEl = document.getElementById('cep');
+      cepEl.dispatchEvent(eventFocus);
+    } else {
+      const cepEl = document.getElementById('cep');
+      cepEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.address && _info.address.address !== '') {
+      const addressEl = document.getElementById('address');
+      addressEl.dispatchEvent(eventFocus);
+    } else {
+      const addressEl = document.getElementById('address');
+      addressEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.address && _info.address.neighborhood !== '') {
+      const neighborhoodEl = document.getElementById('neighborhood');
+      neighborhoodEl.dispatchEvent(eventFocus);
+    } else {
+      const neighborhoodEl = document.getElementById('neighborhood');
+      neighborhoodEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.address && _info.address.number !== '') {
+      const numberEl = document.getElementById('number');
+      numberEl.dispatchEvent(eventFocus);
+    } else {
+      const numberEl = document.getElementById('number');
+      numberEl.dispatchEvent(eventBlur);
+    }
+
+    if (_info.address && _info.address.additional !== '') {
+      const additionalEl = document.getElementById('additional');
+      additionalEl.dispatchEvent(eventFocus);
+    } else {
+      const additionalEl = document.getElementById('additional');
+      additionalEl.dispatchEvent(eventBlur);
+    }
+    if (_info.address && _info.address.city !== '') {
+      const cityEl = document.getElementById('city');
+      cityEl.dispatchEvent(eventFocus);
+    } else {
+      const cityEl = document.getElementById('city');
+      cityEl.dispatchEvent(eventBlur);
+    }
+    if (_info.address && _info.address.state !== '') {
+      const stateEl = document.getElementById('state');
+      stateEl.dispatchEvent(eventFocus);
+    } else {
+      const stateEl = document.getElementById('state');
+      stateEl.dispatchEvent(eventBlur);
+    }
+  }, 50);
+}
+
 async function getCompanyInfo() {
   const storage = JSON.parse(localStorage.getItem('persist:sismei'));
   const user = JSON.parse(storage.user);
@@ -94,6 +181,11 @@ async function handleSubmit(
       ...data,
     });
 
+    data._cnpj = data.cnpj.replace(
+      /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,
+      '$1.$2.$3/$4-$5'
+    );
+
     if (data.phone) {
       const phone1 = data.phone.slice(0, 2);
       const phone2 =
@@ -106,7 +198,7 @@ async function handleSubmit(
           : data.phone.slice(6, 10);
       data._phone = `(${phone1}) ${phone2}-${phone3}`;
 
-      formRef.current.setFieldValue('phone', data._phone);
+      // formRef.current.setFieldValue('phone', data._phone);
     }
 
     dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
@@ -135,18 +227,35 @@ async function handleCepSearch(
 ) {
   const data = formRef.current.getData();
   if (!data.address.cep) return;
-  setCompanyInfo({ ...companyInfo });
+  console.warn('data > ', data);
   setSearching(true);
   try {
     const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
     if (result.data.sucess) {
-      setCompanyInfo({ ...companyInfo, address: result.data.data });
+      setCompanyInfo({
+        ...companyInfo,
+        address: result.data.data,
+        cnpj: data.cnpj,
+        companyInfo: data.companyInfo,
+        email: data.email,
+        fantasyName: data.fantasyName,
+        phone: data.phone,
+      });
+
+      handleInitialFlotaingLabels(formRef);
       setSearching(false);
     }
   } catch (err) {
+    console.warn('erro > ', err);
     setSearching(false);
     return toast.error(err.response.data.data.message);
   }
 }
 
-export { getCompanyInfo, handleUpload, handleSubmit, handleCepSearch };
+export {
+  getCompanyInfo,
+  handleUpload,
+  handleSubmit,
+  handleCepSearch,
+  handleInitialFlotaingLabels,
+};

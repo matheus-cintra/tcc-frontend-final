@@ -16,6 +16,7 @@ import {
   handleUpload,
   handleSubmit,
   handleCepSearch,
+  handleInitialFlotaingLabels,
 } from './methods';
 
 import {
@@ -54,66 +55,6 @@ function MyCompany() {
     phone: false,
   });
 
-  function handleInitialFlotaingLabels() {
-    setTimeout(() => {
-      const event = new Event('focus');
-      const _info = formRef.current.getData();
-      console.warn('INFO > ', _info);
-
-      const companyNameEl = document.getElementById('companyName');
-      companyNameEl.dispatchEvent(event);
-
-      const cnpjEl = document.getElementById('cnpj');
-      cnpjEl.dispatchEvent(event);
-
-      const fantasyNameEl = document.getElementById('fantasyName');
-      fantasyNameEl.dispatchEvent(event);
-
-      if (_info.email && _info.email !== '') {
-        const emailEl = document.getElementById('email');
-        emailEl.dispatchEvent(event);
-      }
-
-      if (_info.phone && _info.phone !== '') {
-        const phoneEl = document.getElementById('phone');
-        phoneEl.dispatchEvent(event);
-      }
-
-      if (_info.address && _info.address.cep !== '') {
-        const cepEl = document.getElementById('cep');
-        cepEl.dispatchEvent(event);
-      }
-
-      if (_info.address && _info.address.address !== '') {
-        const addressEl = document.getElementById('address');
-        addressEl.dispatchEvent(event);
-      }
-
-      if (_info.address && _info.address.neighborhood !== '') {
-        const neighborhoodEl = document.getElementById('neighborhood');
-        neighborhoodEl.dispatchEvent(event);
-      }
-
-      if (_info.address && _info.address.number !== '') {
-        const numberEl = document.getElementById('number');
-        numberEl.dispatchEvent(event);
-      }
-
-      if (_info.address && _info.address.additional !== '') {
-        const additionalEl = document.getElementById('additional');
-        additionalEl.dispatchEvent(event);
-      }
-      if (_info.address && _info.address.city !== '') {
-        const cityEl = document.getElementById('city');
-        cityEl.dispatchEvent(event);
-      }
-      if (_info.address && _info.address.state !== '') {
-        const additionalEl = document.getElementById('state');
-        additionalEl.dispatchEvent(event);
-      }
-    }, 50);
-  }
-
   const dispatch = useDispatch();
 
   const getCompany = async () => {
@@ -122,7 +63,7 @@ function MyCompany() {
     setSearching(false);
     setCompanyInfo(company);
     setCompanyLogo(companyImage);
-    handleInitialFlotaingLabels();
+    handleInitialFlotaingLabels(formRef);
   };
 
   useEffect(() => {
@@ -153,7 +94,13 @@ function MyCompany() {
     );
 
   const handleCepSearchMethod = () =>
-    handleCepSearch(formRef, setSearching, setCompanyInfo, companyInfo);
+    handleCepSearch(
+      formRef,
+      setSearching,
+      setCompanyInfo,
+      companyInfo,
+      handleInitialFlotaingLabels
+    );
 
   function handleOpenAskDialog() {
     setAskOpen(asking => !asking);
