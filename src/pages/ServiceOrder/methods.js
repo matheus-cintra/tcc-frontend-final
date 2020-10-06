@@ -1,6 +1,8 @@
 import moment from 'moment';
 import { mdiFactory, mdiAccount } from '@mdi/js';
 import api from '../../services/api';
+import serviceMethods from '../Service/methods';
+import customerMethods from '../Customer/methods';
 
 async function getRegisters(limit = undefined, skip = undefined) {
   let uri;
@@ -55,7 +57,13 @@ async function getRegistersBySearch(search) {
   return { docs, docCount };
 }
 
+const getServices = () => serviceMethods.getRegisters();
+
+const getCustomers = () => customerMethods.getRegisters();
+
 export default {
   getRegisters,
   getRegistersBySearch,
+  getServices,
+  getCustomers,
 };

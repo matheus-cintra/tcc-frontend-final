@@ -5,10 +5,11 @@ import { mdiAccountSearch, mdiDelete } from '@mdi/js';
 
 import Modal from '../../components/Modals';
 import Asks from '../../components/Dialogs/Asks';
-import DefaultInput from '../../components/DefaultInput/Input';
 
 import { setCompany } from '../../store/modules/company/actions';
 import { validateCompany } from '../../Schemas/globalSchemas';
+
+import FloatLabelInput from '../../components/FloatLabel/Input';
 
 import {
   getCompanyInfo,
@@ -30,6 +31,10 @@ import {
   CompanyImage,
   UploadImage,
   RemoveButton,
+  LoadingContainer,
+  TextLoadingDocuments,
+  FloatingLabelInputContainer,
+  FloatingLabel,
 } from './styles';
 
 function MyCompany() {
@@ -41,20 +46,90 @@ function MyCompany() {
   const [searching, setSearching] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
   const [, setOpen] = useState(false);
+  const [inputActive, setInputActive] = useState({
+    companyName: false,
+    cnpj: false,
+    fantasyName: false,
+    email: false,
+    phone: false,
+  });
+
+  function handleInitialFlotaingLabels() {
+    setTimeout(() => {
+      const event = new Event('focus');
+      const _info = formRef.current.getData();
+      console.warn('INFO > ', _info);
+
+      const companyNameEl = document.getElementById('companyName');
+      companyNameEl.dispatchEvent(event);
+
+      const cnpjEl = document.getElementById('cnpj');
+      cnpjEl.dispatchEvent(event);
+
+      const fantasyNameEl = document.getElementById('fantasyName');
+      fantasyNameEl.dispatchEvent(event);
+
+      if (_info.email && _info.email !== '') {
+        const emailEl = document.getElementById('email');
+        emailEl.dispatchEvent(event);
+      }
+
+      if (_info.phone && _info.phone !== '') {
+        const phoneEl = document.getElementById('phone');
+        phoneEl.dispatchEvent(event);
+      }
+
+      if (_info.address && _info.address.cep !== '') {
+        const cepEl = document.getElementById('cep');
+        cepEl.dispatchEvent(event);
+      }
+
+      if (_info.address && _info.address.address !== '') {
+        const addressEl = document.getElementById('address');
+        addressEl.dispatchEvent(event);
+      }
+
+      if (_info.address && _info.address.neighborhood !== '') {
+        const neighborhoodEl = document.getElementById('neighborhood');
+        neighborhoodEl.dispatchEvent(event);
+      }
+
+      if (_info.address && _info.address.number !== '') {
+        const numberEl = document.getElementById('number');
+        numberEl.dispatchEvent(event);
+      }
+
+      if (_info.address && _info.address.additional !== '') {
+        const additionalEl = document.getElementById('additional');
+        additionalEl.dispatchEvent(event);
+      }
+      if (_info.address && _info.address.city !== '') {
+        const cityEl = document.getElementById('city');
+        cityEl.dispatchEvent(event);
+      }
+      if (_info.address && _info.address.state !== '') {
+        const additionalEl = document.getElementById('state');
+        additionalEl.dispatchEvent(event);
+      }
+    }, 50);
+  }
 
   const dispatch = useDispatch();
 
   const getCompany = async () => {
+    setSearching(true);
     const { company, companyImage } = await getCompanyInfo();
+    setSearching(false);
     setCompanyInfo(company);
     setCompanyLogo(companyImage);
+    handleInitialFlotaingLabels();
   };
 
   useEffect(() => {
     if (working) return;
     setWorking(true);
     getCompany();
-  }, [working]);
+  }, [working]); //eslint-disable-line
 
   const handleClickToUpload = () => {
     const $el = document.getElementById('uploadElementButton');
@@ -109,60 +184,148 @@ function MyCompany() {
       </Toolbar>
       <Container loading={searching ? 'true' : null}>
         {searching ? (
-          <LoadingScreen />
+          <LoadingContainer>
+            <TextLoadingDocuments>
+              Carregando Dados da Empresas
+            </TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
         ) : (
           <Form ref={formRef} onSubmit={handleSubmitMethod}>
             <Row>
-              <DefaultInput
-                width="100"
-                name="companyName"
-                type="text"
-                placeholder="Razão Social"
-                defaultValue={companyInfo.companyName}
-                disabled
-              />
-              <DefaultInput
-                name="cnpj"
-                type="text"
-                placeholder="Seu CNPJ"
-                defaultValue={companyInfo._cnpj}
-                disabled
-              />
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="companyName"
+                  active={inputActive.companyName}
+                >
+                  Razão Social
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="companyName"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, companyName: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, companyName: false });
+                    }
+                  }}
+                  defaultValue={companyInfo.companyName}
+                  name="companyName"
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="cnpj" active={inputActive.cnpj}>
+                  CNPJ
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="cnpj"
+                  type="text"
+                  onFocus={() => setInputActive({ ...inputActive, cnpj: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, cnpj: false });
+                    }
+                  }}
+                  defaultValue={companyInfo._cnpj}
+                  name="cnpj"
+                />
+              </FloatingLabelInputContainer>
             </Row>
             <Row>
-              <DefaultInput
-                name="fantasyName"
-                type="text"
-                placeholder="Nome Fantasia"
-                defaultValue={companyInfo.fantasyName}
-              />
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="fantasyName"
+                  active={inputActive.fantasyName}
+                >
+                  Nome Fantasia
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="fantasyName"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, fantasyName: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, fantasyName: false });
+                    }
+                  }}
+                  defaultValue={companyInfo.fantasyName}
+                  name="fantasyName"
+                  style={{ textTransform: 'capitalize' }}
+                />
+              </FloatingLabelInputContainer>
             </Row>
             <Row>
-              <DefaultInput
-                name="email"
-                type="text"
-                placeholder="E-mail"
-                defaultValue={companyInfo.email}
-              />
-              <DefaultInput
-                maxLength="15"
-                name="phone"
-                type="text"
-                placeholder="Seu telefone"
-                defaultValue={companyInfo._phone}
-              />
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="email" active={inputActive.email}>
+                  Email
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="email"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, email: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, email: false });
+                    }
+                  }}
+                  defaultValue={companyInfo.email}
+                  name="email"
+                  style={{ textTransform: 'lowercase' }}
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="phone" active={inputActive.phone}>
+                  Telefone
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="phone"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, phone: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, phone: false });
+                    }
+                  }}
+                  defaultValue={companyInfo._phone}
+                  name="phone"
+                  maxLength="15"
+                />
+              </FloatingLabelInputContainer>
             </Row>
             <Row>
               <SearchContainer>
-                <DefaultInput
-                  width="30"
-                  name="address.cep"
-                  type="text"
-                  placeholder="Cep"
-                  defaultValue={
-                    companyInfo.address ? companyInfo.address.cep : ''
-                  }
-                />
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="cep" active={inputActive.cep}>
+                    CEP
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="cep"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, cep: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, cep: false });
+                      }
+                    }}
+                    defaultValue={
+                      companyInfo.address ? companyInfo.address.cep : ''
+                    }
+                    name="address.cep"
+                    // style={{ width: '30%' }}
+                  />
+                </FloatingLabelInputContainer>
                 <SearchButton onClick={handleCepSearchMethod}>
                   <Icon
                     path={mdiAccountSearch}
@@ -172,43 +335,153 @@ function MyCompany() {
                   />
                 </SearchButton>
               </SearchContainer>
-              <DefaultInput
-                name="address.address"
-                type="text"
-                placeholder="Endereço"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.address : ''
-                }
-                disabled
-              />
-              <DefaultInput
-                name="address.neighborhood"
-                type="text"
-                placeholder="Bairro"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.neighborhood : ''
-                }
-                disabled
-              />
-              <DefaultInput
-                name="address.number"
-                type="text"
-                placeholder="Número"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.number : ''
-                }
-              />
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="address" active={inputActive.address}>
+                  Endereço
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="address"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, address: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, address: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.address : ''
+                  }
+                  name="address.address"
+                  disabled
+                  style={{ textTransform: 'capitalize' }}
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="address"
+                  active={inputActive.neighborhood}
+                >
+                  Bairro
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="neighborhood"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, neighborhood: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, neighborhood: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.neighborhood : ''
+                  }
+                  name="address.neighborhood"
+                  style={{ textTransform: 'capitalize' }}
+                  disabled
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="number" active={inputActive.number}>
+                  Número
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="number"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, number: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, number: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.number : ''
+                  }
+                  name="address.number"
+                />
+              </FloatingLabelInputContainer>
             </Row>
             <Row>
-              <DefaultInput
-                name="address.additional"
-                type="text"
-                placeholder="Complemento"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.additional : ''
-                }
-              />
-              <DefaultInput
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="additional"
+                  active={inputActive.additional}
+                >
+                  Complemento
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="additional"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, additional: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, additional: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.additional : ''
+                  }
+                  name="address.additional"
+                  style={{ textTransform: 'capitalize' }}
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="city" active={inputActive.city}>
+                  Cidade
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="city"
+                  type="text"
+                  onFocus={() => setInputActive({ ...inputActive, city: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, city: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.city : ''
+                  }
+                  name="address.city"
+                  style={{ textTransform: 'capitalize' }}
+                  disabled
+                />
+              </FloatingLabelInputContainer>
+
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="state" active={inputActive.state}>
+                  Estado
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="state"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, state: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, state: false });
+                    }
+                  }}
+                  defaultValue={
+                    companyInfo.address ? companyInfo.address.state : ''
+                  }
+                  name="address.state"
+                  disabled
+                />
+              </FloatingLabelInputContainer>
+
+              {/* <DefaultInput
                 name="address.city"
                 type="text"
                 placeholder="Cidade"
@@ -225,7 +498,7 @@ function MyCompany() {
                   companyInfo.address ? companyInfo.address.state : ''
                 }
                 disabled
-              />
+              /> */}
             </Row>
             <Row>
               <input

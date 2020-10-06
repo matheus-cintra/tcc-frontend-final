@@ -1,17 +1,23 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import Icon from '@mdi/react';
-import { mdiClose, mdiTrashCan, mdiAccountSearch } from '@mdi/js';
-import * as Yup from 'yup';
-import { cpf as _cpfCheck, cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
-import { toast } from 'react-toastify';
-import api from '../../../services/api';
+import { mdiClose, mdiTrashCan } from '@mdi/js';
+import history from '../../../services/history';
 import Input from '../../InputMask/Input';
 import DefaultInput from '../../DefaultInput/Input';
 import Divider from '../../Divider';
-import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
-import Asks from '../Asks';
+import Asks from './Asks';
+import FloatLabelInput from '../../FloatLabel/Input';
+import TextAreaInput from '../../InputTextArea/Input';
+import {
+  clearSuggestions,
+  autocompleteChange,
+  filterArray,
+  selectSuggestion,
+  submit,
+} from './methods';
 
 import {
   Container,
@@ -21,38 +27,39 @@ import {
   BottomActions,
   RowContainer,
   InputContainer,
-  SearchContainer,
-  SearchButton,
+  AutoCompleteResult,
+  AutocompleteContainer,
+  Autocomplete,
+  NoAutocompleteSuggestion,
+  FloatingLabelInputContainer,
+  FloatingLabel,
+  // FloatLabelInput,
 } from './styles';
 
-function ServiceOrderDialog({ setOpen, current }) {
-  const serviceorderId = current._id;
+function ServiceOrderDialog({ setOpen, current, customers, services }) {
+  const serviceOrderId = current._id;
   const formRef = useRef(null);
-  const [entityType, setEntityType] = useState(
-    current.entityType ? current.entityType : '1'
-  );
-  const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
-
-  const schema = Yup.object().shape({
-    name: Yup.string().required('Nome Obrigatório'),
-    cpf: Yup.string().min(14, 'CPF Inválido').max(14, 'CPF Inválido'),
-    cnpj: Yup.string().min(18, 'CNPJ Inválido').max(18, 'CNPJ Inválido'),
-    phone: Yup.string(),
-    email: Yup.string().email('Email inválido'),
-    description: Yup.string(),
-
-    cep: Yup.string().min(8, 'Cep Inválido').max(8, 'Cép Inválido'),
-    address: Yup.object().shape({
-      address: Yup.string(),
-      additional: Yup.string(),
-      cep: Yup.string(),
-      city: Yup.string(),
-      neighborhood: Yup.string(),
-      number: Yup.string(),
-      state: Yup.string(),
-    }),
+  const [inputCustomer, setCustomerInput] = useState('');
+  const [inputService, setServiceInput] = useState('');
+  const [autocompleteServices, setAutocompleteServices] = useState([]);
+  const [autocompleteCustomers, setAutocompleteCustomers] = useState([]);
+  const [noCustomerSuggestions, setNoCustomerSuggestions] = useState(false);
+  const [noServiceSuggestions, setNoServiceSuggestions] = useState(false);
+  const [selectedCustomer, setSelectedCustomer] = useState({});
+  const [selectedService, setSelectedService] = useState({});
+  const [inputActive, setInputActive] = useState({
+    customer: false,
+    contact: false,
+    service: false,
+    basePrice: false,
+    finalPrice: false,
+    dateService: false,
+    description: false,
+    paymentMethod: false,
+    paymentDate: false,
+    paymentValue: false,
   });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
@@ -64,112 +71,288 @@ function ServiceOrderDialog({ setOpen, current }) {
   });
   /** ************************************************************************* */
 
+  function handlePaymentDateInitial() {
+    setTimeout(() => {
+      const paymentDateElement = document.getElementById('inputPaymentDate');
+      const event = new Event('focus');
+      if (current.paymentDate) {
+        paymentDateElement.dispatchEvent(event);
+      }
+    }, 30);
+  }
+
+  useEffect(() => {
+    handlePaymentDateInitial();
+  }, []);
+
+  useEffect(() => {
+    const elCustomer = document.getElementById('autocompleteCustomerId');
+    elCustomer.addEventListener('keyup', e => {
+      if (e.key === 'Backspace') {
+        if (e.target.value === '') {
+          setNoCustomerSuggestions(false);
+        }
+        setCustomerInput(e.target.value);
+      }
+      if (e.key === 'Delete') {
+        if (e.target.value === '') {
+          setNoCustomerSuggestions(false);
+        }
+        setCustomerInput(e.target.value);
+      }
+    });
+
+    const elService = document.getElementById('autocompleteServiceId');
+    elService.addEventListener('keyup', e => {
+      if (e.key === 'Backspace') {
+        if (e.target.value === '') {
+          setNoCustomerSuggestions(false);
+        }
+        setCustomerInput(e.target.value);
+      }
+      if (e.key === 'Delete') {
+        if (e.target.value === '') {
+          setNoCustomerSuggestions(false);
+        }
+        setCustomerInput(e.target.value);
+      }
+    });
+  }, []);
+
   const handleClose = () => {
-    if (submitting || searching) return;
+    if (submitting) return;
     setOpen(open => !open);
   };
 
-  const handleOptionChange = type => {
-    setEntityType(type);
+  const handleSubmit = async data =>
+    submit(
+      {
+        data,
+        customer: selectedCustomer,
+        service: selectedService,
+      },
+      setSubmitting,
+      formRef
+    );
+
+  // async function handleSubmit(data) {
+  //   data.customerName = selectedCustomer.name;
+  //   data.serviceName = selectedService.name;
+
+  //   setSubmitting(true);
+
+  //   try {
+  //     formRef.current.setErrors({});
+  //     console.warn('data > ', data);
+  //     await schema.validate(data, {
+  //       abortEarly: false,
+  //     });
+
+  //     const today = moment();
+  //     const _serviceDate = moment(data.serviceDate);
+
+  //     console.warn('today > ', today);
+  //     console.warn('_serviceDate> ', _serviceDate);
+
+  //     if (_serviceDate.diff(today).endOf('day') < 0) {
+  //       console.warn('ERRADO');
+  //     }
+  //     return;
+  //     if (data.cnpj) {
+  //       data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
+  //     } else {
+  //       data.cpf = helpers.returnOnlyNumbers(data.cpf);
+  //     }
+
+  //     const cpfCnpjIsValid = data.cnpj
+  //       ? _cnpjCheck.isValid(data.cnpj)
+  //       : _cpfCheck.isValid(data.cpf);
+
+  //     if (!cpfCnpjIsValid) {
+  //       setSubmitting(false);
+  //       return toast.error('CPF ou CNPJ inválido');
+  //     }
+
+  //     const result = serviceOrderId
+  //       ? await api.put(`/api/v1/serviceOrders/${serviceOrderId}`, { ...data })
+  //       : await api.post('/api/v1/serviceOrders/', { ...data });
+
+  //     if (!result.data.success) {
+  //       return toast.error('Eror ao atualizar Ordem de Serviço.');
+  //     }
+
+  //     if (serviceOrderId) {
+  //       toast.success('Ordem de Serviço Atualizado.');
+  //     } else {
+  //       toast.success('Ordem de Serviço Criado.');
+  //     }
+
+  //     handleClose();
+  //   } catch (error) {
+  //     setSubmitting(false);
+  //     if (error instanceof Yup.ValidationError) {
+  //       console.warn('error > ', error);
+  //       const errorMessages = {};
+
+  //       error.inner.forEach(err => {
+  //         errorMessages[err.path] = err.message;
+  //       });
+
+  //       formRef.current.setErrors(errorMessages);
+  //     } else {
+  //       return toast.error(
+  //         (error.response &&
+  //           error.response.data &&
+  //           error.response.data.data &&
+  //           error.response.data.data.message) ||
+  //           'Erro desconhecido'
+  //       );
+  //     }
+  //   }
+  // }
+
+  const handleCloseReturn = () => {
+    handleClose();
   };
-
-  const handleCepSearch = async () => {
-    const data = formRef.current.getData();
-    if (!data.address.cep) return;
-    setSearching(true);
-    try {
-      const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
-      if (result.data.sucess) {
-        const addressResult = result.data.data;
-        formRef.current.setFieldValue('address.cep', addressResult.cep);
-        formRef.current.setFieldValue('address.address', addressResult.address);
-        formRef.current.setFieldValue('address.number', addressResult.number);
-        formRef.current.setFieldValue(
-          'address.additional',
-          addressResult.additional
-        );
-        formRef.current.setFieldValue('address.city', addressResult.city);
-        formRef.current.setFieldValue('address.state', addressResult.state);
-        formRef.current.setFieldValue(
-          'address.neighborhood',
-          addressResult.neighborhood
-        );
-      }
-      setSearching(false);
-    } catch (error) {
-      setSearching(false);
-      return toast.error(error.response.data.data.message);
-    }
-  };
-
-  async function handleSubmit(data) {
-    setSubmitting(true);
-
-    data.entityType = entityType;
-    try {
-      await schema.validate(data, {
-        abortEarly: false,
-      });
-
-      if (data.cnpj) {
-        data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
-      } else {
-        data.cpf = helpers.returnOnlyNumbers(data.cpf);
-      }
-
-      const cpfCnpjIsValid = data.cnpj
-        ? _cnpjCheck.isValid(data.cnpj)
-        : _cpfCheck.isValid(data.cpf);
-
-      if (!cpfCnpjIsValid) {
-        setSubmitting(false);
-        return toast.error('CPF ou CNPJ inválido');
-      }
-
-      const result = serviceorderId
-        ? await api.put(`/api/v1/serviceorders/${serviceorderId}`, { ...data })
-        : await api.post('/api/v1/serviceorders/', { ...data });
-
-      if (!result.data.success) {
-        return toast.error('Eror ao atualizar ordem de serviço.');
-      }
-
-      if (serviceorderId) {
-        toast.success('Ordem de Serviço Atualizado.');
-      } else {
-        toast.success('Ordem de Serviço Criado.');
-      }
-
-      handleClose();
-    } catch (error) {
-      setSubmitting(false);
-      if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
-
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
-
-        formRef.current.setErrors(errorMessages);
-      } else {
-        return toast.error(error.response.data.data.message);
-      }
-    }
-  }
 
   const handleOpenAskDialog = () => {
     setAskOpen(asking => !asking);
   };
 
   const handleAskDialog = () => {
-    return <Asks setAskOpen={setAskOpen} registerId={serviceorderId} />;
+    return (
+      <Asks
+        setAskOpen={setAskOpen}
+        serviceOrderId={serviceOrderId}
+        handleClose={handleCloseReturn}
+      />
+    );
   };
+
+  const getSuggestionValue = suggestion => suggestion.name;
+
+  const getServicesValue = service => service.name;
+
+  const renderSuggestion = suggestion => (
+    <AutocompleteContainer>
+      <AutoCompleteResult>{suggestion.name}</AutoCompleteResult>
+    </AutocompleteContainer>
+  );
+
+  const clearCustomerRequest = () => clearSuggestions(setAutocompleteCustomers);
+  const clearServiceRequest = () => clearSuggestions(setAutocompleteServices);
+
+  const handleAutocompleteCustomerChange = (e, { newValue }) =>
+    autocompleteChange(newValue, setSelectedCustomer, setCustomerInput);
+
+  const handleAutocompleteServiceChange = (e, { newValue }) =>
+    autocompleteChange(newValue, setSelectedService, setServiceInput);
+
+  const filterSuggestions = (value, type) => {
+    switch (type) {
+      case 'customer':
+        filterArray(
+          value,
+          customers,
+          selectedCustomer,
+          setNoCustomerSuggestions,
+          setAutocompleteCustomers
+        );
+        break;
+
+      case 'service':
+        filterArray(
+          value,
+          services,
+          selectedService,
+          setNoServiceSuggestions,
+          setAutocompleteServices
+        );
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const handleOnFocus = el => {
+    setInputActive({ ...inputActive, [el]: true });
+  };
+
+  const handleBlur = (e, el) => {
+    if (e.target.value === '') {
+      setInputActive({ ...inputActive, [el]: false });
+    }
+  };
+
+  const customerInputProps = {
+    value: inputCustomer,
+    onChange: handleAutocompleteCustomerChange,
+    name: 'autocompleteCustomer',
+    id: 'autocompleteCustomerId',
+    onBlur: e => handleBlur(e, 'customer'),
+    onFocus: () => handleOnFocus('customer'),
+  };
+
+  const serviceInputProps = {
+    value: inputService,
+    onChange: handleAutocompleteServiceChange,
+    name: 'autocompleteService',
+    id: 'autocompleteServiceId',
+    onBlur: e => handleBlur(e, 'service'),
+    onFocus: () => handleOnFocus('service'),
+  };
+
+  const handleSuggestionSelect = (suggestion, type) => {
+    switch (type) {
+      case 'customer': {
+        selectSuggestion(
+          suggestion,
+          setSelectedCustomer,
+          formRef,
+          'customerName'
+        );
+
+        setTimeout(() => {
+          const inputElement = document.getElementById('inputContact');
+          const event = new Event('focus');
+          inputElement.dispatchEvent(event);
+        }, 30);
+        break;
+      }
+
+      case 'service': {
+        selectSuggestion(
+          suggestion,
+          setSelectedService,
+          formRef,
+          'serviceName'
+        );
+
+        setTimeout(() => {
+          const inputElement = document.getElementById('inputTeste');
+          const dateElement = document.getElementById('inputDateService');
+          const event = new Event('focus');
+          inputElement.dispatchEvent(event);
+          dateElement.dispatchEvent(event);
+        }, 30);
+        break;
+      }
+
+      default:
+        break;
+    }
+  };
+
+  const handleNoCustomer = () => history.push('/customer');
+
+  const handleNoService = () => history.push('/service');
 
   return (
     <>
       <Toolbar>
         <Title>
-          {serviceorderId ? 'Editar Ordem de Serviço' : 'Novo Ordem de Serviço'}
+          {serviceOrderId ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço'}
         </Title>
         <Icon
           path={mdiClose}
@@ -177,10 +360,10 @@ function ServiceOrderDialog({ setOpen, current }) {
           size={1}
           color="#FFF"
           onClick={handleClose}
-          style={{ cursor: searching || submitting ? 'default' : 'pointer' }}
+          style={{ cursor: submitting ? 'default' : 'pointer' }}
         />
       </Toolbar>
-      {serviceorderId ? (
+      {serviceOrderId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <fieldset disabled={submitting}>
@@ -195,59 +378,6 @@ function ServiceOrderDialog({ setOpen, current }) {
                     required
                   />
                 </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <label>
-                  <input
-                    type="radio"
-                    value="1"
-                    name="entityType"
-                    defaultChecked={current.entityType === '1'}
-                    onChange={() => handleOptionChange('1')}
-                  />
-                  Pessoa Física
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="entityType"
-                    value="2"
-                    defaultChecked={current.entityType === '2'}
-                    onChange={() => handleOptionChange('2')}
-                  />
-                  Pessoa Jurídica
-                </label>
-                {entityType === '1' ? (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <Input
-                      mask="999.999.999-99"
-                      name="cpf"
-                      type="text"
-                      placeholder="CPF"
-                      defaultValue={current.cpf}
-                    />
-                  </InputContainer>
-                ) : (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <Input
-                      mask="99.999.999/9999-99"
-                      defaultValue={current.cnpj}
-                      name="cnpj"
-                      type="text"
-                      placeholder="CNPJ"
-                    />
-                  </InputContainer>
-                )}
               </RowContainer>
               <RowContainer>
                 <InputContainer
@@ -298,45 +428,6 @@ function ServiceOrderDialog({ setOpen, current }) {
               <Divider>Endereço</Divider>
 
               <RowContainer>
-                <SearchContainer>
-                  <InputContainer
-                    style={{
-                      width: '100%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="address.cep"
-                      type="text"
-                      placeholder="CEP"
-                      defaultValue={current.address.cep}
-                    />
-                  </InputContainer>
-                  <SearchButton onClick={handleCepSearch} disabled={searching}>
-                    <Icon
-                      path={mdiAccountSearch}
-                      title="Buscar Cep"
-                      size="30px"
-                      color="#333"
-                    />
-                  </SearchButton>
-                </SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '65%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.address"
-                    defaultValue={current.address.address}
-                    type="text"
-                    placeholder="Rua"
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
                 <InputContainer
                   style={{
                     width: '15%',
@@ -348,7 +439,7 @@ function ServiceOrderDialog({ setOpen, current }) {
                     name="address.number"
                     type="text"
                     placeholder="Número"
-                    defaultValue={current.address.number}
+                    defaultValue={current.address && current.address.number}
                   />
                 </InputContainer>
                 <InputContainer
@@ -362,7 +453,9 @@ function ServiceOrderDialog({ setOpen, current }) {
                     name="address.neighborhood"
                     type="text"
                     placeholder="Bairro"
-                    defaultValue={current.address.neighborhood}
+                    defaultValue={
+                      current.address && current.address.neighborhood
+                    }
                   />
                 </InputContainer>
                 <InputContainer
@@ -376,7 +469,7 @@ function ServiceOrderDialog({ setOpen, current }) {
                     name="address.additional"
                     type="text"
                     placeholder="Complemento"
-                    defaultValue={current.address.additional}
+                    defaultValue={current.address && current.address.additional}
                   />
                 </InputContainer>
               </RowContainer>
@@ -391,7 +484,7 @@ function ServiceOrderDialog({ setOpen, current }) {
                     name="address.city"
                     type="text"
                     placeholder="Cidade"
-                    defaultValue={current.address.city}
+                    defaultValue={current.address && current.address.city}
                   />
                 </InputContainer>
                 <InputContainer
@@ -405,7 +498,7 @@ function ServiceOrderDialog({ setOpen, current }) {
                     name="address.state"
                     type="text"
                     placeholder="Estado"
-                    defaultValue={current.address.state}
+                    defaultValue={current.address && current.address.state}
                   />
                 </InputContainer>
               </RowContainer>
@@ -415,212 +508,275 @@ function ServiceOrderDialog({ setOpen, current }) {
       ) : (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <Divider>Dádos Básicos</Divider>
+            <Divider>Dados da Ordem de Serviço</Divider>
             <RowContainer>
-              <InputContainer style={{ marginRight: '5px' }}>
-                <DefaultInput name="name" type="text" placeholder="Nome*" />
+              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
+                <FloatingLabel
+                  htmlFor="autocompleteCustomerId"
+                  active={inputActive.customer}
+                >
+                  Cliente
+                </FloatingLabel>
+                <Autocomplete
+                  suggestions={autocompleteCustomers}
+                  onSuggestionsFetchRequested={({ value }) =>
+                    filterSuggestions(value, 'customer')
+                  }
+                  onSuggestionsClearRequested={clearCustomerRequest}
+                  getSuggestionValue={getSuggestionValue}
+                  renderSuggestion={renderSuggestion}
+                  inputProps={customerInputProps}
+                  onSuggestionSelected={(e, { suggestion }) =>
+                    handleSuggestionSelect(suggestion, 'customer')
+                  }
+                  name="customerName"
+                />
+                {noCustomerSuggestions ? (
+                  <NoAutocompleteSuggestion onClick={handleNoCustomer}>
+                    Nenhum cliente encontrado. Clique para adicionar.
+                  </NoAutocompleteSuggestion>
+                ) : null}
+              </InputContainer>
+              {selectedCustomer.name ? (
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="inputContact"
+                    active={inputActive.contact}
+                  >
+                    Telefone
+                  </FloatingLabel>
+                  <Input
+                    mask="99-99999-9999"
+                    id="inputContact"
+                    name="phone"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, contact: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, contact: false });
+                      }
+                    }}
+                    type="text"
+                    defaultValue={selectedCustomer.phone}
+                    disabled
+                  />
+                </FloatingLabelInputContainer>
+              ) : null}
+            </RowContainer>
+            <RowContainer>
+              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
+                <FloatingLabel
+                  htmlFor="autocompleteServiceId"
+                  active={inputActive.service}
+                >
+                  Serviço Prestado
+                </FloatingLabel>
+                <Autocomplete
+                  suggestions={autocompleteServices}
+                  onSuggestionsFetchRequested={({ value }) =>
+                    filterSuggestions(value, 'service')
+                  }
+                  onSuggestionsClearRequested={clearServiceRequest}
+                  getSuggestionValue={getServicesValue}
+                  renderSuggestion={renderSuggestion}
+                  inputProps={serviceInputProps}
+                  onSuggestionSelected={(e, { suggestion }) =>
+                    handleSuggestionSelect(suggestion, 'service')
+                  }
+                  name="serviceName"
+                />
+                {noServiceSuggestions ? (
+                  <NoAutocompleteSuggestion onClick={handleNoService}>
+                    Nenhum serviço encontrado. Clique para adicionar.
+                  </NoAutocompleteSuggestion>
+                ) : null}
               </InputContainer>
             </RowContainer>
             <RowContainer>
-              <label>
-                <input
-                  type="radio"
-                  value="1"
-                  checked={entityType === '1'}
-                  onChange={() => handleOptionChange('1')}
-                />
-                Pessoa Física
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="2"
-                  checked={entityType === '2'}
-                  onChange={() => handleOptionChange('2')}
-                />
-                Pessoa Jurídica
-              </label>
-              {entityType === '1' ? (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="999.999.999-99"
-                    name="cpf"
-                    type="text"
-                    placeholder="CPF"
-                  />
-                </InputContainer>
-              ) : (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99.999.999/9999-99"
-                    name="cnpj"
-                    type="text"
-                    placeholder="CNPJ"
-                  />
-                </InputContainer>
-              )}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <Input
-                  mask="99-99999-9999"
-                  name="phone"
-                  type="text"
-                  placeholder="Telefone"
-                />
-              </InputContainer>
+              {selectedService.name ? (
+                <>
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="inputTeste"
+                      active={inputActive.basePrice}
+                    >
+                      Preço Base R$
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="inputTeste"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, basePrice: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, basePrice: false });
+                        }
+                      }}
+                      name="basePrice"
+                      defaultValue={selectedService.formatedPrice}
+                      disabled
+                    />
+                  </FloatingLabelInputContainer>
 
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput name="email" type="text" placeholder="Email" />
-              </InputContainer>
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="inputTeste2"
+                      active={inputActive.finalPrice}
+                    >
+                      Preço Final R$
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="inputTeste2"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, finalPrice: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, finalPrice: false });
+                        }
+                      }}
+                      name="finalPrice"
+                    />
+                  </FloatingLabelInputContainer>
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="inputDateService"
+                      active={inputActive.dateService}
+                    >
+                      Data de Execução
+                    </FloatingLabel>
+                    <Input
+                      mask="99/99/9999"
+                      id="inputDateService"
+                      name="dateService"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, dateService: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            dateService: false,
+                          });
+                        }
+                      }}
+                      type="text"
+                      defaultValue={moment().format('DD/MM/YYYY')}
+                    />
+                  </FloatingLabelInputContainer>
+                </>
+              ) : null}
             </RowContainer>
             <RowContainer>
               <InputContainer
                 style={{
-                  marginRight: '5px',
+                  display: 'flex',
                 }}
               >
-                <DefaultInput
+                <FloatingLabel
+                  htmlFor="inputDescription"
+                  active={inputActive.description}
+                  style={{ marginBottom: '60px' }}
+                >
+                  Descrição do Serviço
+                </FloatingLabel>
+                <TextAreaInput
                   name="description"
+                  id="inputDescription"
                   type="text"
-                  placeholder="Descrição"
-                />
-              </InputContainer>
-            </RowContainer>
-
-            <Divider>Endereço</Divider>
-
-            <RowContainer>
-              <SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '100%',
-                    marginRight: '5px',
+                  rows={5}
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, description: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, description: false });
+                    }
                   }}
+                />
+              </InputContainer>
+            </RowContainer>
+
+            <Divider>Informações de Cobrança</Divider>
+
+            <RowContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="inputPaymentMethod"
+                  active={inputActive.paymentMethod}
                 >
-                  <DefaultInput
-                    name="address.cep"
-                    type="text"
-                    placeholder="CEP"
-                  />
-                </InputContainer>
-                <SearchButton onClick={handleCepSearch} disabled={searching}>
-                  <Icon
-                    path={mdiAccountSearch}
-                    title="Buscar Cep"
-                    size="30px"
-                    color="#333"
-                  />
-                </SearchButton>
-              </SearchContainer>
-              <InputContainer
-                style={{
-                  width: '65%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.address"
+                  Método de Cobrança
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="inputPaymentMethod"
                   type="text"
-                  placeholder="Rua"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, paymentMethod: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, paymentMethod: false });
+                    }
+                  }}
+                  name="paymentMethod"
+                  defaultValue={selectedService.paymentMethod}
                 />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '15%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  maxLength="5"
-                  name="address.number"
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="inputPaymentDate"
+                  active={inputActive.paymentDate}
+                >
+                  Data de Pagamento
+                </FloatingLabel>
+                <Input
+                  mask="99/99/9999"
+                  id="inputPaymentDate"
+                  name="paymentDate"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, paymentDate: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        paymentDate: false,
+                      });
+                    }
+                  }}
                   type="text"
-                  placeholder="Número"
                 />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.neighborhood"
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="inputPaymentValue"
+                  active={inputActive.paymentValue}
+                >
+                  Valor Total Pago
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="inputPaymentValue"
                   type="text"
-                  placeholder="Bairro"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, paymentValue: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({ ...inputActive, paymentValue: false });
+                    }
+                  }}
+                  name="paymentValue"
                 />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.additional"
-                  type="text"
-                  placeholder="Complemento"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.city"
-                  type="text"
-                  placeholder="Cidade"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.state"
-                  type="text"
-                  placeholder="Estado"
-                />
-              </InputContainer>
+              </FloatingLabelInputContainer>
             </RowContainer>
           </Form>
         </Container>
       )}
       <BottomActions>
-        {serviceorderId ? (
+        {serviceOrderId ? (
           <Icon
             path={mdiTrashCan}
             title="Remove"
@@ -634,10 +790,18 @@ function ServiceOrderDialog({ setOpen, current }) {
         <button
           type="submit"
           form="editForm"
-          disabled={searching || submitting}
+          disabled={
+            submitting || (!selectedCustomer.name && !selectedService.name)
+          }
           style={{
-            cursor: searching || submitting ? 'default' : 'pointer',
-            background: searching || submitting ? '#909090' : '#333',
+            cursor:
+              submitting || !selectedCustomer.name || !selectedService.name
+                ? 'default'
+                : 'pointer',
+            background:
+              submitting || !selectedCustomer.name || !selectedService.name
+                ? '#909090'
+                : '#333',
           }}
         >
           Salvar
@@ -656,4 +820,11 @@ export default ServiceOrderDialog;
 ServiceOrderDialog.propTypes = {
   setOpen: PropTypes.func.isRequired,
   current: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  services: PropTypes.arrayOf(PropTypes.object),
+  customers: PropTypes.arrayOf(PropTypes.object),
+};
+
+ServiceOrderDialog.defaultProps = {
+  services: [],
+  customers: [],
 };

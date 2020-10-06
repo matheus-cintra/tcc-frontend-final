@@ -64,7 +64,11 @@ function ServiceDialog({ setOpen, current }) {
         return toast.error('Eror ao atualizar serviço.');
       }
 
-      toast.success('Serviço Atualizado.');
+      if (serviceId) {
+        toast.success('Serviço Atualizado.');
+      } else {
+        toast.success('Serviço Criado.');
+      }
 
       handleClose();
     } catch (error) {
@@ -76,6 +80,8 @@ function ServiceDialog({ setOpen, current }) {
         });
 
         formRef.current.setErrors(errorMessages);
+      } else {
+        toast.error(error.response.data.data.message);
       }
     }
   }

@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { Form as Unform } from '@unform/web';
+import Autosuggest from 'react-autosuggest';
 
 export const Container = styled.div`
   display: flex;
@@ -12,8 +13,82 @@ export const Container = styled.div`
   }
 `;
 
+export const NoAutocompleteSuggestion = styled.div`
+  display: block;
+  position: absolute;
+  margin-top: -7px;
+  width: 655px;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+  font-family: Helvetica, sans-serif;
+  font-weight: 300;
+  font-size: 13px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  z-index: 2;
+  margin-left: 5px;
+  cursor: pointer;
+  padding: 10px 10px;
+  transition: background 0.5s;
+
+  &:hover {
+    background: #f0f0f0;
+  }
+`;
+
 export const InputContainer = styled.div`
   width: 100%;
+
+  .react-autosuggest__container {
+    position: relative;
+    width: 100%;
+  }
+
+  .react-autosuggest__input--focused {
+    outline: none;
+  }
+
+  .react-autosuggest__input--open {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .react-autosuggest__suggestions-container {
+    display: none;
+  }
+
+  .react-autosuggest__suggestions-container--open {
+    display: block;
+    position: absolute;
+    margin-top: -5px;
+    width: 100%;
+    border: 1px solid #f0f0f0;
+    background-color: #fff;
+    font-family: Helvetica, sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    z-index: 3;
+    margin-left: 5px;
+  }
+
+  .react-autosuggest__suggestions-list {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+  }
+
+  .react-autosuggest__suggestion {
+    cursor: pointer;
+    padding: 10px 20px;
+  }
+
+  .react-autosuggest__suggestion--highlighted {
+    transition: background 0.5s;
+
+    background: #ddd;
+  }
 
   input {
     padding: 10px;
@@ -92,6 +167,7 @@ export const RowContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  width: 100%;
 
   input {
     width: 100%;
@@ -145,4 +221,92 @@ export const LoadingScreen = styled.div`
       transform: rotate(360deg);
     }
   }
+`;
+
+export const AutocompleteContainer = styled.div`
+  /* display: flex;
+  width: 100%;
+  flex: 1;
+  justify-content: center; */
+`;
+
+export const AutoCompleteResult = styled.span`
+  /* font-size: 12px;
+  margin-left: 10px;
+  margin-top: 0;
+  padding: 10px;
+  border: 1px solid #f0f0f0;
+  border-radius: 5px;
+  width: 100%;
+  z-index: 5;
+  transition: background 0.5s; */
+
+  /* cursor: pointer; */
+  /* width: 100%;
+  padding: 10px;
+  background: #fff;
+  transition: background 1s; */
+
+  /* &:hover {
+    background: #333;
+  } */
+`;
+
+export const Autocomplete = styled(Autosuggest)``;
+
+export const DescriptionTextArea = styled.textarea`
+  font: 14px 'Roboto', sans-serif;
+  padding: 10px;
+  /* margin: 5px 5px 5px 10px; */
+  /* margin-left: 5px; */
+  margin: 5px 0 0 5px;
+  border-radius: 4px;
+  border: none;
+  background: #f3f3f3;
+  width: 100%;
+  font-size: 14px;
+  resize: none;
+`;
+
+export const FloatingLabelInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  input {
+    -webkit-appearance: none !important;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    border: none;
+    background: #f3f3f3;
+  }
+`;
+
+export const FloatingLabel = styled.label`
+  display: inline-block;
+  z-index: 2;
+  position: absolute;
+  transition: all 150ms ease-in;
+  color: #9a9a9a;
+  margin-left: 15px !important;
+  cursor: text;
+
+  transform: ${props => (props.active ? 'translateY(-17px)' : null)};
+  font-size: ${props => (props.active ? '0.8em' : null)};
+  color: ${props => (props.active ? '#9a9a9a' : null)};
+  text-shadow: ${props =>
+    props.active
+      ? '1px 0 0 #fff, -1px 0 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff'
+      : null};
+`;
+
+export const FloatLabelInput = styled.input`
+  -webkit-appearance: none !important;
+  padding: 10px;
+  margin: 5px;
+  border-radius: 4px;
+  border: none;
+  background: #f3f3f3;
+  text-transform: uppercase;
 `;

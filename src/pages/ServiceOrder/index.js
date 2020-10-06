@@ -11,6 +11,19 @@ export default function ServiceOrder() {
   const [open, setOpen] = useState(false);
   const [currentServiceOrder, setCurrentServiceOrder] = useState({});
   const [registerCount, setRegisterCount] = useState(0);
+  const [services, setServices] = useState([]);
+  const [customers, setCustomers] = useState([]);
+
+  const getService = async () => {
+    const servicesResult = await methods.getServices();
+
+    setServices(servicesResult.docs);
+  };
+
+  const getCustomers = async () => {
+    const customersResult = await methods.getCustomers();
+    setCustomers(customersResult.docs);
+  };
 
   const getServiceOrders = async (initial, limit, skip) => {
     if (open) return;
@@ -29,6 +42,8 @@ export default function ServiceOrder() {
   useEffect(() => {
     setWorking(true);
     getServiceOrders(true);
+    getService();
+    getCustomers();
   }, []); //eslint-disable-line
 
   useEffect(() => {
@@ -43,7 +58,12 @@ export default function ServiceOrder() {
 
   const handleServiceOrderEdit = () => {
     return (
-      <ServiceOrderDialog setOpen={setOpen} current={currentServiceOrder} />
+      <ServiceOrderDialog
+        setOpen={setOpen}
+        current={currentServiceOrder}
+        services={services}
+        customers={customers}
+      />
     );
   };
 

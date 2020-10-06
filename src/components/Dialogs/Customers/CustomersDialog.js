@@ -11,7 +11,7 @@ import DefaultInput from '../../DefaultInput/Input';
 import Divider from '../../Divider';
 import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
-import Asks from '../Asks';
+import Asks from './Asks';
 
 import {
   Container,
@@ -157,12 +157,22 @@ function CustomerDialog({ setOpen, current }) {
     }
   }
 
+  const handleCloseReturn = () => {
+    handleClose();
+  };
+
   const handleOpenAskDialog = () => {
     setAskOpen(asking => !asking);
   };
 
   const handleAskDialog = () => {
-    return <Asks setAskOpen={setAskOpen} registerId={customerId} />;
+    return (
+      <Asks
+        setAskOpen={setAskOpen}
+        customerId={customerId}
+        handleClose={handleCloseReturn}
+      />
+    );
   };
 
   return (

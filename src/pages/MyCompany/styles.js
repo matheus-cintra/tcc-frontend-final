@@ -34,7 +34,7 @@ export const Row = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-top: 20px;
+  margin-top: 10px;
 
   &:last-child {
     justify-content: space-between;
@@ -114,13 +114,13 @@ export const SearchContainer = styled.div`
 `;
 
 export const LoadingScreen = styled.div`
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #3498db; /* Blue */
+  border: 10px solid #f3f3f3;
+  border-top: 10px solid #455a64;
   border-radius: 50%;
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   animation: spin 2s linear infinite;
-  padding: 100px;
+  padding: 60px;
 
   @keyframes spin {
     0% {
@@ -166,4 +166,54 @@ export const RemoveButton = styled.button`
   border-radius: 5px;
   height: 30px;
   width: 100px;
+`;
+
+export const LoadingContainer = styled.div`
+  max-height: calc(100vh - 170px);
+  height: 100%;
+  margin: 0 0 25px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+
+export const TextLoadingDocuments = styled.span`
+  font-size: 16px;
+  color: #455a64;
+  margin-bottom: 15px;
+  font-weight: 600;
+`;
+
+export const FloatingLabelInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  input {
+    -webkit-appearance: none !important;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    border: none;
+    background: #f3f3f3;
+  }
+`;
+
+export const FloatingLabel = styled.label`
+  display: inline-block;
+  z-index: 2;
+  position: absolute;
+  transition: all 150ms ease-in;
+  color: #9a9a9a;
+  margin-left: 15px !important;
+  cursor: text;
+
+  transform: ${props => (props.active ? 'translateY(-17px)' : null)};
+  font-size: ${props => (props.active ? '0.8em' : null)};
+  color: ${props => (props.active ? '#9a9a9a' : null)};
+  text-shadow: ${props =>
+    props.active
+      ? '1px 0 0 #fff, -1px 0 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff'
+      : null};
 `;

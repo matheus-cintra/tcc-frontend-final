@@ -31,7 +31,27 @@ function formatPrice(price, type) {
   return finalPrice;
 }
 
+function normalize(str, strCase) {
+  if (!str) return;
+
+  const result = str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  if (strCase === 'lower') {
+    return result.toLowerCase();
+  }
+  if (strCase === 'upper') {
+    return result.toUpperCase();
+  }
+  return result;
+}
+
+function escapeRegexCharacters(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export default {
   returnOnlyNumbers,
   formatPrice,
+  normalize,
+  escapeRegexCharacters,
 };
