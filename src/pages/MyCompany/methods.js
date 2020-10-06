@@ -135,6 +135,7 @@ async function handleCepSearch(
 ) {
   const data = formRef.current.getData();
   if (!data.address.cep) return;
+  setCompanyInfo({ ...companyInfo });
   setSearching(true);
   try {
     const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
