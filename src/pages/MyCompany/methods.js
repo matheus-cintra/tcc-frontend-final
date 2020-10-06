@@ -71,7 +71,8 @@ async function handleSubmit(
   attachmentId,
   dispatch,
   setCompany,
-  companyLogo
+  companyLogo,
+  setCompanyInfo
 ) {
   try {
     formRef.current.setErrors({});
@@ -109,6 +110,8 @@ async function handleSubmit(
     }
 
     dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
+
+    setCompanyInfo(data);
 
     toast.success('Empresa Atualizada.');
   } catch (error) {

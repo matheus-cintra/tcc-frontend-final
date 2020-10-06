@@ -148,7 +148,8 @@ function MyCompany() {
       attachmentId,
       dispatch,
       setCompany,
-      companyLogo
+      companyLogo,
+      setCompanyInfo
     );
 
   const handleCepSearchMethod = () =>
