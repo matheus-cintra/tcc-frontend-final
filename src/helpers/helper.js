@@ -13,7 +13,7 @@ function formatPrice(price, type) {
     if (price.includes(',')) {
       const numberSplit = price.toString().split(',');
       let finalPrice = `${numberSplit[0]}.${numberSplit[1]}`;
-      finalPrice = parseFloat(finalPrice);
+      finalPrice = parseFloat(finalPrice).toFixed(2);
       return finalPrice;
     }
     return parseFloat(price);

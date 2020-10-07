@@ -1,13 +1,18 @@
 import * as Yup from 'yup';
-import moment from 'moment';
+import moment from 'moment-timezone';
+// import momentTimezone from '';
+import 'moment/locale/pt-br';
 import { toast } from 'react-toastify';
 import helpers from '../../../helpers/helper';
+import api from '../../../services/api';
+
+moment.locale('pt-br');
 
 const schema = Yup.object().shape({
   customerContact: Yup.string(),
   serviceBasePrice: Yup.string(),
   serviceFinalPrice: Yup.string(),
-  serviceDate: Yup.date(),
+  serviceDate: Yup.string(),
   serviceDescription: Yup.string(),
   paymentMethod: Yup.string(),
   paymentDate: Yup.string(),
@@ -50,7 +55,13 @@ function selectSuggestion(suggestion, setReg, formRef, name) {
   formRef.current.setFieldValue([name], suggestion.name);
 }
 
-async function submit(form, setSubmitting, formRef) {
+async function submit(
+  form,
+  setSubmitting,
+  formRef,
+  serviceOrderId,
+  handleClose
+) {
   form.data.customerName = form.customer.name;
   form.data.serviceName = form.service.name;
 
@@ -63,21 +74,51 @@ async function submit(form, setSubmitting, formRef) {
     });
 
     const _serviceDate =
-      form.data.dateService && moment(form.data.dateService, 'DD/MM/YYYY');
-    const _paymentDate =
-      form.data.paymentDate && moment(form.data.paymentDate, 'DD/MM/YYYY');
+      form.data.dateService &&
+      moment(form.data.serviceDate).utc().tz('America/Sao_Paulo').endOf('day');
 
-    let _finalPrice = helpers.returnOnlyNumbers(form.data.finalPrice);
-    let _paymentValue = helpers.returnOnlyNumbers(form.data.paymentValue);
+    const _paymentDate =
+      form.data.paymentDate &&
+      moment(form.data.serviceDate).utc().tz('America/Sao_Paulo').endOf('day');
+
+    const _finalPrice = helpers.formatPrice(form.data.finalPrice, 'data');
+    const _paymentValue = helpers.formatPrice(form.data.paymentValue, 'data');
+    const _basePrice = helpers.formatPrice(form.data.basePrice, 'data');
 
     if (_serviceDate && !_serviceDate.isValid()) throw new Error();
     if (_paymentDate && !_paymentDate.isValid()) throw new Error();
-    if (_finalPrice === '') _finalPrice = 0;
-    if (_paymentValue === '') _paymentValue = 0;
+    // if (_finalPrice === '') _finalPrice = 0;
+    // if (_paymentValue === '') _paymentValue = 0;
 
-    //     const result = serviceOrderId
-    //       ? await api.put(`/api/v1/serviceOrders/${serviceOrderId}`, { ...data })
-    //       : await api.post('/api/v1/serviceOrders/', { ...data });
+    const ds = {
+      customerId: form.customer._id,
+      serviceId: form.service._id,
+      basePrice: _basePrice,
+      finalPrice: _finalPrice,
+      executionDate: _serviceDate,
+      description: form.data.description,
+      paymentMethod: form.data.paymentMethod,
+      paymentDate: _paymentDate,
+      paymentValue: _paymentValue,
+    };
+
+    const result = serviceOrderId
+      ? await api.put(`/api/v1/service-order/${serviceOrderId}`, {
+          ...ds,
+        })
+      : await api.post('/api/v1/service-order/', { ...ds });
+
+    if (!result.data.success) {
+      return toast.error('Eror ao atualizar cliente.');
+    }
+
+    if (serviceOrderId) {
+      toast.success('Ordem de Serviço Atualizada.');
+    } else {
+      toast.success('Ordem de Serviço Criada.');
+    }
+
+    handleClose();
   } catch (error) {
     setSubmitting(false);
     if (error instanceof Yup.ValidationError) {
@@ -89,13 +130,12 @@ async function submit(form, setSubmitting, formRef) {
 
       formRef.current.setErrors(errorMessages);
     } else {
-      console.warn('ERROR > ', error);
       return toast.error(
         (error.response &&
           error.response.data &&
           error.response.data.data &&
           error.response.data.data.message) ||
-          'Erro desconhecido'
+          'Erro na Validação dos dados.'
       );
     }
   }

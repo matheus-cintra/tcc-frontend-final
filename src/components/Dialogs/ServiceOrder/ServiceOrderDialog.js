@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import Icon from '@mdi/react';
@@ -71,7 +71,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   });
   /** ************************************************************************* */
 
-  function handlePaymentDateInitial() {
+  useCallback(() => {
     setTimeout(() => {
       const paymentDateElement = document.getElementById('inputPaymentDate');
       const event = new Event('focus');
@@ -79,11 +79,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
         paymentDateElement.dispatchEvent(event);
       }
     }, 30);
-  }
-
-  useEffect(() => {
-    handlePaymentDateInitial();
-  }, []);
+  }, [current.paymentDate]);
 
   useEffect(() => {
     const elCustomer = document.getElementById('autocompleteCustomerId');
@@ -106,15 +102,15 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
     elService.addEventListener('keyup', e => {
       if (e.key === 'Backspace') {
         if (e.target.value === '') {
-          setNoCustomerSuggestions(false);
+          setNoServiceSuggestions(false);
         }
-        setCustomerInput(e.target.value);
+        setServiceInput(e.target.value);
       }
       if (e.key === 'Delete') {
         if (e.target.value === '') {
-          setNoCustomerSuggestions(false);
+          setNoServiceSuggestions(false);
         }
-        setCustomerInput(e.target.value);
+        setServiceInput(e.target.value);
       }
     });
   }, []);
@@ -132,84 +128,10 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
         service: selectedService,
       },
       setSubmitting,
-      formRef
+      formRef,
+      serviceOrderId,
+      handleClose
     );
-
-  // async function handleSubmit(data) {
-  //   data.customerName = selectedCustomer.name;
-  //   data.serviceName = selectedService.name;
-
-  //   setSubmitting(true);
-
-  //   try {
-  //     formRef.current.setErrors({});
-  //     console.warn('data > ', data);
-  //     await schema.validate(data, {
-  //       abortEarly: false,
-  //     });
-
-  //     const today = moment();
-  //     const _serviceDate = moment(data.serviceDate);
-
-  //     console.warn('today > ', today);
-  //     console.warn('_serviceDate> ', _serviceDate);
-
-  //     if (_serviceDate.diff(today).endOf('day') < 0) {
-  //       console.warn('ERRADO');
-  //     }
-  //     return;
-  //     if (data.cnpj) {
-  //       data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
-  //     } else {
-  //       data.cpf = helpers.returnOnlyNumbers(data.cpf);
-  //     }
-
-  //     const cpfCnpjIsValid = data.cnpj
-  //       ? _cnpjCheck.isValid(data.cnpj)
-  //       : _cpfCheck.isValid(data.cpf);
-
-  //     if (!cpfCnpjIsValid) {
-  //       setSubmitting(false);
-  //       return toast.error('CPF ou CNPJ inválido');
-  //     }
-
-  //     const result = serviceOrderId
-  //       ? await api.put(`/api/v1/serviceOrders/${serviceOrderId}`, { ...data })
-  //       : await api.post('/api/v1/serviceOrders/', { ...data });
-
-  //     if (!result.data.success) {
-  //       return toast.error('Eror ao atualizar Ordem de Serviço.');
-  //     }
-
-  //     if (serviceOrderId) {
-  //       toast.success('Ordem de Serviço Atualizado.');
-  //     } else {
-  //       toast.success('Ordem de Serviço Criado.');
-  //     }
-
-  //     handleClose();
-  //   } catch (error) {
-  //     setSubmitting(false);
-  //     if (error instanceof Yup.ValidationError) {
-  //       console.warn('error > ', error);
-  //       const errorMessages = {};
-
-  //       error.inner.forEach(err => {
-  //         errorMessages[err.path] = err.message;
-  //       });
-
-  //       formRef.current.setErrors(errorMessages);
-  //     } else {
-  //       return toast.error(
-  //         (error.response &&
-  //           error.response.data &&
-  //           error.response.data.data &&
-  //           error.response.data.data.message) ||
-  //           'Erro desconhecido'
-  //       );
-  //     }
-  //   }
-  // }
 
   const handleCloseReturn = () => {
     handleClose();
@@ -242,15 +164,20 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   const clearCustomerRequest = () => clearSuggestions(setAutocompleteCustomers);
   const clearServiceRequest = () => clearSuggestions(setAutocompleteServices);
 
-  const handleAutocompleteCustomerChange = (e, { newValue }) =>
+  const handleAutocompleteCustomerChange = (e, { newValue }) => {
     autocompleteChange(newValue, setSelectedCustomer, setCustomerInput);
+  };
 
-  const handleAutocompleteServiceChange = (e, { newValue }) =>
+  const handleAutocompleteServiceChange = (e, { newValue }) => {
     autocompleteChange(newValue, setSelectedService, setServiceInput);
+  };
 
   const filterSuggestions = (value, type) => {
     switch (type) {
       case 'customer':
+        if (value !== selectedCustomer.name) {
+          setSelectedCustomer({});
+        }
         filterArray(
           value,
           customers,
@@ -261,6 +188,10 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
         break;
 
       case 'service':
+        if (value !== selectedService.name) {
+          setSelectedService({});
+        }
+
         filterArray(
           value,
           services,
@@ -317,7 +248,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
           const inputElement = document.getElementById('inputContact');
           const event = new Event('focus');
           inputElement.dispatchEvent(event);
-        }, 30);
+        }, 50);
         break;
       }
 
@@ -546,7 +477,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     Telefone
                   </FloatingLabel>
                   <Input
-                    mask="99-99999-9999"
+                    mask="(99) 99999-9999"
                     id="inputContact"
                     name="phone"
                     onFocus={() =>

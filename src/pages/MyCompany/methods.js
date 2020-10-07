@@ -227,7 +227,6 @@ async function handleCepSearch(
 ) {
   const data = formRef.current.getData();
   if (!data.address.cep) return;
-  console.warn('data > ', data);
   setSearching(true);
   try {
     const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
@@ -246,7 +245,6 @@ async function handleCepSearch(
       setSearching(false);
     }
   } catch (err) {
-    console.warn('erro > ', err);
     setSearching(false);
     return toast.error(err.response.data.data.message);
   }

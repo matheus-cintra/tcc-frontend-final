@@ -25,6 +25,7 @@ async function getRegisters(limit = undefined, skip = undefined) {
   docs = docs.map(serviceorder => {
     return {
       ...serviceorder,
+      name: serviceorder.customer[0].name,
       registerSince: moment(serviceorder.createdAt, 'YYYY-MM-DD').format(
         'DD/MM/YYYY'
       ),

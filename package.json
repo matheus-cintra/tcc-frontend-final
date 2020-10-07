@@ -51,6 +51,7 @@
     "immer": "^6.0.9",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.29.0",
+    "moment-timezone": "^0.5.31",
     "polished": "^3.6.3",
     "prop-types": "^15.7.2",
     "rc-steps": "^4.0.1",
