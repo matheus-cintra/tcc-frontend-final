@@ -279,8 +279,6 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   function handleDispatchEvents() {
     const event = new Event('focus');
 
-    console.warn('cuyrrent > ', current);
-
     const contactEl = document.getElementById('inputContact');
     contactEl.dispatchEvent(event);
 

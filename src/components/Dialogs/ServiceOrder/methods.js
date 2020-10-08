@@ -71,7 +71,6 @@ async function submit(
     await schema.validate(form.data, {
       abortEarly: false,
     });
-    console.warn('form > ', form.data);
 
     const _serviceDate =
       form.data.dateService &&
@@ -79,8 +78,6 @@ async function submit(
         .tz('America/Sao_Paulo')
         .startOf('day')
         .format();
-
-    console.warn('SERVICE > ', _serviceDate);
 
     const _paymentDate =
       form.data.paymentDate &&
@@ -107,8 +104,6 @@ async function submit(
       paymentValue: _paymentValue,
     };
 
-    console.warn('ds >', ds);
-
     const result = serviceOrderId
       ? await api.put(`/api/v1/service-order/${serviceOrderId}`, {
           ...ds,
@@ -127,7 +122,6 @@ async function submit(
 
     handleClose();
   } catch (error) {
-    console.warn('ERROR >', error);
     setSubmitting(false);
     if (error instanceof Yup.ValidationError) {
       const errorMessages = {};
