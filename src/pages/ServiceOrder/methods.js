@@ -3,6 +3,7 @@ import { mdiFactory, mdiAccount } from '@mdi/js';
 import api from '../../services/api';
 import serviceMethods from '../Service/methods';
 import customerMethods from '../Customer/methods';
+import helpers from '../../helpers/helper';
 
 async function getRegisters(limit = undefined, skip = undefined) {
   let uri;
@@ -25,6 +26,9 @@ async function getRegisters(limit = undefined, skip = undefined) {
   docs = docs.map(serviceorder => {
     return {
       ...serviceorder,
+      basePrice: helpers.formatPrice(serviceorder.basePrice),
+      finalPrice: helpers.formatPrice(serviceorder.finalPrice),
+      paymentValue: helpers.formatPrice(serviceorder.paymentValue),
       name: serviceorder.customer[0].name,
       registerSince: moment(serviceorder.createdAt, 'YYYY-MM-DD').format(
         'DD/MM/YYYY'

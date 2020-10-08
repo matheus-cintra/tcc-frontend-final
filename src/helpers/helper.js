@@ -21,6 +21,7 @@ function formatPrice(price, type) {
   if (Number.isInteger(price)) {
     return `${price},00`;
   }
+
   const numberSplit = price.toString().split('.');
   let finalPrice;
   if (numberSplit[1].length === 1) {

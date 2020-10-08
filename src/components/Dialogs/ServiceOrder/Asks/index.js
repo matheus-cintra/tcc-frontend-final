@@ -20,7 +20,7 @@ function Asks({ setAskOpen, serviceOrderId, handleClose }) {
   async function handleDelete() {
     try {
       const deleteResult = await api.delete(
-        `/api/v1/serviceOrders/${serviceOrderId}`
+        `/api/v1/service-order/${serviceOrderId}`
       );
       if (!deleteResult) throw new Error();
 
