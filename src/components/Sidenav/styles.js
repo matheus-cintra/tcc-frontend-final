@@ -25,6 +25,9 @@ export const Container = styled.nav`
 
     img {
       width: 100px;
+      height: 100px;
+      max-width: 100px;
+      max-height: 100px;
       border-radius: 50%;
       overflow: hidden;
       border: 1px solid #333;

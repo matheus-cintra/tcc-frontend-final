@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { mdiFactory, mdiAccount } from '@mdi/js';
 import api from '../../services/api';
 import serviceMethods from '../Service/methods';
@@ -28,11 +28,22 @@ async function getRegisters(limit = undefined, skip = undefined) {
       ...serviceorder,
       basePrice: helpers.formatPrice(serviceorder.basePrice),
       finalPrice: helpers.formatPrice(serviceorder.finalPrice),
-      paymentValue: helpers.formatPrice(serviceorder.paymentValue),
+      paymentValue:
+        serviceorder.paymentValue &&
+        helpers.formatPrice(serviceorder.paymentValue),
       name: serviceorder.customer[0].name,
-      registerSince: moment(serviceorder.createdAt, 'YYYY-MM-DD').format(
-        'DD/MM/YYYY'
-      ),
+      registerSince: moment(serviceorder.createdAt, 'YYYY-MM-DD')
+        .tz('America/Sao_Paulo')
+        .endOf('day')
+        .format('DD/MM/YYYY'),
+      executionDate: moment(serviceorder.executionDate, 'YYYY-MM-DD')
+        .tz('America/Sao_Paulo')
+        .endOf('day')
+        .format('DD/MM/YYYY'),
+      paymentDate: moment(serviceorder.paymentDate, 'YYYY-MM-DD')
+        .tz('America/Sao_Paulo')
+        .endOf('day')
+        .format('DD/MM/YYYY'),
       icon: serviceorder.cnpj ? mdiFactory : mdiAccount,
       subtitle: serviceorder.cnpj ? 'Jurídica' : 'Física',
     };

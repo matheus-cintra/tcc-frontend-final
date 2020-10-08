@@ -279,6 +279,8 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   function handleDispatchEvents() {
     const event = new Event('focus');
 
+    console.warn('cuyrrent > ', current);
+
     const contactEl = document.getElementById('inputContact');
     contactEl.dispatchEvent(event);
 
@@ -503,9 +505,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                           }
                         }}
                         type="text"
-                        defaultValue={moment(current.executionDate).format(
-                          'DD/MM/YYYY'
-                        )}
+                        defaultValue={current.executionDate}
                       />
                     </FloatingLabelInputContainer>
                   </>
@@ -592,9 +592,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                         });
                       }
                     }}
-                    defaultValue={moment(current.paymentDate).format(
-                      'DD/MM/YYYY'
-                    )}
+                    defaultValue={current.paymentDate}
                     type="text"
                   />
                 </FloatingLabelInputContainer>

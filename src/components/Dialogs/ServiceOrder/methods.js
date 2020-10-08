@@ -64,7 +64,6 @@ async function submit(
 ) {
   form.data.customerName = form.customer.name;
   form.data.serviceName = form.service.name;
-
   setSubmitting(true);
 
   try {
@@ -72,24 +71,30 @@ async function submit(
     await schema.validate(form.data, {
       abortEarly: false,
     });
+    console.warn('form > ', form.data);
 
     const _serviceDate =
       form.data.dateService &&
-      moment(form.data.serviceDate).utc().tz('America/Sao_Paulo').endOf('day');
+      moment(form.data.dateService, 'DD/MM/YYYY')
+        .tz('America/Sao_Paulo')
+        .startOf('day')
+        .format();
+
+    console.warn('SERVICE > ', _serviceDate);
 
     const _paymentDate =
       form.data.paymentDate &&
-      moment(form.data.serviceDate).utc().tz('America/Sao_Paulo').endOf('day');
+      moment(form.data.paymentDate, 'DD/MM/YYYY')
+        .tz('America/Sao_Paulo')
+        .startOf('day')
+        .format();
 
     const _finalPrice = helpers.formatPrice(form.data.finalPrice, 'data');
     const _paymentValue = helpers.formatPrice(form.data.paymentValue, 'data');
     const _basePrice = helpers.formatPrice(form.data.basePrice, 'data');
 
-    if (_serviceDate && !_serviceDate.isValid()) throw new Error();
-    if (_paymentDate && !_paymentDate.isValid()) throw new Error();
-    // if (_finalPrice === '') _finalPrice = 0;
-    // if (_paymentValue === '') _paymentValue = 0;
-
+    // if (_serviceDate && !_serviceDate.isValid()) throw new Error();
+    // if (_paymentDate && !_paymentDate.isValid()) throw new Error();
     const ds = {
       customerId: form.customer._id,
       serviceId: form.service._id,
@@ -101,6 +106,8 @@ async function submit(
       paymentDate: _paymentDate,
       paymentValue: _paymentValue,
     };
+
+    console.warn('ds >', ds);
 
     const result = serviceOrderId
       ? await api.put(`/api/v1/service-order/${serviceOrderId}`, {
@@ -120,6 +127,7 @@ async function submit(
 
     handleClose();
   } catch (error) {
+    console.warn('ERROR >', error);
     setSubmitting(false);
     if (error instanceof Yup.ValidationError) {
       const errorMessages = {};

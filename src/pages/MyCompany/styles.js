@@ -137,6 +137,18 @@ export const CompanyImage = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+
+  width: 250px;
+  height: 300px;
+  border-radius: 15px;
+  margin-top: 20px;
+
+  span {
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #9a9a9a;
+  }
 
   img {
     width: 200px;

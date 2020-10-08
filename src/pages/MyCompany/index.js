@@ -161,6 +161,7 @@ function MyCompany() {
                   }}
                   defaultValue={companyInfo.companyName}
                   name="companyName"
+                  disabled
                 />
               </FloatingLabelInputContainer>
 
@@ -179,6 +180,7 @@ function MyCompany() {
                   }}
                   defaultValue={companyInfo._cnpj}
                   name="cnpj"
+                  disabled
                 />
               </FloatingLabelInputContainer>
             </Row>
@@ -271,7 +273,6 @@ function MyCompany() {
                       companyInfo.address ? companyInfo.address.cep : ''
                     }
                     name="address.cep"
-                    // style={{ width: '30%' }}
                   />
                 </FloatingLabelInputContainer>
                 <SearchButton onClick={handleCepSearchMethod}>
@@ -428,25 +429,6 @@ function MyCompany() {
                   disabled
                 />
               </FloatingLabelInputContainer>
-
-              {/* <DefaultInput
-                name="address.city"
-                type="text"
-                placeholder="Cidade"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.city : ''
-                }
-                disabled
-              />
-              <DefaultInput
-                name="address.state"
-                type="text"
-                placeholder="Estado"
-                defaultValue={
-                  companyInfo.address ? companyInfo.address.state : ''
-                }
-                disabled
-              /> */}
             </Row>
             <Row>
               <input
@@ -456,12 +438,15 @@ function MyCompany() {
                 onChange={e => handleUploadMethod(e)}
               />
               {!companyLogo.fileLink ? (
-                <UploadImage type="button" onClick={handleClickToUpload}>
-                  Adicionar Imagem
-                </UploadImage>
+                <CompanyImage>
+                  <UploadImage type="button" onClick={handleClickToUpload}>
+                    Adicionar Logotipo
+                  </UploadImage>
+                </CompanyImage>
               ) : null}
               {companyLogo.fileLink ? (
                 <CompanyImage>
+                  <span>Logotipo da Empresa</span>
                   <img src={companyLogo.fileLink} alt="Company Logo" />
                   <RemoveButton type="button" onClick={handleOpenAskDialog}>
                     <Icon
