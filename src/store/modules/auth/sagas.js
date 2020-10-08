@@ -27,9 +27,10 @@ export function* signIn({ payload }) {
         imageProfile.data.data && imageProfile.data.data.fileLink;
     }
 
-    yield put(
-      setCompany(company[0].fantasyName, company[0]._companyLogo[0].fileLink)
-    );
+    const { fantasyName } = company[0];
+    const companyLogo =
+      company[0]._companyLogo[0] && company[0]._companyLogo[0].fileLink;
+    yield put(setCompany(fantasyName, companyLogo));
 
     yield put(signInSuccess(token, userToFront));
 
