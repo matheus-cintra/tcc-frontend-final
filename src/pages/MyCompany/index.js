@@ -4,12 +4,14 @@ import Icon from '@mdi/react';
 import { mdiAccountSearch, mdiDelete } from '@mdi/js';
 
 import Modal from '../../components/Modals';
-import Asks from '../../components/Dialogs/Asks';
+import Asks from './Dialogs/Asks';
 
 import { setCompany } from '../../store/modules/company/actions';
 import { validateCompany } from '../../Schemas/globalSchemas';
 
 import FloatLabelInput from '../../components/FloatLabel/Input';
+
+import { store } from '../../store';
 
 import {
   getCompanyInfo,
@@ -54,6 +56,9 @@ function MyCompany() {
     email: false,
     phone: false,
   });
+
+  const state = store.getState();
+  const accountId = state.user.profile._id;
 
   const dispatch = useDispatch();
 
@@ -115,11 +120,10 @@ function MyCompany() {
     return (
       <Asks
         setAskOpen={handleOpenAskDialog}
-        registerId={
+        attachmentId={
           companyLogo && companyLogo._id ? companyLogo._id : attachmentId
         }
-        apiToCall="/api/v1/attachments/"
-        forceReload={false}
+        accountId={accountId}
         closeReturn={handleCloseReturn}
       />
     );

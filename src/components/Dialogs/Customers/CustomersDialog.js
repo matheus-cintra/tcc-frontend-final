@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan, mdiAccountSearch } from '@mdi/js';
@@ -12,6 +12,7 @@ import Divider from '../../Divider';
 import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
 import Asks from './Asks';
+import FloatLabelInput from '../../FloatLabel/Input';
 
 import {
   Container,
@@ -23,6 +24,11 @@ import {
   InputContainer,
   SearchContainer,
   SearchButton,
+  LoadingContainer,
+  TextLoadingDocuments,
+  LoadingScreen,
+  FloatingLabelInputContainer,
+  FloatingLabel,
 } from './styles';
 
 function CustomerDialog({ setOpen, current }) {
@@ -34,6 +40,21 @@ function CustomerDialog({ setOpen, current }) {
   const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+
+  const [inputActive, setInputActive] = useState({
+    customerName: false,
+    cnpj: false,
+    contactPhone: false,
+    contactEmail: false,
+    description: false,
+    cep: false,
+    address: false,
+    number: false,
+    neighborhood: false,
+    additional: false,
+    city: false,
+    state: false,
+  });
 
   const schema = Yup.object().shape({
     name: Yup.string().required('Nome Obrigatório'),
@@ -175,6 +196,42 @@ function CustomerDialog({ setOpen, current }) {
     );
   };
 
+  function handleDispatchEvents() {
+    const event = new Event('focus');
+
+    const customerNameEl = document.getElementById('customerName');
+    customerNameEl.dispatchEvent(event);
+
+    // const basePriceEl = document.getElementById('basePriceId');
+    // basePriceEl.dispatchEvent(event);
+
+    // const finalPrice = document.getElementById('finalPriceId');
+    // finalPrice.dispatchEvent(event);
+
+    // const serviceDateEl = document.getElementById('inputDateService');
+    // serviceDateEl.dispatchEvent(event);
+
+    // const inputDescriptionEl = document.getElementById('inputDescription');
+    // inputDescriptionEl.dispatchEvent(event);
+
+    // const inputPaymentMethodEl = document.getElementById('inputPaymentMethod');
+    // inputPaymentMethodEl.dispatchEvent(event);
+
+    // const inputPaymentDateEl = document.getElementById('inputPaymentDate');
+    // inputPaymentDateEl.dispatchEvent(event);
+
+    // const inputPaymentValueEl = document.getElementById('inputPaymentValue');
+    // inputPaymentValueEl.dispatchEvent(event);
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (customerId) {
+        handleDispatchEvents();
+      }
+    }, 50);
+  }, []);
+
   return (
     <>
       <Toolbar>
@@ -189,19 +246,290 @@ function CustomerDialog({ setOpen, current }) {
         />
       </Toolbar>
       {customerId ? (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <fieldset disabled={submitting}>
+        <>
+          <LoadingContainer style={{ display: searching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>Buscando Endereço</TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: searching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+              <fieldset disabled={submitting}>
+                <Divider>Dádos Básicos</Divider>
+                <RowContainer>
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="customerName"
+                      active={inputActive.customerName}
+                    >
+                      Cliente
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="customerName"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, customerName: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            customerName: false,
+                          });
+                        }
+                      }}
+                      defaultValue={current.name}
+                      name="customerName"
+                      required
+                    />
+                  </FloatingLabelInputContainer>
+                  {/* <InputContainer style={{ marginRight: '5px' }}>
+                    <DefaultInput
+                      name="name"
+                      type="text"
+                      placeholder="Nome*"
+                      defaultValue={current.name}
+                      required
+                    />
+                  </InputContainer> */}
+                </RowContainer>
+                <RowContainer>
+                  <label>
+                    <input
+                      type="radio"
+                      value="1"
+                      name="entityType"
+                      defaultChecked={current.entityType === '1'}
+                      onChange={() => handleOptionChange('1')}
+                    />
+                    Pessoa Física
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="entityType"
+                      value="2"
+                      defaultChecked={current.entityType === '2'}
+                      onChange={() => handleOptionChange('2')}
+                    />
+                    Pessoa Jurídica
+                  </label>
+                  {entityType === '1' ? (
+                    <InputContainer
+                      style={{
+                        width: '49%',
+                        marginRight: '5px',
+                      }}
+                    >
+                      <Input
+                        mask="999.999.999-99"
+                        name="cpf"
+                        type="text"
+                        placeholder="CPF"
+                        defaultValue={current.cpf}
+                      />
+                    </InputContainer>
+                  ) : (
+                    <InputContainer
+                      style={{
+                        width: '49%',
+                        marginRight: '5px',
+                      }}
+                    >
+                      <Input
+                        mask="99.999.999/9999-99"
+                        defaultValue={current.cnpj}
+                        name="cnpj"
+                        type="text"
+                        placeholder="CNPJ"
+                      />
+                    </InputContainer>
+                  )}
+                </RowContainer>
+                <RowContainer>
+                  <InputContainer
+                    style={{
+                      width: '50%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <Input
+                      mask="99-99999-9999"
+                      defaultValue={current.phone}
+                      name="phone"
+                      type="text"
+                      placeholder="Telefone"
+                    />
+                  </InputContainer>
+
+                  <InputContainer
+                    style={{
+                      width: '50%',
+                      marginLeft: '5px',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="email"
+                      defaultValue={current.email}
+                      type="text"
+                      placeholder="Email"
+                    />
+                  </InputContainer>
+                </RowContainer>
+                <RowContainer>
+                  <InputContainer
+                    style={{
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="description"
+                      type="text"
+                      placeholder="Descrição"
+                      defaultValue={current.description}
+                    />
+                  </InputContainer>
+                </RowContainer>
+
+                <Divider>Endereço</Divider>
+
+                <RowContainer>
+                  <SearchContainer>
+                    <InputContainer
+                      style={{
+                        width: '100%',
+                        marginRight: '5px',
+                      }}
+                    >
+                      <DefaultInput
+                        name="address.cep"
+                        type="text"
+                        placeholder="CEP"
+                        defaultValue={current.address && current.address.cep}
+                      />
+                    </InputContainer>
+                    <SearchButton
+                      onClick={handleCepSearch}
+                      disabled={searching}
+                    >
+                      <Icon
+                        path={mdiAccountSearch}
+                        title="Buscar Cep"
+                        size="30px"
+                        color="#333"
+                      />
+                    </SearchButton>
+                  </SearchContainer>
+                  <InputContainer
+                    style={{
+                      width: '65%',
+                      marginLeft: '5px',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.address"
+                      defaultValue={current.address && current.address.address}
+                      type="text"
+                      placeholder="Rua"
+                    />
+                  </InputContainer>
+                </RowContainer>
+                <RowContainer>
+                  <InputContainer
+                    style={{
+                      width: '15%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      maxLength="5"
+                      name="address.number"
+                      type="text"
+                      placeholder="Número"
+                      defaultValue={current.address && current.address.number}
+                    />
+                  </InputContainer>
+                  <InputContainer
+                    style={{
+                      width: '42%',
+                      marginLeft: '5px',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.neighborhood"
+                      type="text"
+                      placeholder="Bairro"
+                      defaultValue={
+                        current.address && current.address.neighborhood
+                      }
+                    />
+                  </InputContainer>
+                  <InputContainer
+                    style={{
+                      width: '42%',
+                      marginRight: '5px',
+                      marginLeft: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.additional"
+                      type="text"
+                      placeholder="Complemento"
+                      defaultValue={
+                        current.address && current.address.additional
+                      }
+                    />
+                  </InputContainer>
+                </RowContainer>
+                <RowContainer>
+                  <InputContainer
+                    style={{
+                      width: '50%',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.city"
+                      type="text"
+                      placeholder="Cidade"
+                      defaultValue={current.address && current.address.city}
+                    />
+                  </InputContainer>
+                  <InputContainer
+                    style={{
+                      width: '50%',
+                      marginLeft: '5px',
+                      marginRight: '5px',
+                    }}
+                  >
+                    <DefaultInput
+                      name="address.state"
+                      type="text"
+                      placeholder="Estado"
+                      defaultValue={current.address && current.address.state}
+                    />
+                  </InputContainer>
+                </RowContainer>
+              </fieldset>
+            </Form>
+          </Container>
+        </>
+      ) : (
+        <>
+          <LoadingContainer style={{ display: searching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>
+              Carregando Dados da Empresas
+            </TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: searching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
               <Divider>Dádos Básicos</Divider>
               <RowContainer>
                 <InputContainer style={{ marginRight: '5px' }}>
-                  <DefaultInput
-                    name="name"
-                    type="text"
-                    placeholder="Nome*"
-                    defaultValue={current.name}
-                    required
-                  />
+                  <DefaultInput name="name" type="text" placeholder="Nome*" />
                 </InputContainer>
               </RowContainer>
               <RowContainer>
@@ -209,8 +537,7 @@ function CustomerDialog({ setOpen, current }) {
                   <input
                     type="radio"
                     value="1"
-                    name="entityType"
-                    defaultChecked={current.entityType === '1'}
+                    checked={entityType === '1'}
                     onChange={() => handleOptionChange('1')}
                   />
                   Pessoa Física
@@ -218,9 +545,8 @@ function CustomerDialog({ setOpen, current }) {
                 <label>
                   <input
                     type="radio"
-                    name="entityType"
                     value="2"
-                    defaultChecked={current.entityType === '2'}
+                    checked={entityType === '2'}
                     onChange={() => handleOptionChange('2')}
                   />
                   Pessoa Jurídica
@@ -237,7 +563,6 @@ function CustomerDialog({ setOpen, current }) {
                       name="cpf"
                       type="text"
                       placeholder="CPF"
-                      defaultValue={current.cpf}
                     />
                   </InputContainer>
                 ) : (
@@ -249,7 +574,6 @@ function CustomerDialog({ setOpen, current }) {
                   >
                     <Input
                       mask="99.999.999/9999-99"
-                      defaultValue={current.cnpj}
                       name="cnpj"
                       type="text"
                       placeholder="CNPJ"
@@ -266,7 +590,6 @@ function CustomerDialog({ setOpen, current }) {
                 >
                   <Input
                     mask="99-99999-9999"
-                    defaultValue={current.phone}
                     name="phone"
                     type="text"
                     placeholder="Telefone"
@@ -280,12 +603,7 @@ function CustomerDialog({ setOpen, current }) {
                     marginRight: '5px',
                   }}
                 >
-                  <DefaultInput
-                    name="email"
-                    defaultValue={current.email}
-                    type="text"
-                    placeholder="Email"
-                  />
+                  <DefaultInput name="email" type="text" placeholder="Email" />
                 </InputContainer>
               </RowContainer>
               <RowContainer>
@@ -298,7 +616,6 @@ function CustomerDialog({ setOpen, current }) {
                     name="description"
                     type="text"
                     placeholder="Descrição"
-                    defaultValue={current.description}
                   />
                 </InputContainer>
               </RowContainer>
@@ -317,7 +634,6 @@ function CustomerDialog({ setOpen, current }) {
                       name="address.cep"
                       type="text"
                       placeholder="CEP"
-                      defaultValue={current.address && current.address.cep}
                     />
                   </InputContainer>
                   <SearchButton onClick={handleCepSearch} disabled={searching}>
@@ -338,7 +654,6 @@ function CustomerDialog({ setOpen, current }) {
                 >
                   <DefaultInput
                     name="address.address"
-                    defaultValue={current.address && current.address.address}
                     type="text"
                     placeholder="Rua"
                   />
@@ -356,7 +671,6 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.number"
                     type="text"
                     placeholder="Número"
-                    defaultValue={current.address && current.address.number}
                   />
                 </InputContainer>
                 <InputContainer
@@ -370,23 +684,19 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.neighborhood"
                     type="text"
                     placeholder="Bairro"
-                    defaultValue={
-                      current.address && current.address.neighborhood
-                    }
                   />
                 </InputContainer>
                 <InputContainer
                   style={{
                     width: '42%',
-                    marginRight: '5px',
                     marginLeft: '5px',
+                    marginRight: '5px',
                   }}
                 >
                   <DefaultInput
                     name="address.additional"
                     type="text"
                     placeholder="Complemento"
-                    defaultValue={current.address && current.address.additional}
                   />
                 </InputContainer>
               </RowContainer>
@@ -401,7 +711,6 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.city"
                     type="text"
                     placeholder="Cidade"
-                    defaultValue={current.address && current.address.city}
                   />
                 </InputContainer>
                 <InputContainer
@@ -415,219 +724,12 @@ function CustomerDialog({ setOpen, current }) {
                     name="address.state"
                     type="text"
                     placeholder="Estado"
-                    defaultValue={current.address && current.address.state}
                   />
                 </InputContainer>
               </RowContainer>
-            </fieldset>
-          </Form>
-        </Container>
-      ) : (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <Divider>Dádos Básicos</Divider>
-            <RowContainer>
-              <InputContainer style={{ marginRight: '5px' }}>
-                <DefaultInput name="name" type="text" placeholder="Nome*" />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <label>
-                <input
-                  type="radio"
-                  value="1"
-                  checked={entityType === '1'}
-                  onChange={() => handleOptionChange('1')}
-                />
-                Pessoa Física
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="2"
-                  checked={entityType === '2'}
-                  onChange={() => handleOptionChange('2')}
-                />
-                Pessoa Jurídica
-              </label>
-              {entityType === '1' ? (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="999.999.999-99"
-                    name="cpf"
-                    type="text"
-                    placeholder="CPF"
-                  />
-                </InputContainer>
-              ) : (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99.999.999/9999-99"
-                    name="cnpj"
-                    type="text"
-                    placeholder="CNPJ"
-                  />
-                </InputContainer>
-              )}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <Input
-                  mask="99-99999-9999"
-                  name="phone"
-                  type="text"
-                  placeholder="Telefone"
-                />
-              </InputContainer>
-
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput name="email" type="text" placeholder="Email" />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="description"
-                  type="text"
-                  placeholder="Descrição"
-                />
-              </InputContainer>
-            </RowContainer>
-
-            <Divider>Endereço</Divider>
-
-            <RowContainer>
-              <SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '100%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.cep"
-                    type="text"
-                    placeholder="CEP"
-                  />
-                </InputContainer>
-                <SearchButton onClick={handleCepSearch} disabled={searching}>
-                  <Icon
-                    path={mdiAccountSearch}
-                    title="Buscar Cep"
-                    size="30px"
-                    color="#333"
-                  />
-                </SearchButton>
-              </SearchContainer>
-              <InputContainer
-                style={{
-                  width: '65%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.address"
-                  type="text"
-                  placeholder="Rua"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '15%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  maxLength="5"
-                  name="address.number"
-                  type="text"
-                  placeholder="Número"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.neighborhood"
-                  type="text"
-                  placeholder="Bairro"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.additional"
-                  type="text"
-                  placeholder="Complemento"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.city"
-                  type="text"
-                  placeholder="Cidade"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.state"
-                  type="text"
-                  placeholder="Estado"
-                />
-              </InputContainer>
-            </RowContainer>
-          </Form>
-        </Container>
+            </Form>
+          </Container>
+        </>
       )}
       <BottomActions>
         {customerId ? (

@@ -32,7 +32,6 @@ function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
 
       handleClose(userUpdate);
     } catch (error) {
-      console.warn('ERROR > ', error);
       toast.error('Falha ao apagar imagem.');
     }
   }
