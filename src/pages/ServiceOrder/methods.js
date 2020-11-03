@@ -55,7 +55,7 @@ async function getRegisters(limit = undefined, skip = undefined) {
           .tz('America/Sao_Paulo')
           .endOf('day')
           .format('DD/MM/YYYY'),
-      icon: serviceorder.cnpj ? mdiFactory : mdiAccount,
+      icon: serviceorder.customer[0].cnpj ? mdiFactory : mdiAccount,
       subtitle: serviceorder.cnpj ? 'Jurídica' : 'Física',
       formatedPrice:
         serviceorder.paymentValue &&
@@ -63,6 +63,12 @@ async function getRegisters(limit = undefined, skip = undefined) {
       statusPaid: serviceorder.paymentValue ? mdiCheck : mdiAlertCircleOutline,
     };
   });
+
+  // console.warn('docs > ', moment(docs[0].executionDate).valueOf());
+
+  // docs = docs.sort(
+
+  // );
 
   return { docs, docCount };
 }

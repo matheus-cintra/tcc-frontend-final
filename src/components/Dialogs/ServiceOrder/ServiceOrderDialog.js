@@ -51,7 +51,6 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   const [selectedCustomer, setSelectedCustomer] = useState({});
   const [selectedService, setSelectedService] = useState({});
   const [paid, setPaid] = useState(false);
-  const [hasPaymentValue, setHasPaymentValue] = useState(false);
   const [inputActive, setInputActive] = useState({
     customer: false,
     contact: false,
@@ -321,20 +320,12 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
         setServiceInput(current.service[0].name);
         handleDispatchEvents();
       }
-    }, 50);
+    }, 100);
   }, []); //eslint-disable-line
 
   const handleNoCustomer = () => history.push('/customer');
 
   const handleNoService = () => history.push('/service');
-
-  const handleHasPaymentValue = () => {
-    setTimeout(() => {
-      if (formRef.current === null) return;
-      const data = formRef.current.getData();
-      return data.paymentValue !== '';
-    }, 200);
-  };
 
   return (
     <>
@@ -609,32 +600,6 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     type="text"
                   />
                 </FloatingLabelInputContainer>
-                <FloatingLabelInputContainer>
-                  <FloatingLabel
-                    htmlFor="inputPaymentValue"
-                    active={inputActive.paymentValue}
-                  >
-                    Valor Total Pago
-                  </FloatingLabel>
-                  <FloatLabelInput
-                    id="inputPaymentValue"
-                    type="number"
-                    onChange={e => setHasPaymentValue(e.target.value !== '')}
-                    onFocus={() =>
-                      setInputActive({ ...inputActive, paymentValue: true })
-                    }
-                    onBlur={e => {
-                      if (e.target.value === '') {
-                        setInputActive({ ...inputActive, paymentValue: false });
-                      }
-                    }}
-                    name="paymentValue"
-                    defaultValue={
-                      current.paymentValue &&
-                      helper.formatPrice(current.paymentValue, 'data')
-                    }
-                  />
-                </FloatingLabelInputContainer>
                 <div style={{ marginLeft: '5px' }}>
                   <label htmlFor="checkPaid" style={{ marginLeft: 0 }}>
                     Pago?
@@ -646,133 +611,39 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     name="paid"
                     onChange={() => setPaid(isPaid => !isPaid)}
                     defaultChecked={current.paid}
-                    disabled={!hasPaymentValue}
                   />
                 </div>
+                {paid || current.paid ? (
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="inputPaymentValue"
+                      active={inputActive.paymentValue}
+                    >
+                      Valor Total Pago
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="inputPaymentValue"
+                      type="number"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, paymentValue: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            paymentValue: false,
+                          });
+                        }
+                      }}
+                      name="paymentValue"
+                      defaultValue={
+                        current.paymentValue &&
+                        helper.formatPrice(current.paymentValue, 'data')
+                      }
+                    />
+                  </FloatingLabelInputContainer>
+                ) : null}
               </RowContainer>
-              {/* <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99-99999-9999"
-                    defaultValue={current.phone}
-                    name="phone"
-                    type="text"
-                    placeholder="Telefone"
-                  />
-                </InputContainer>
-
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="email"
-                    defaultValue={current.email}
-                    type="text"
-                    placeholder="Email"
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="description"
-                    type="text"
-                    placeholder="Descrição"
-                    defaultValue={current.description}
-                  />
-                </InputContainer>
-              </RowContainer>
-
-              <Divider>Endereço</Divider>
-
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '15%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    maxLength="5"
-                    name="address.number"
-                    type="text"
-                    placeholder="Número"
-                    defaultValue={current.address && current.address.number}
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.neighborhood"
-                    type="text"
-                    placeholder="Bairro"
-                    defaultValue={
-                      current.address && current.address.neighborhood
-                    }
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginRight: '5px',
-                    marginLeft: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.additional"
-                    type="text"
-                    placeholder="Complemento"
-                    defaultValue={current.address && current.address.additional}
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.city"
-                    type="text"
-                    placeholder="Cidade"
-                    defaultValue={current.address && current.address.city}
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.state"
-                    type="text"
-                    placeholder="Estado"
-                    defaultValue={current.address && current.address.state}
-                  />
-                </InputContainer>
-              </RowContainer> */}
             </fieldset>
           </Form>
         </Container>
@@ -1031,32 +902,43 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     type="text"
                   />
                 </FloatingLabelInputContainer>
-                <FloatingLabelInputContainer>
-                  <FloatingLabel
-                    htmlFor="inputPaymentValue"
-                    active={inputActive.paymentValue}
-                  >
-                    Valor Total Pago
-                  </FloatingLabel>
-                  <FloatLabelInput
-                    id="inputPaymentValue"
-                    type="text"
-                    onFocus={() =>
-                      setInputActive({ ...inputActive, paymentValue: true })
-                    }
-                    onBlur={e => {
-                      if (e.target.value === '') {
-                        setInputActive({ ...inputActive, paymentValue: false });
-                      }
-                    }}
-                    name="paymentValue"
+                <div style={{ marginLeft: '5px' }}>
+                  <label htmlFor="checkPaid" style={{ marginLeft: 0 }}>
+                    Pago?
+                  </label>
+                  <input
+                    style={{ marginTop: '10px' }}
+                    type="checkbox"
+                    name="paid"
+                    onChange={() => setPaid(isPaid => !isPaid)}
                   />
-                </FloatingLabelInputContainer>
-                <input
-                  type="checkbox"
-                  name="paid"
-                  disabled={!handleHasPaymentValue()}
-                />
+                </div>
+                {paid ? (
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="inputPaymentValue"
+                      active={inputActive.paymentValue}
+                    >
+                      Valor Total Pago
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="inputPaymentValue"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, paymentValue: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            paymentValue: false,
+                          });
+                        }
+                      }}
+                      name="paymentValue"
+                    />
+                  </FloatingLabelInputContainer>
+                ) : null}
               </RowContainer>
             </fieldset>
           </Form>
