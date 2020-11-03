@@ -10,6 +10,8 @@ import Modal from '../../Modals';
 import Asks from './Asks';
 import FloatLabelInput from '../../FloatLabel/Input';
 import TextAreaInput from '../../InputTextArea/Input';
+import helper from '../../../helpers/helper';
+
 import {
   clearSuggestions,
   autocompleteChange,
@@ -48,6 +50,8 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
   const [noServiceSuggestions, setNoServiceSuggestions] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState({});
   const [selectedService, setSelectedService] = useState({});
+  const [paid, setPaid] = useState(false);
+  const [hasPaymentValue, setHasPaymentValue] = useState(false);
   const [inputActive, setInputActive] = useState({
     customer: false,
     contact: false,
@@ -125,6 +129,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
         data,
         customer: selectedCustomer,
         service: selectedService,
+        paid,
       },
       setSubmitting,
       formRef,
@@ -278,7 +283,6 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
 
   function handleDispatchEvents() {
     const event = new Event('focus');
-
     const contactEl = document.getElementById('inputContact');
     contactEl.dispatchEvent(event);
 
@@ -295,13 +299,16 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
     inputDescriptionEl.dispatchEvent(event);
 
     const inputPaymentMethodEl = document.getElementById('inputPaymentMethod');
-    inputPaymentMethodEl.dispatchEvent(event);
+    if (current.paymentMethod && current.paymentMethod !== '')
+      inputPaymentMethodEl.dispatchEvent(event);
 
     const inputPaymentDateEl = document.getElementById('inputPaymentDate');
-    inputPaymentDateEl.dispatchEvent(event);
+    if (current.paymentDate && current.paymentDate !== '')
+      inputPaymentDateEl.dispatchEvent(event);
 
     const inputPaymentValueEl = document.getElementById('inputPaymentValue');
-    inputPaymentValueEl.dispatchEvent(event);
+    if (current.paymentValue && current.paymentValue !== '')
+      inputPaymentValueEl.dispatchEvent(event);
   }
 
   useEffect(() => {
@@ -321,6 +328,14 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
 
   const handleNoService = () => history.push('/service');
 
+  const handleHasPaymentValue = () => {
+    setTimeout(() => {
+      if (formRef.current === null) return;
+      const data = formRef.current.getData();
+      return data.paymentValue !== '';
+    }, 200);
+  };
+
   return (
     <>
       <Toolbar>
@@ -339,7 +354,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
       {serviceOrderId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <fieldset disabled={submitting}>
+            <fieldset disabled={submitting || current.paid}>
               <Divider>Dados da Ordem de Serviço</Divider>
               <RowContainer>
                 <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
@@ -603,7 +618,8 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                   </FloatingLabel>
                   <FloatLabelInput
                     id="inputPaymentValue"
-                    type="text"
+                    type="number"
+                    onChange={e => setHasPaymentValue(e.target.value !== '')}
                     onFocus={() =>
                       setInputActive({ ...inputActive, paymentValue: true })
                     }
@@ -613,9 +629,26 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                       }
                     }}
                     name="paymentValue"
-                    defaultValue={current.paymentValue}
+                    defaultValue={
+                      current.paymentValue &&
+                      helper.formatPrice(current.paymentValue, 'data')
+                    }
                   />
                 </FloatingLabelInputContainer>
+                <div style={{ marginLeft: '5px' }}>
+                  <label htmlFor="checkPaid" style={{ marginLeft: 0 }}>
+                    Pago?
+                  </label>
+                  <input
+                    style={{ marginTop: '10px' }}
+                    id="checkPaid"
+                    type="checkbox"
+                    name="paid"
+                    onChange={() => setPaid(isPaid => !isPaid)}
+                    defaultChecked={current.paid}
+                    disabled={!hasPaymentValue}
+                  />
+                </div>
               </RowContainer>
               {/* <RowContainer>
                 <InputContainer
@@ -746,270 +779,286 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
       ) : (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <Divider>Dados da Ordem de Serviço</Divider>
-            <RowContainer>
-              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
-                <FloatingLabel
-                  htmlFor="autocompleteCustomerId"
-                  active={inputActive.customer}
-                >
-                  Cliente
-                </FloatingLabel>
-                <Autocomplete
-                  suggestions={autocompleteCustomers}
-                  onSuggestionsFetchRequested={({ value }) =>
-                    filterSuggestions(value, 'customer')
-                  }
-                  onSuggestionsClearRequested={clearCustomerRequest}
-                  getSuggestionValue={getSuggestionValue}
-                  renderSuggestion={renderSuggestion}
-                  inputProps={customerInputProps}
-                  onSuggestionSelected={(e, { suggestion }) =>
-                    handleSuggestionSelect(suggestion, 'customer')
-                  }
-                  name="customerName"
-                />
-                {noCustomerSuggestions ? (
-                  <NoAutocompleteSuggestion onClick={handleNoCustomer}>
-                    Nenhum cliente encontrado. Clique para adicionar.
-                  </NoAutocompleteSuggestion>
-                ) : null}
-              </InputContainer>
-              {selectedCustomer.name ? (
-                <FloatingLabelInputContainer>
+            <fieldset disabled={submitting}>
+              <Divider>Dados da Ordem de Serviço</Divider>
+              <RowContainer>
+                <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
                   <FloatingLabel
-                    htmlFor="inputContact"
-                    active={inputActive.contact}
+                    htmlFor="autocompleteCustomerId"
+                    active={inputActive.customer}
                   >
-                    Telefone
+                    Cliente
                   </FloatingLabel>
-                  <Input
-                    mask="(99) 99999-9999"
-                    id="inputContact"
-                    name="phone"
-                    onFocus={() =>
-                      setInputActive({ ...inputActive, contact: true })
+                  <Autocomplete
+                    suggestions={autocompleteCustomers}
+                    onSuggestionsFetchRequested={({ value }) =>
+                      filterSuggestions(value, 'customer')
                     }
-                    onBlur={e => {
-                      if (e.target.value === '') {
-                        setInputActive({ ...inputActive, contact: false });
-                      }
-                    }}
-                    type="text"
-                    defaultValue={selectedCustomer.phone}
-                    disabled
+                    onSuggestionsClearRequested={clearCustomerRequest}
+                    getSuggestionValue={getSuggestionValue}
+                    renderSuggestion={renderSuggestion}
+                    inputProps={customerInputProps}
+                    onSuggestionSelected={(e, { suggestion }) =>
+                      handleSuggestionSelect(suggestion, 'customer')
+                    }
+                    name="customerName"
                   />
-                </FloatingLabelInputContainer>
-              ) : null}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
-                <FloatingLabel
-                  htmlFor="autocompleteServiceId"
-                  active={inputActive.service}
-                >
-                  Serviço Prestado
-                </FloatingLabel>
-                <Autocomplete
-                  suggestions={autocompleteServices}
-                  onSuggestionsFetchRequested={({ value }) =>
-                    filterSuggestions(value, 'service')
-                  }
-                  onSuggestionsClearRequested={clearServiceRequest}
-                  getSuggestionValue={getServicesValue}
-                  renderSuggestion={renderSuggestion}
-                  inputProps={serviceInputProps}
-                  onSuggestionSelected={(e, { suggestion }) =>
-                    handleSuggestionSelect(suggestion, 'service')
-                  }
-                  name="serviceName"
-                />
-                {noServiceSuggestions ? (
-                  <NoAutocompleteSuggestion onClick={handleNoService}>
-                    Nenhum serviço encontrado. Clique para adicionar.
-                  </NoAutocompleteSuggestion>
-                ) : null}
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              {selectedService.name ? (
-                <>
+                  {noCustomerSuggestions ? (
+                    <NoAutocompleteSuggestion onClick={handleNoCustomer}>
+                      Nenhum cliente encontrado. Clique para adicionar.
+                    </NoAutocompleteSuggestion>
+                  ) : null}
+                </InputContainer>
+                {selectedCustomer.name ? (
                   <FloatingLabelInputContainer>
                     <FloatingLabel
-                      htmlFor="basePriceId"
-                      active={inputActive.basePrice}
+                      htmlFor="inputContact"
+                      active={inputActive.contact}
                     >
-                      Preço Base R$
+                      Telefone
                     </FloatingLabel>
-                    <FloatLabelInput
-                      id="basePriceId"
-                      type="text"
+                    <Input
+                      mask="(99) 99999-9999"
+                      id="inputContact"
+                      name="phone"
                       onFocus={() =>
-                        setInputActive({ ...inputActive, basePrice: true })
+                        setInputActive({ ...inputActive, contact: true })
                       }
                       onBlur={e => {
                         if (e.target.value === '') {
-                          setInputActive({ ...inputActive, basePrice: false });
+                          setInputActive({ ...inputActive, contact: false });
                         }
                       }}
-                      name="basePrice"
-                      defaultValue={selectedService.formatedPrice}
+                      type="text"
+                      defaultValue={selectedCustomer.phone}
                       disabled
                     />
                   </FloatingLabelInputContainer>
-
-                  <FloatingLabelInputContainer>
-                    <FloatingLabel
-                      htmlFor="finalPriceId"
-                      active={inputActive.finalPrice}
-                    >
-                      Preço Final R$
-                    </FloatingLabel>
-                    <FloatLabelInput
-                      id="finalPriceId"
-                      type="text"
-                      onFocus={() =>
-                        setInputActive({ ...inputActive, finalPrice: true })
-                      }
-                      onBlur={e => {
-                        if (e.target.value === '') {
-                          setInputActive({ ...inputActive, finalPrice: false });
+                ) : null}
+              </RowContainer>
+              <RowContainer>
+                <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
+                  <FloatingLabel
+                    htmlFor="autocompleteServiceId"
+                    active={inputActive.service}
+                  >
+                    Serviço Prestado
+                  </FloatingLabel>
+                  <Autocomplete
+                    suggestions={autocompleteServices}
+                    onSuggestionsFetchRequested={({ value }) =>
+                      filterSuggestions(value, 'service')
+                    }
+                    onSuggestionsClearRequested={clearServiceRequest}
+                    getSuggestionValue={getServicesValue}
+                    renderSuggestion={renderSuggestion}
+                    inputProps={serviceInputProps}
+                    onSuggestionSelected={(e, { suggestion }) =>
+                      handleSuggestionSelect(suggestion, 'service')
+                    }
+                    name="serviceName"
+                  />
+                  {noServiceSuggestions ? (
+                    <NoAutocompleteSuggestion onClick={handleNoService}>
+                      Nenhum serviço encontrado. Clique para adicionar.
+                    </NoAutocompleteSuggestion>
+                  ) : null}
+                </InputContainer>
+              </RowContainer>
+              <RowContainer>
+                {selectedService.name ? (
+                  <>
+                    <FloatingLabelInputContainer>
+                      <FloatingLabel
+                        htmlFor="basePriceId"
+                        active={inputActive.basePrice}
+                      >
+                        Preço Base R$
+                      </FloatingLabel>
+                      <FloatLabelInput
+                        id="basePriceId"
+                        type="text"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, basePrice: true })
                         }
-                      }}
-                      name="finalPrice"
-                    />
-                  </FloatingLabelInputContainer>
-                  <FloatingLabelInputContainer>
-                    <FloatingLabel
-                      htmlFor="inputDateService"
-                      active={inputActive.dateService}
-                    >
-                      Data de Execução
-                    </FloatingLabel>
-                    <Input
-                      mask="99/99/9999"
-                      id="inputDateService"
-                      name="dateService"
-                      onFocus={() =>
-                        setInputActive({ ...inputActive, dateService: true })
-                      }
-                      onBlur={e => {
-                        if (e.target.value === '') {
-                          setInputActive({
-                            ...inputActive,
-                            dateService: false,
-                          });
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({
+                              ...inputActive,
+                              basePrice: false,
+                            });
+                          }
+                        }}
+                        name="basePrice"
+                        defaultValue={selectedService.formatedPrice}
+                        disabled
+                      />
+                    </FloatingLabelInputContainer>
+
+                    <FloatingLabelInputContainer>
+                      <FloatingLabel
+                        htmlFor="finalPriceId"
+                        active={inputActive.finalPrice}
+                      >
+                        Preço Final R$
+                      </FloatingLabel>
+                      <FloatLabelInput
+                        id="finalPriceId"
+                        type="text"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, finalPrice: true })
                         }
-                      }}
-                      type="text"
-                      defaultValue={moment().format('DD/MM/YYYY')}
-                    />
-                  </FloatingLabelInputContainer>
-                </>
-              ) : null}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  display: 'flex',
-                }}
-              >
-                <FloatingLabel
-                  htmlFor="inputDescription"
-                  active={inputActive.description}
-                  style={{ marginBottom: '60px' }}
-                >
-                  Descrição do Serviço
-                </FloatingLabel>
-                <TextAreaInput
-                  name="description"
-                  id="inputDescription"
-                  type="text"
-                  rows={5}
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, description: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({ ...inputActive, description: false });
-                    }
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({
+                              ...inputActive,
+                              finalPrice: false,
+                            });
+                          }
+                        }}
+                        name="finalPrice"
+                      />
+                    </FloatingLabelInputContainer>
+                    <FloatingLabelInputContainer>
+                      <FloatingLabel
+                        htmlFor="inputDateService"
+                        active={inputActive.dateService}
+                      >
+                        Data de Execução
+                      </FloatingLabel>
+                      <Input
+                        mask="99/99/9999"
+                        id="inputDateService"
+                        name="dateService"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, dateService: true })
+                        }
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({
+                              ...inputActive,
+                              dateService: false,
+                            });
+                          }
+                        }}
+                        type="text"
+                        defaultValue={moment().format('DD/MM/YYYY')}
+                      />
+                    </FloatingLabelInputContainer>
+                  </>
+                ) : null}
+              </RowContainer>
+              <RowContainer>
+                <InputContainer
+                  style={{
+                    display: 'flex',
                   }}
-                />
-              </InputContainer>
-            </RowContainer>
+                >
+                  <FloatingLabel
+                    htmlFor="inputDescription"
+                    active={inputActive.description}
+                    style={{ marginBottom: '60px' }}
+                  >
+                    Descrição do Serviço
+                  </FloatingLabel>
+                  <TextAreaInput
+                    name="description"
+                    id="inputDescription"
+                    type="text"
+                    rows={5}
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, description: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, description: false });
+                      }
+                    }}
+                  />
+                </InputContainer>
+              </RowContainer>
 
-            <Divider>Informações de Cobrança</Divider>
+              <Divider>Informações de Cobrança</Divider>
 
-            <RowContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel
-                  htmlFor="inputPaymentMethod"
-                  active={inputActive.paymentMethod}
-                >
-                  Método de Cobrança
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="inputPaymentMethod"
-                  type="text"
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, paymentMethod: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({ ...inputActive, paymentMethod: false });
+              <RowContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="inputPaymentMethod"
+                    active={inputActive.paymentMethod}
+                  >
+                    Método de Cobrança
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="inputPaymentMethod"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, paymentMethod: true })
                     }
-                  }}
-                  name="paymentMethod"
-                  defaultValue={selectedService.paymentMethod}
-                />
-              </FloatingLabelInputContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel
-                  htmlFor="inputPaymentDate"
-                  active={inputActive.paymentDate}
-                >
-                  Data de Pagamento
-                </FloatingLabel>
-                <Input
-                  mask="99/99/9999"
-                  id="inputPaymentDate"
-                  name="paymentDate"
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, paymentDate: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        paymentDate: false,
-                      });
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          paymentMethod: false,
+                        });
+                      }
+                    }}
+                    name="paymentMethod"
+                    defaultValue={selectedService.paymentMethod}
+                  />
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="inputPaymentDate"
+                    active={inputActive.paymentDate}
+                  >
+                    Data de Pagamento
+                  </FloatingLabel>
+                  <Input
+                    mask="99/99/9999"
+                    id="inputPaymentDate"
+                    name="paymentDate"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, paymentDate: true })
                     }
-                  }}
-                  type="text"
-                />
-              </FloatingLabelInputContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel
-                  htmlFor="inputPaymentValue"
-                  active={inputActive.paymentValue}
-                >
-                  Valor Total Pago
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="inputPaymentValue"
-                  type="text"
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, paymentValue: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({ ...inputActive, paymentValue: false });
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          paymentDate: false,
+                        });
+                      }
+                    }}
+                    type="text"
+                  />
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="inputPaymentValue"
+                    active={inputActive.paymentValue}
+                  >
+                    Valor Total Pago
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="inputPaymentValue"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, paymentValue: true })
                     }
-                  }}
-                  name="paymentValue"
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, paymentValue: false });
+                      }
+                    }}
+                    name="paymentValue"
+                  />
+                </FloatingLabelInputContainer>
+                <input
+                  type="checkbox"
+                  name="paid"
+                  disabled={!handleHasPaymentValue()}
                 />
-              </FloatingLabelInputContainer>
-            </RowContainer>
+              </RowContainer>
+            </fieldset>
           </Form>
         </Container>
       )}

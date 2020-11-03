@@ -7,10 +7,10 @@ import api from '../../../../services/api';
 
 import { Toolbar, Title, Container, AskText, BottomActions } from './styles';
 
-function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
-  const handleClose = userUpdate => {
-    closeReturn(userUpdate);
+function Asks({ setAskOpen, serviceId, handleClose }) {
+  const closeAllDialogs = () => {
     setAskOpen(open => !open);
+    handleClose();
   };
 
   const handleJustClose = () => {
@@ -19,27 +19,18 @@ function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
 
   async function handleDelete() {
     try {
-      const s3Deleted = await api.delete(`/api/v1/attachments/${attachmentId}`);
-      if (!s3Deleted) throw new Error();
-
-      const dataset = {
-        logo: null,
-      };
-
-      const userUpdate = await api.put(`/api/v1/update-account/${accountId}`, {
-        ...dataset,
-      });
-
-      handleClose(userUpdate);
+      await api.delete(`/api/v1/registration-service/${serviceId}`);
+      toast.success('Serviço removido com sucesso.');
+      closeAllDialogs();
     } catch (error) {
-      toast.error('Falha ao apagar imagem.');
+      toast.error(error.response.data.data.message);
     }
   }
 
   return (
     <>
       <Toolbar>
-        <Title>Remover Foto de Perfil</Title>
+        <Title>Remover Serviço?</Title>
         <Icon
           path={mdiClose}
           title="Close"
@@ -50,8 +41,8 @@ function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
       </Toolbar>
       <Container>
         <AskText>
-          Você tem certeza que deseja remover sua foto de perfil? Essa ação é
-          definitiva e após a exclusão, você passará a utilizar uma foto padrão.
+          Você tem certeza que deseja remover este serviço? Esta ação é
+          irreversível.
         </AskText>
         <BottomActions>
           <button type="button" onClick={handleDelete}>
@@ -70,13 +61,10 @@ export default Asks;
 
 Asks.propTypes = {
   setAskOpen: PropTypes.func.isRequired,
-  closeReturn: PropTypes.func,
-  accountId: PropTypes.string,
-  attachmentId: PropTypes.string,
+  serviceId: PropTypes.string,
+  handleClose: PropTypes.func.isRequired,
 };
 
 Asks.defaultProps = {
-  accountId: undefined,
-  attachmentId: undefined,
-  closeReturn: undefined,
+  serviceId: undefined,
 };

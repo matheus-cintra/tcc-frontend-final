@@ -102,6 +102,9 @@ async function submit(
       paymentMethod: form.data.paymentMethod,
       paymentDate: _paymentDate,
       paymentValue: _paymentValue,
+      _idxCustomerName: form.customer.name,
+      _idxServiceName: form.service.name,
+      paid: form.paid,
     };
 
     const result = serviceOrderId

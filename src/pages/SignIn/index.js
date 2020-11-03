@@ -54,13 +54,7 @@ export default function SignIn() {
           <Input name="email" type="email" placeholder="Seu e-mail" />
           <Input name="password" type="password" placeholder="Sua senha" />
 
-          <button
-            type="submit"
-            style={{
-              cursor: submitting ? 'default' : 'pointer',
-              background: submitting ? '#bdbdbd' : 'null',
-            }}
-          >
+          <button type="submit" disabled={submitting}>
             Acessar
           </button>
 

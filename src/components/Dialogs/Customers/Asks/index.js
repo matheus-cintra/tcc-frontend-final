@@ -19,12 +19,10 @@ function Asks({ setAskOpen, customerId, handleClose }) {
 
   async function handleDelete() {
     try {
-      const deleteResult = await api.delete(`/api/v1/customers/${customerId}`);
-      if (!deleteResult) throw new Error();
-
+      await api.delete(`/api/v1/customers/${customerId}`);
       closeAllDialogs();
     } catch (error) {
-      toast.error('Falha ao apagar cliente.');
+      toast.error(error.response.data.data.message);
     }
   }
 

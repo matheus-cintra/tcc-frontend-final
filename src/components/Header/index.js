@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { store } from '../../store';
+import FallbackIcon from '../../assets/fallback_icon.jpg';
 
 import { Container, Content, Profile } from './styles';
 
@@ -19,10 +20,7 @@ function Header() {
               <Link to="/profile">Meu Perfil</Link>
             </div>
             <img
-              src={
-                userProfile.imageLink ||
-                'https://api.adorable.io/avatars/48/abott@adorable.png'
-              }
+              src={userProfile.imageLink || FallbackIcon}
               alt="Profile Pic"
             />
           </Profile>

@@ -7,12 +7,12 @@ import { cpf as _cpfCheck, cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import Input from '../../InputMask/Input';
-import DefaultInput from '../../DefaultInput/Input';
 import Divider from '../../Divider';
 import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
 import Asks from './Asks';
 import FloatLabelInput from '../../FloatLabel/Input';
+import { handleDispatchEvents } from './methods';
 
 import {
   Container,
@@ -21,7 +21,6 @@ import {
   Form,
   BottomActions,
   RowContainer,
-  InputContainer,
   SearchContainer,
   SearchButton,
   LoadingContainer,
@@ -40,12 +39,13 @@ function CustomerDialog({ setOpen, current }) {
   const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+  const [cepFound, setCepFound] = useState(false);
 
   const [inputActive, setInputActive] = useState({
-    customerName: false,
+    name: false,
     cnpj: false,
-    contactPhone: false,
-    contactEmail: false,
+    phone: false,
+    email: false,
     description: false,
     cep: false,
     address: false,
@@ -95,6 +95,7 @@ function CustomerDialog({ setOpen, current }) {
   };
 
   const handleCepSearch = async () => {
+    setCepFound(false);
     const data = formRef.current.getData();
     if (!data.address.cep) return;
     setSearching(true);
@@ -102,29 +103,41 @@ function CustomerDialog({ setOpen, current }) {
       const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
       if (result.data.sucess) {
         const addressResult = result.data.data;
-        formRef.current.setFieldValue('address.cep', addressResult.cep);
-        formRef.current.setFieldValue('address.address', addressResult.address);
-        formRef.current.setFieldValue('address.number', addressResult.number);
-        formRef.current.setFieldValue(
-          'address.additional',
-          addressResult.additional
-        );
-        formRef.current.setFieldValue('address.city', addressResult.city);
-        formRef.current.setFieldValue('address.state', addressResult.state);
-        formRef.current.setFieldValue(
-          'address.neighborhood',
-          addressResult.neighborhood
-        );
+        setSearching(false);
+
+        formRef.current.setData({
+          address: {
+            cep: addressResult.cep,
+            address: addressResult.address,
+            neighborhood: addressResult.neighborhood,
+            city: addressResult.city,
+            state: addressResult.state,
+          },
+        });
+        setCepFound(true);
+        setTimeout(() => handleDispatchEvents(undefined, addressResult), 50);
       }
-      setSearching(false);
     } catch (error) {
       setSearching(false);
-      return toast.error(error.response.data.data.message);
+      return toast.error(
+        error.response ? error.response.data.data.message : error
+      );
     }
   };
 
   async function handleSubmit(data) {
     setSubmitting(true);
+
+    if (
+      current &&
+      current.address &&
+      data.address &&
+      data.address.cep !== current.address.cep &&
+      !cepFound
+    ) {
+      await handleCepSearch();
+      data = formRef.current.getData();
+    }
 
     data.entityType = entityType;
     try {
@@ -147,8 +160,35 @@ function CustomerDialog({ setOpen, current }) {
         return toast.error('CPF ou CNPJ inválido');
       }
 
+      const { cpf, cnpj } = data;
+      if (customerId) {
+        delete data.cpf;
+        delete data.cnpj;
+      }
+
+      const ds = {
+        $set: {
+          ...data,
+        },
+        $unset: {},
+      };
+
+      if (cnpj) {
+        ds.$set.cnpj = cnpj;
+        ds.$set._idxCnpj = cnpj;
+        ds.$unset.cpf = true;
+        ds.$unset._idxCpf = true;
+      }
+
+      if (cpf) {
+        ds.$set.cpf = cpf;
+        ds.$set._idxCpf = cpf;
+        ds.$unset.cnpj = true;
+        ds.$unset._idxCnpj = true;
+      }
+
       const result = customerId
-        ? await api.put(`/api/v1/customers/${customerId}`, { ...data })
+        ? await api.put(`/api/v1/customers/${customerId}`, { ...ds })
         : await api.post('/api/v1/customers/', { ...data });
 
       if (!result.data.success) {
@@ -196,41 +236,13 @@ function CustomerDialog({ setOpen, current }) {
     );
   };
 
-  function handleDispatchEvents() {
-    const event = new Event('focus');
-
-    const customerNameEl = document.getElementById('customerName');
-    customerNameEl.dispatchEvent(event);
-
-    // const basePriceEl = document.getElementById('basePriceId');
-    // basePriceEl.dispatchEvent(event);
-
-    // const finalPrice = document.getElementById('finalPriceId');
-    // finalPrice.dispatchEvent(event);
-
-    // const serviceDateEl = document.getElementById('inputDateService');
-    // serviceDateEl.dispatchEvent(event);
-
-    // const inputDescriptionEl = document.getElementById('inputDescription');
-    // inputDescriptionEl.dispatchEvent(event);
-
-    // const inputPaymentMethodEl = document.getElementById('inputPaymentMethod');
-    // inputPaymentMethodEl.dispatchEvent(event);
-
-    // const inputPaymentDateEl = document.getElementById('inputPaymentDate');
-    // inputPaymentDateEl.dispatchEvent(event);
-
-    // const inputPaymentValueEl = document.getElementById('inputPaymentValue');
-    // inputPaymentValueEl.dispatchEvent(event);
-  }
-
   useEffect(() => {
     setTimeout(() => {
       if (customerId) {
-        handleDispatchEvents();
+        handleDispatchEvents(current, undefined);
       }
     }, 50);
-  }, []);
+  }, [current, customerId]);
 
   return (
     <>
@@ -257,40 +269,28 @@ function CustomerDialog({ setOpen, current }) {
                 <Divider>Dádos Básicos</Divider>
                 <RowContainer>
                   <FloatingLabelInputContainer>
-                    <FloatingLabel
-                      htmlFor="customerName"
-                      active={inputActive.customerName}
-                    >
+                    <FloatingLabel htmlFor="name" active={inputActive.name}>
                       Cliente
                     </FloatingLabel>
                     <FloatLabelInput
-                      id="customerName"
+                      id="name"
                       type="text"
                       onFocus={() =>
-                        setInputActive({ ...inputActive, customerName: true })
+                        setInputActive({ ...inputActive, name: true })
                       }
                       onBlur={e => {
                         if (e.target.value === '') {
                           setInputActive({
                             ...inputActive,
-                            customerName: false,
+                            name: false,
                           });
                         }
                       }}
                       defaultValue={current.name}
-                      name="customerName"
+                      name="name"
                       required
                     />
                   </FloatingLabelInputContainer>
-                  {/* <InputContainer style={{ marginRight: '5px' }}>
-                    <DefaultInput
-                      name="name"
-                      type="text"
-                      placeholder="Nome*"
-                      defaultValue={current.name}
-                      required
-                    />
-                  </InputContainer> */}
                 </RowContainer>
                 <RowContainer>
                   <label>
@@ -314,88 +314,157 @@ function CustomerDialog({ setOpen, current }) {
                     Pessoa Jurídica
                   </label>
                   {entityType === '1' ? (
-                    <InputContainer
-                      style={{
-                        width: '49%',
-                        marginRight: '5px',
-                      }}
-                    >
+                    <FloatingLabelInputContainer style={{ width: '50%' }}>
+                      <FloatingLabel
+                        htmlFor="inputCpf"
+                        active={inputActive.cpf}
+                      >
+                        CPF
+                      </FloatingLabel>
                       <Input
                         mask="999.999.999-99"
+                        id="inputCpf"
                         name="cpf"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, cpf: true })
+                        }
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({ ...inputActive, cpf: false });
+                          }
+                        }}
                         type="text"
-                        placeholder="CPF"
                         defaultValue={current.cpf}
                       />
-                    </InputContainer>
+                    </FloatingLabelInputContainer>
                   ) : (
-                    <InputContainer
-                      style={{
-                        width: '49%',
-                        marginRight: '5px',
-                      }}
-                    >
+                    <FloatingLabelInputContainer style={{ width: '50%' }}>
+                      <FloatingLabel
+                        htmlFor="inputCnpj"
+                        active={inputActive.cnpj}
+                      >
+                        CNPJ
+                      </FloatingLabel>
                       <Input
                         mask="99.999.999/9999-99"
-                        defaultValue={current.cnpj}
+                        id="inputCnpj"
                         name="cnpj"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, cnpj: true })
+                        }
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({ ...inputActive, cnpj: false });
+                          }
+                        }}
                         type="text"
-                        placeholder="CNPJ"
+                        defaultValue={current.cnpj}
                       />
-                    </InputContainer>
+                    </FloatingLabelInputContainer>
                   )}
                 </RowContainer>
                 <RowContainer>
-                  <InputContainer
-                    style={{
-                      width: '50%',
-                      marginRight: '5px',
-                    }}
-                  >
+                  <FloatingLabelInputContainer style={{ width: '50%' }}>
+                    <FloatingLabel
+                      htmlFor="inputPhone"
+                      active={inputActive.phone}
+                    >
+                      Telefone
+                    </FloatingLabel>
                     <Input
-                      mask="99-99999-9999"
-                      defaultValue={current.phone}
+                      mask="(99) 99999-9999"
+                      id="inputPhone"
                       name="phone"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, phone: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, phone: false });
+                        }
+                      }}
                       type="text"
-                      placeholder="Telefone"
+                      defaultValue={current.phone}
                     />
-                  </InputContainer>
-
-                  <InputContainer
-                    style={{
-                      width: '50%',
-                      marginLeft: '5px',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="email"
+                  </FloatingLabelInputContainer>
+                  <FloatingLabelInputContainer style={{ width: '50%' }}>
+                    <FloatingLabel
+                      htmlFor="inputEmail"
+                      active={inputActive.email}
+                    >
+                      Email
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="inputEmail"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, email: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, email: false });
+                        }
+                      }}
                       defaultValue={current.email}
-                      type="text"
-                      placeholder="Email"
+                      name="email"
+                      style={{ textTransform: 'lowercase' }}
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                 </RowContainer>
                 <RowContainer>
-                  <InputContainer
-                    style={{
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="description"
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="description"
+                      active={inputActive.description}
+                    >
+                      Descrição
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="description"
                       type="text"
-                      placeholder="Descrição"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, description: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            description: false,
+                          });
+                        }
+                      }}
                       defaultValue={current.description}
+                      name="description"
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                 </RowContainer>
 
                 <Divider>Endereço</Divider>
 
                 <RowContainer>
                   <SearchContainer>
-                    <InputContainer
+                    <FloatingLabelInputContainer>
+                      <FloatingLabel htmlFor="cep" active={inputActive.cep}>
+                        CEP
+                      </FloatingLabel>
+                      <FloatLabelInput
+                        id="cep"
+                        type="text"
+                        onFocus={() =>
+                          setInputActive({ ...inputActive, cep: true })
+                        }
+                        onBlur={e => {
+                          if (e.target.value === '') {
+                            setInputActive({ ...inputActive, cep: false });
+                          }
+                        }}
+                        defaultValue={
+                          current.address ? current.address.cep : ''
+                        }
+                        name="address.cep"
+                      />
+                    </FloatingLabelInputContainer>
+                    {/* <InputContainer
                       style={{
                         width: '100%',
                         marginRight: '5px',
@@ -407,7 +476,7 @@ function CustomerDialog({ setOpen, current }) {
                         placeholder="CEP"
                         defaultValue={current.address && current.address.cep}
                       />
-                    </InputContainer>
+                    </InputContainer> */}
                     <SearchButton
                       onClick={handleCepSearch}
                       disabled={searching}
@@ -420,7 +489,35 @@ function CustomerDialog({ setOpen, current }) {
                       />
                     </SearchButton>
                   </SearchContainer>
-                  <InputContainer
+
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="address"
+                      active={inputActive.address}
+                    >
+                      Endereço
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="address"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, address: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, address: false });
+                        }
+                      }}
+                      defaultValue={
+                        current.address ? current.address.address : ''
+                      }
+                      name="address.address"
+                      disabled
+                      style={{ textTransform: 'capitalize' }}
+                    />
+                  </FloatingLabelInputContainer>
+
+                  {/* <InputContainer
                     style={{
                       width: '65%',
                       marginLeft: '5px',
@@ -433,10 +530,32 @@ function CustomerDialog({ setOpen, current }) {
                       type="text"
                       placeholder="Rua"
                     />
-                  </InputContainer>
+                  </InputContainer> */}
                 </RowContainer>
                 <RowContainer>
-                  <InputContainer
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel htmlFor="number" active={inputActive.number}>
+                      Número
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="number"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, number: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, number: false });
+                        }
+                      }}
+                      defaultValue={
+                        current.address ? current.address.number : ''
+                      }
+                      name="address.number"
+                    />
+                  </FloatingLabelInputContainer>
+
+                  {/* <InputContainer
                     style={{
                       width: '15%',
                       marginRight: '5px',
@@ -449,8 +568,39 @@ function CustomerDialog({ setOpen, current }) {
                       placeholder="Número"
                       defaultValue={current.address && current.address.number}
                     />
-                  </InputContainer>
-                  <InputContainer
+                  </InputContainer> */}
+
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="address"
+                      active={inputActive.neighborhood}
+                    >
+                      Bairro
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="neighborhood"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, neighborhood: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            neighborhood: false,
+                          });
+                        }
+                      }}
+                      defaultValue={
+                        current.address ? current.address.neighborhood : ''
+                      }
+                      name="address.neighborhood"
+                      style={{ textTransform: 'capitalize' }}
+                      disabled
+                    />
+                  </FloatingLabelInputContainer>
+
+                  {/* <InputContainer
                     style={{
                       width: '42%',
                       marginLeft: '5px',
@@ -465,8 +615,34 @@ function CustomerDialog({ setOpen, current }) {
                         current.address && current.address.neighborhood
                       }
                     />
-                  </InputContainer>
-                  <InputContainer
+                  </InputContainer> */}
+
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="additional"
+                      active={inputActive.additional}
+                    >
+                      Complemento
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="additional"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, additional: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, additional: false });
+                        }
+                      }}
+                      defaultValue={
+                        current.address ? current.address.additional : ''
+                      }
+                      name="address.additional"
+                      style={{ textTransform: 'capitalize' }}
+                    />
+                  </FloatingLabelInputContainer>
+                  {/* <InputContainer
                     style={{
                       width: '42%',
                       marginRight: '5px',
@@ -481,10 +657,31 @@ function CustomerDialog({ setOpen, current }) {
                         current.address && current.address.additional
                       }
                     />
-                  </InputContainer>
+                  </InputContainer> */}
                 </RowContainer>
                 <RowContainer>
-                  <InputContainer
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel htmlFor="city" active={inputActive.city}>
+                      Cidade
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="city"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, city: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, city: false });
+                        }
+                      }}
+                      defaultValue={current.address ? current.address.city : ''}
+                      name="address.city"
+                      style={{ textTransform: 'capitalize' }}
+                      disabled
+                    />
+                  </FloatingLabelInputContainer>
+                  {/* <InputContainer
                     style={{
                       width: '50%',
                       marginRight: '5px',
@@ -496,8 +693,30 @@ function CustomerDialog({ setOpen, current }) {
                       placeholder="Cidade"
                       defaultValue={current.address && current.address.city}
                     />
-                  </InputContainer>
-                  <InputContainer
+                  </InputContainer> */}
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel htmlFor="state" active={inputActive.state}>
+                      Estado
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="state"
+                      type="text"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, state: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, state: false });
+                        }
+                      }}
+                      defaultValue={
+                        current.address ? current.address.state : ''
+                      }
+                      name="address.state"
+                      disabled
+                    />
+                  </FloatingLabelInputContainer>
+                  {/* <InputContainer
                     style={{
                       width: '50%',
                       marginLeft: '5px',
@@ -510,7 +729,7 @@ function CustomerDialog({ setOpen, current }) {
                       placeholder="Estado"
                       defaultValue={current.address && current.address.state}
                     />
-                  </InputContainer>
+                  </InputContainer> */}
                 </RowContainer>
               </fieldset>
             </Form>
@@ -528,9 +747,28 @@ function CustomerDialog({ setOpen, current }) {
             <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
               <Divider>Dádos Básicos</Divider>
               <RowContainer>
-                <InputContainer style={{ marginRight: '5px' }}>
-                  <DefaultInput name="name" type="text" placeholder="Nome*" />
-                </InputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="name" active={inputActive.name}>
+                    Cliente
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="name"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, name: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          name: false,
+                        });
+                      }
+                    }}
+                    name="name"
+                    required
+                  />
+                </FloatingLabelInputContainer>
               </RowContainer>
               <RowContainer>
                 <label>
@@ -552,90 +790,145 @@ function CustomerDialog({ setOpen, current }) {
                   Pessoa Jurídica
                 </label>
                 {entityType === '1' ? (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
+                  <FloatingLabelInputContainer style={{ width: '50%' }}>
+                    <FloatingLabel htmlFor="inputCpf" active={inputActive.cpf}>
+                      CPF
+                    </FloatingLabel>
                     <Input
                       mask="999.999.999-99"
+                      id="inputCpf"
                       name="cpf"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, cpf: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, cpf: false });
+                        }
+                      }}
                       type="text"
-                      placeholder="CPF"
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                 ) : (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
+                  <FloatingLabelInputContainer style={{ width: '50%' }}>
+                    <FloatingLabel
+                      htmlFor="inputCnpj"
+                      active={inputActive.cnpj}
+                    >
+                      CNPJ
+                    </FloatingLabel>
                     <Input
                       mask="99.999.999/9999-99"
+                      id="inputCnpj"
                       name="cnpj"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, cnpj: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, cnpj: false });
+                        }
+                      }}
                       type="text"
-                      placeholder="CNPJ"
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                 )}
               </RowContainer>
               <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
+                <FloatingLabelInputContainer style={{ width: '50%' }}>
+                  <FloatingLabel
+                    htmlFor="inputPhone"
+                    active={inputActive.phone}
+                  >
+                    Telefone
+                  </FloatingLabel>
                   <Input
-                    mask="99-99999-9999"
+                    mask="(99) 99999-9999"
+                    id="inputPhone"
                     name="phone"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, phone: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, phone: false });
+                      }
+                    }}
                     type="text"
-                    placeholder="Telefone"
                   />
-                </InputContainer>
-
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput name="email" type="text" placeholder="Email" />
-                </InputContainer>
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer style={{ width: '50%' }}>
+                  <FloatingLabel
+                    htmlFor="inputEmail"
+                    active={inputActive.email}
+                  >
+                    Email
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="inputEmail"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, email: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, email: false });
+                      }
+                    }}
+                    name="email"
+                    style={{ textTransform: 'lowercase' }}
+                  />
+                </FloatingLabelInputContainer>
               </RowContainer>
               <RowContainer>
-                <InputContainer
-                  style={{
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="description"
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="description"
+                    active={inputActive.description}
+                  >
+                    Descrição
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="description"
                     type="text"
-                    placeholder="Descrição"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, description: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          description: false,
+                        });
+                      }
+                    }}
+                    name="description"
                   />
-                </InputContainer>
+                </FloatingLabelInputContainer>
               </RowContainer>
 
               <Divider>Endereço</Divider>
 
               <RowContainer>
                 <SearchContainer>
-                  <InputContainer
-                    style={{
-                      width: '100%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="address.cep"
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel htmlFor="cep" active={inputActive.cep}>
+                      CEP
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="cep"
                       type="text"
-                      placeholder="CEP"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, cep: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({ ...inputActive, cep: false });
+                        }
+                      }}
+                      name="address.cep"
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                   <SearchButton onClick={handleCepSearch} disabled={searching}>
                     <Icon
                       path={mdiAccountSearch}
@@ -645,87 +938,135 @@ function CustomerDialog({ setOpen, current }) {
                     />
                   </SearchButton>
                 </SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '65%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="address" active={inputActive.address}>
+                    Endereço
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="address"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, address: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, address: false });
+                      }
+                    }}
                     name="address.address"
-                    type="text"
-                    placeholder="Rua"
+                    disabled
+                    style={{ textTransform: 'capitalize' }}
                   />
-                </InputContainer>
+                </FloatingLabelInputContainer>
               </RowContainer>
               <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '15%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    maxLength="5"
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="number" active={inputActive.number}>
+                    Número
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="number"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, number: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, number: false });
+                      }
+                    }}
                     name="address.number"
-                    type="text"
-                    placeholder="Número"
                   />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="address"
+                    active={inputActive.neighborhood}
+                  >
+                    Bairro
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="neighborhood"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, neighborhood: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          neighborhood: false,
+                        });
+                      }
+                    }}
                     name="address.neighborhood"
-                    type="text"
-                    placeholder="Bairro"
+                    style={{ textTransform: 'capitalize' }}
+                    disabled
                   />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="additional"
+                    active={inputActive.additional}
+                  >
+                    Complemento
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="additional"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, additional: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, additional: false });
+                      }
+                    }}
                     name="address.additional"
-                    type="text"
-                    placeholder="Complemento"
+                    style={{ textTransform: 'capitalize' }}
                   />
-                </InputContainer>
+                </FloatingLabelInputContainer>
               </RowContainer>
               <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="city" active={inputActive.city}>
+                    Cidade
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="city"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, city: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, city: false });
+                      }
+                    }}
                     name="address.city"
-                    type="text"
-                    placeholder="Cidade"
+                    style={{ textTransform: 'capitalize' }}
+                    disabled
                   />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="state" active={inputActive.state}>
+                    Estado
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="state"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, state: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({ ...inputActive, state: false });
+                      }
+                    }}
                     name="address.state"
-                    type="text"
-                    placeholder="Estado"
+                    disabled
                   />
-                </InputContainer>
+                </FloatingLabelInputContainer>
               </RowContainer>
             </Form>
           </Container>

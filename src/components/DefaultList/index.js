@@ -27,6 +27,8 @@ import {
   LoadingContainer,
   TextLoadingDocuments,
   ListButton,
+  RightColumn,
+  StatusContainer,
 } from './styles';
 
 import DefaultInput from '../DefaultInput/Input';
@@ -107,7 +109,7 @@ function DefaultList(props) {
           </NewButton>
         </ToolbarActions>
       </Toolbar>
-      {!working && list && list.length > 0 ? (
+      {!working && !searching && list && list.length > 0 ? (
         <Scroll
           options={{ suppressScrollX: true }}
           onYReachEnd={() => !searching && handleLoadMore()}
@@ -133,8 +135,19 @@ function DefaultList(props) {
                       <DocumentSubtitle>{item.description}</DocumentSubtitle>
                     </DocumentTitleSubtitleContainer>
                   </DocumentContainer>
-                  {item.formatedPrice ? (
-                    <span>R$ {item.formatedPrice}</span>
+                  {item.statusPaid ? (
+                    <RightColumn>
+                      <span>R$ {item.formatedPrice || '-'}</span>
+                      <StatusContainer>
+                        <Icon
+                          path={item.statusPaid}
+                          title="Pago"
+                          size={1}
+                          color="#333"
+                        />
+                        <RegisterSince>{item.registerSince}</RegisterSince>
+                      </StatusContainer>
+                    </RightColumn>
                   ) : (
                     <RegisterSince>{item.registerSince}</RegisterSince>
                   )}
@@ -143,7 +156,7 @@ function DefaultList(props) {
             ))}
           </DocumentList>
         </Scroll>
-      ) : working ? (
+      ) : working || searching ? (
         <LoadingContainer>
           <TextLoadingDocuments>Carregando Documentos</TextLoadingDocuments>
           <LoadingScreen />

@@ -95,3 +95,36 @@ export const RowContainer = styled.div`
     width: 100%;
   }
 `;
+
+export const FloatingLabelInputContainer = styled.div`
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  input {
+    -webkit-appearance: none !important;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    border: none;
+    background: #f3f3f3;
+  }
+`;
+
+export const FloatingLabel = styled.label`
+  display: inline-block;
+  z-index: 2;
+  position: absolute;
+  transition: all 150ms ease-in;
+  color: #9a9a9a;
+  margin-left: 15px !important;
+  cursor: text;
+
+  transform: ${props => (props.active ? 'translateY(-17px)' : null)};
+  font-size: ${props => (props.active ? '0.8em' : null)};
+  color: ${props => (props.active ? '#9a9a9a' : null)};
+  text-shadow: ${props =>
+    props.active
+      ? '1px 0 0 #fff, -1px 0 0 #fff, 2px 0 0 #fff, -2px 0 0 #fff, 0 1px 0 #fff, 0 -1px 0 #fff, 0 2px 0 #fff, 0 -2px 0 #fff'
+      : null};
+`;

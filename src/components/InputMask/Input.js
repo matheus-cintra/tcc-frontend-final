@@ -14,12 +14,12 @@ export default function Input({ name, ...rest }) {
       name: fieldName,
       ref: inputRef.current,
       path: 'value',
-      setValue(ref, value) {
-        ref.setInputValue(value);
-      },
-      clearValue(ref) {
-        ref.setInputValue('');
-      },
+      // setValue(ref, value) {
+      //   ref.setInputValue(value);
+      // },
+      // clearValue(ref) {
+      //   ref.setInputValue('');
+      // },
     });
   }, [fieldName, registerField]);
 

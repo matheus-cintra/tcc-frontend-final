@@ -238,3 +238,17 @@ export const TextLoadingDocuments = styled.span`
   margin-bottom: 15px;
   font-weight: 600;
 `;
+
+export const RightColumn = styled.div`
+  width: 200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+export const StatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+  width: 120px;
+  justify-content: space-between;
+`;

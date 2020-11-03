@@ -1,11 +1,16 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose, mdiTrashCan } from '@mdi/js';
 import * as Yup from 'yup';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
-import Input from '../../InputMask/Input';
+import FloatLabelInput from '../../FloatLabel/Input';
+
+import { handleDispatchEvents } from './methods';
+
+import Modal from '../../Modals';
+import Asks from './Asks';
 
 import {
   Container,
@@ -14,16 +19,24 @@ import {
   Form,
   BottomActions,
   RowContainer,
-  InputContainer,
+  FloatingLabelInputContainer,
+  FloatingLabel,
 } from './styles';
 import helper from '../../../helpers/helper';
 
 function ServiceDialog({ setOpen, current }) {
   const serviceId = current._id;
   const formRef = useRef(null);
+  const [askOpen, setAskOpen] = useState(false);
+
+  const [inputActive, setInputActive] = useState({
+    code: false,
+    name: false,
+    price: false,
+    description: false,
+  });
 
   const schema = Yup.object().shape({
-    code: Yup.string().required('Código Obrigatório'),
     name: Yup.string().required('Nome Obrigatório'),
     price: Yup.string().required('Preço Obrigatório'),
   });
@@ -86,6 +99,32 @@ function ServiceDialog({ setOpen, current }) {
     }
   }
 
+  const handleCloseReturn = () => {
+    handleClose();
+  };
+
+  const handleOpenAskDialog = () => {
+    setAskOpen(asking => !asking);
+  };
+
+  const handleAskDialog = () => {
+    return (
+      <Asks
+        setAskOpen={setAskOpen}
+        serviceId={serviceId}
+        handleClose={handleCloseReturn}
+      />
+    );
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (serviceId) {
+        handleDispatchEvents(current);
+      }
+    }, 50);
+  }, [current, serviceId]);
+
   return (
     <>
       <Toolbar>
@@ -102,46 +141,99 @@ function ServiceDialog({ setOpen, current }) {
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input
-                  name="code"
+              <FloatingLabelInputContainer style={{ width: '290px' }}>
+                <FloatingLabel htmlFor="code" active={inputActive.code}>
+                  Código (Auto)
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="code"
                   type="text"
+                  onFocus={() => setInputActive({ ...inputActive, code: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        code: false,
+                      });
+                    }
+                  }}
                   defaultValue={current.code}
-                  placeholder="Código*"
+                  name="code"
+                  disabled
                 />
-              </InputContainer>
-              <InputContainer>
-                <Input
-                  name="name"
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="name" active={inputActive.name}>
+                  Nome
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="name"
                   type="text"
+                  onFocus={() => setInputActive({ ...inputActive, name: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        name: false,
+                      });
+                    }
+                  }}
                   defaultValue={current.name}
-                  placeholder="Nome*"
+                  name="name"
                 />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
-                <Input
-                  name="price"
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="formatedPrice"
+                  active={inputActive.formatedPrice}
+                >
+                  Preço
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="formatedPrice"
                   type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, formatedPrice: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        formatedPrice: false,
+                      });
+                    }
+                  }}
                   defaultValue={current.formatedPrice}
-                  placeholder="Preço*"
+                  name="price"
                 />
-              </InputContainer>
+              </FloatingLabelInputContainer>
             </RowContainer>
             <RowContainer>
-              <InputContainer style={{ marginRight: '10px' }}>
-                <Input
-                  name="description"
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="description"
+                  active={inputActive.description}
+                >
+                  Descrição
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="description"
                   type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, description: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        description: false,
+                      });
+                    }
+                  }}
                   defaultValue={current.description}
-                  placeholder="Descrição"
+                  name="description"
                 />
-              </InputContainer>
+              </FloatingLabelInputContainer>
             </RowContainer>
           </Form>
         </Container>
@@ -149,26 +241,95 @@ function ServiceDialog({ setOpen, current }) {
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <RowContainer>
-              <InputContainer style={{ width: '200px', marginRight: '15px' }}>
-                <Input name="code" type="text" placeholder="Código*" />
-              </InputContainer>
-              <InputContainer>
-                <Input name="name" type="text" placeholder="Nome*" />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '200px',
-                  marginLeft: '15px',
-                  marginRight: '10px',
-                }}
-              >
-                <Input name="price" type="text" placeholder="Preço*" />
-              </InputContainer>
+              <FloatingLabelInputContainer style={{ width: '290px' }}>
+                <FloatingLabel htmlFor="code" active={inputActive.code}>
+                  Código (Auto)
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="code"
+                  type="text"
+                  onFocus={() => setInputActive({ ...inputActive, code: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        code: false,
+                      });
+                    }
+                  }}
+                  name="code"
+                  disabled
+                />
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel htmlFor="name" active={inputActive.name}>
+                  Nome
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="name"
+                  type="text"
+                  onFocus={() => setInputActive({ ...inputActive, name: true })}
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        name: false,
+                      });
+                    }
+                  }}
+                  name="name"
+                />
+              </FloatingLabelInputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="formatedPrice"
+                  active={inputActive.formatedPrice}
+                >
+                  Preço
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="formatedPrice"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, formatedPrice: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        formatedPrice: false,
+                      });
+                    }
+                  }}
+                  name="price"
+                />
+              </FloatingLabelInputContainer>
             </RowContainer>
             <RowContainer>
-              <InputContainer style={{ marginRight: '10px' }}>
-                <Input name="description" type="text" placeholder="Descrição" />
-              </InputContainer>
+              <FloatingLabelInputContainer>
+                <FloatingLabel
+                  htmlFor="description"
+                  active={inputActive.description}
+                >
+                  Descrição
+                </FloatingLabel>
+                <FloatLabelInput
+                  id="description"
+                  type="text"
+                  onFocus={() =>
+                    setInputActive({ ...inputActive, description: true })
+                  }
+                  onBlur={e => {
+                    if (e.target.value === '') {
+                      setInputActive({
+                        ...inputActive,
+                        description: false,
+                      });
+                    }
+                  }}
+                  name="description"
+                />
+              </FloatingLabelInputContainer>
             </RowContainer>
           </Form>
         </Container>
@@ -179,12 +340,16 @@ function ServiceDialog({ setOpen, current }) {
           title="Remove"
           size={1.2}
           color="#333"
-          onClick={handleClose}
+          onClick={handleOpenAskDialog}
         />
         <button type="submit" form="editForm">
           Salvar
         </button>
       </BottomActions>
+
+      <Modal open={askOpen} setOpen={setOpen}>
+        <div>{handleAskDialog()}</div>
+      </Modal>
     </>
   );
 }
