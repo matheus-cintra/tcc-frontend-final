@@ -15,7 +15,6 @@ function formatPrice(price, type) {
       const numberSplit = price.toString().split(',');
       let finalPrice = `${numberSplit[0]}.${numberSplit[1]}`;
       finalPrice = parseFloat(finalPrice).toFixed(2);
-      console.warn('finalprice > ', finalPrice);
       return finalPrice;
     }
     return parseFloat(price);
