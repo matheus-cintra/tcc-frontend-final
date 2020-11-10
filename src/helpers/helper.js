@@ -9,11 +9,13 @@ function returnOnlyNumbers(str) {
 }
 
 function formatPrice(price, type) {
+  if (!price) return 0;
   if (type === 'data') {
     if (price.includes(',')) {
       const numberSplit = price.toString().split(',');
       let finalPrice = `${numberSplit[0]}.${numberSplit[1]}`;
       finalPrice = parseFloat(finalPrice).toFixed(2);
+      console.warn('finalprice > ', finalPrice);
       return finalPrice;
     }
     return parseFloat(price);
