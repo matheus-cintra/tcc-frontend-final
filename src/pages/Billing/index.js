@@ -11,6 +11,13 @@ export default function Billing() {
   const [open, setOpen] = useState(false);
   const [currentBilling, setCurrentBilling] = useState({});
   const [registerCount, setRegisterCount] = useState(0);
+  const [serviceOrders, setServiceOrders] = useState([]);
+
+  const getServiceOrders = async () => {
+    const serviceOrdersResult = await methods.getServiceOrder();
+    serviceOrdersResult.docs = serviceOrdersResult.docs.filter(x => x.paid);
+    setServiceOrders(serviceOrdersResult.docs);
+  };
 
   const getBillings = async (initial, limit, skip) => {
     if (open) return;
@@ -29,6 +36,7 @@ export default function Billing() {
   useEffect(() => {
     setWorking(true);
     getBillings(true);
+    getServiceOrders();
   }, []); //eslint-disable-line
 
   useEffect(() => {
@@ -42,7 +50,13 @@ export default function Billing() {
   };
 
   const handleBillingEdit = () => {
-    return <BillingDialog setOpen={setOpen} current={currentBilling} />;
+    return (
+      <BillingDialog
+        setOpen={setOpen}
+        current={currentBilling}
+        serviceOrders={serviceOrders}
+      />
+    );
   };
 
   return (

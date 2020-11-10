@@ -1,6 +1,7 @@
 import moment from 'moment';
-import { mdiFactory, mdiAccount } from '@mdi/js';
+import { mdiFile } from '@mdi/js';
 import api from '../../services/api';
+import serviceOrdersMethods from '../ServiceOrder/methods';
 
 async function getRegisters(limit = undefined, skip = undefined) {
   let uri;
@@ -23,11 +24,12 @@ async function getRegisters(limit = undefined, skip = undefined) {
   docs = docs.map(billing => {
     return {
       ...billing,
+      name: billing.service[0].name,
       registerSince: moment(billing.createdAt, 'YYYY-MM-DD').format(
         'DD/MM/YYYY'
       ),
-      icon: billing.cnpj ? mdiFactory : mdiAccount,
-      subtitle: billing.cnpj ? 'Jurídica' : 'Física',
+      icon: mdiFile,
+      subtitle: 'Documentos',
     };
   });
 
@@ -44,18 +46,22 @@ async function getRegistersBySearch(search) {
   docs = docs.map(billing => {
     return {
       ...billing,
+      name: billing.service[0].name,
       registerSince: moment(billing.createdAt, 'YYYY-MM-DD').format(
         'DD/MM/YYYY'
       ),
-      icon: billing.cnpj ? mdiFactory : mdiAccount,
-      subtitle: billing.cnpj ? 'Jurídica' : 'Física',
+      icon: mdiFile,
+      subtitle: 'Documentos',
     };
   });
 
   return { docs, docCount };
 }
 
+const getServiceOrder = () => serviceOrdersMethods.getRegisters();
+
 export default {
   getRegisters,
   getRegistersBySearch,
+  getServiceOrder,
 };

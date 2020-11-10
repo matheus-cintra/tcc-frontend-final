@@ -64,12 +64,6 @@ async function getRegisters(limit = undefined, skip = undefined) {
     };
   });
 
-  // console.warn('docs > ', moment(docs[0].executionDate).valueOf());
-
-  // docs = docs.sort(
-
-  // );
-
   return { docs, docCount };
 }
 

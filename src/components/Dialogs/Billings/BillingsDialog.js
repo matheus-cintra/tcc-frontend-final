@@ -1,17 +1,20 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
-import { mdiClose, mdiTrashCan, mdiAccountSearch } from '@mdi/js';
-import * as Yup from 'yup';
-import { cpf as _cpfCheck, cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
+import { mdiClose, mdiTrashCan, mdiFile, mdiDelete } from '@mdi/js';
 import { toast } from 'react-toastify';
+import history from '../../../services/history';
 import api from '../../../services/api';
-import Input from '../../InputMask/Input';
-import DefaultInput from '../../DefaultInput/Input';
 import Divider from '../../Divider';
-import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
-import Asks from '../Asks';
+import Asks from './Asks';
+
+import {
+  clearSuggestions,
+  autocompleteChange,
+  filterArray,
+  selectSuggestion,
+} from './methods';
 
 import {
   Container,
@@ -21,38 +24,35 @@ import {
   BottomActions,
   RowContainer,
   InputContainer,
-  SearchContainer,
-  SearchButton,
+  AutoCompleteResult,
+  AutocompleteContainer,
+  Autocomplete,
+  NoAutocompleteSuggestion,
+  FloatingLabel,
+  DanfeImage,
+  UploadImage,
+  RemoveButton,
 } from './styles';
 
-function BillingDialog({ setOpen, current }) {
+function BillingDialog({ setOpen, current, serviceOrders }) {
   const billingId = current._id;
   const formRef = useRef(null);
-  const [entityType, setEntityType] = useState(
-    current.entityType ? current.entityType : '1'
-  );
-  const [searching, setSearching] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
-
-  const schema = Yup.object().shape({
-    name: Yup.string().required('Nome Obrigatório'),
-    cpf: Yup.string().min(14, 'CPF Inválido').max(14, 'CPF Inválido'),
-    cnpj: Yup.string().min(18, 'CNPJ Inválido').max(18, 'CNPJ Inválido'),
-    phone: Yup.string(),
-    email: Yup.string().email('Email inválido'),
-    description: Yup.string(),
-
-    cep: Yup.string().min(8, 'Cep Inválido').max(8, 'Cép Inválido'),
-    address: Yup.object().shape({
-      address: Yup.string(),
-      additional: Yup.string(),
-      cep: Yup.string(),
-      city: Yup.string(),
-      neighborhood: Yup.string(),
-      number: Yup.string(),
-      state: Yup.string(),
-    }),
+  const [inputServiceOrder, setServiceOrderInput] = useState('');
+  const [autocompleteServiceOrders, setAutocompleteServiceOrders] = useState(
+    []
+  );
+  const [noServiceOrderSuggestions, setNoServiceOrderSuggestions] = useState(
+    false
+  );
+  const [selectedServiceOrder, setSelectedServiceOrder] = useState({});
+  const [danfe, setDanfe] = useState(undefined);
+  const [danfeId, setDanfeId] = useState(undefined);
+  const [xml, setXml] = useState(undefined);
+  const [xmlId, setXmlId] = useState(undefined);
+  const [inputActive, setInputActive] = useState({
+    serviceOrder: false,
   });
 
   /** ************************* PRINT FORM IN CONSOLE ************************* */
@@ -64,106 +64,217 @@ function BillingDialog({ setOpen, current }) {
   });
   /** ************************************************************************* */
 
+  useEffect(() => {
+    const elServiceOrder = document.getElementById(
+      'autocompleteServiceOrderId'
+    );
+    elServiceOrder.addEventListener('keyup', e => {
+      if (e.key === 'Backspace') {
+        if (e.target.value === '') {
+          setNoServiceOrderSuggestions(false);
+        }
+        setServiceOrderInput(e.target.value);
+      }
+      if (e.key === 'Delete') {
+        if (e.target.value === '') {
+          setNoServiceOrderSuggestions(false);
+        }
+        setServiceOrderInput(e.target.value);
+      }
+    });
+  }, []);
+
   const handleClose = () => {
-    if (submitting || searching) return;
+    if (submitting) return;
     setOpen(open => !open);
   };
 
-  const handleOptionChange = type => {
-    setEntityType(type);
+  const handleClickToUpload = el => {
+    const $el = document.getElementById(el);
+    $el.click();
   };
 
-  const handleCepSearch = async () => {
-    const data = formRef.current.getData();
-    if (!data.address.cep) return;
-    setSearching(true);
-    try {
-      const result = await api.post(`/api/v1/getAddress/${data.address.cep}`);
-      if (result.data.sucess) {
-        const addressResult = result.data.data;
-        formRef.current.setFieldValue('address.cep', addressResult.cep);
-        formRef.current.setFieldValue('address.address', addressResult.address);
-        formRef.current.setFieldValue('address.number', addressResult.number);
-        formRef.current.setFieldValue(
-          'address.additional',
-          addressResult.additional
-        );
-        formRef.current.setFieldValue('address.city', addressResult.city);
-        formRef.current.setFieldValue('address.state', addressResult.state);
-        formRef.current.setFieldValue(
-          'address.neighborhood',
-          addressResult.neighborhood
-        );
-      }
-      setSearching(false);
-    } catch (error) {
-      setSearching(false);
-      return toast.error(error.response.data.data.message);
+  async function handleUpload(e, setInfo, setInfoId, el) {
+    const $el = document.getElementById(el);
+    const files = e.target.files[0];
+    const result = await api.post('/api/v1/tools/get-signed-url', {
+      fileName: files.name,
+      fileSize: files.size,
+    });
+    fetch(result.data.doc.url, { method: 'PUT', body: files })
+      .then(() => {
+        setInfo(result.data.doc);
+        setInfoId(result.data.doc.attachmentId);
+        $el.value = '';
+      })
+      .catch(() => {
+        toast.error('Falha ao anexar arquivo. Tente novamente.');
+        $el.value = '';
+      });
+  }
+
+  const handleUploadMethod = async (e, el, type) => {
+    switch (type) {
+      case 'danfe':
+        handleUpload(e, setDanfe, setDanfeId, el);
+        break;
+
+      case 'xml':
+        handleUpload(e, setXml, setXmlId, el);
+        break;
+
+      default:
+        break;
     }
   };
 
-  async function handleSubmit(data) {
+  const handleSubmit = async () => {
     setSubmitting(true);
-
-    data.entityType = entityType;
     try {
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+      console.warn('selectedServiceOrder.service > ', selectedServiceOrder);
+      const dataSet = {
+        serviceOrderId: selectedServiceOrder._id,
+        serviceId:
+          current && current.service && current.service.length > 0
+            ? current.service[0]._id
+            : selectedServiceOrder.service[0]._id,
+        xmlId: xmlId && xmlId,
+        danfeId: danfeId && danfeId,
+      };
 
-      if (data.cnpj) {
-        data.cnpj = helpers.returnOnlyNumbers(data.cnpj);
-      } else {
-        data.cpf = helpers.returnOnlyNumbers(data.cpf);
-      }
-
-      const cpfCnpjIsValid = data.cnpj
-        ? _cnpjCheck.isValid(data.cnpj)
-        : _cpfCheck.isValid(data.cpf);
-
-      if (!cpfCnpjIsValid) {
-        setSubmitting(false);
-        return toast.error('CPF ou CNPJ inválido');
-      }
+      console.warn('chegou aqui... ', dataSet, billingId);
 
       const result = billingId
-        ? await api.put(`/api/v1/billings/${billingId}`, { ...data })
-        : await api.post('/api/v1/billings/', { ...data });
+        ? await api.put(`/api/v1/billings/${billingId}`, { ...dataSet })
+        : await api.post('/api/v1/billings', { ...dataSet });
 
       if (!result.data.success) {
-        return toast.error('Eror ao atualizar faturamento.');
+        return toast.error('Eror ao atualizar a entrada da nota.');
       }
 
       if (billingId) {
-        toast.success('Faturamento Atualizado.');
+        toast.success('Entrada Atualizada.');
       } else {
-        toast.success('Faturamento Criado.');
+        toast.success('Entrada de Nota Fiscal Criada.');
       }
 
       handleClose();
     } catch (error) {
-      setSubmitting(false);
-      if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
-
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
-
-        formRef.current.setErrors(errorMessages);
-      } else {
-        return toast.error(error.response.data.data.message);
-      }
+      console.warn('erro > ', error);
     }
-  }
+  };
+  // submit(
+  //   {
+  //     data,
+  //     serviceOrder: selectedServiceOrder,
+  //   },
+  //   setSubmitting,
+  //   formRef,
+  //   billingId,
+  //   handleClose
+  // );
+
+  const handleCloseReturn = () => {
+    handleClose();
+  };
 
   const handleOpenAskDialog = () => {
     setAskOpen(asking => !asking);
   };
 
   const handleAskDialog = () => {
-    return <Asks setAskOpen={setAskOpen} registerId={billingId} />;
+    return (
+      <Asks
+        setAskOpen={setAskOpen}
+        billingId={billingId}
+        handleClose={handleCloseReturn}
+      />
+    );
   };
+
+  const getSuggestionValue = suggestion => suggestion.service[0].name;
+
+  const renderSuggestion = suggestion => (
+    <AutocompleteContainer>
+      <AutoCompleteResult>{suggestion.service[0].name}</AutoCompleteResult>
+    </AutocompleteContainer>
+  );
+
+  const clearServiceOrderRequest = () =>
+    clearSuggestions(setAutocompleteServiceOrders);
+
+  const handleAutocompleteServiceOrderChange = (e, { newValue }) => {
+    autocompleteChange(newValue, setSelectedServiceOrder, setServiceOrderInput);
+  };
+
+  const filterSuggestions = (value, type) => {
+    switch (type) {
+      case 'serviceOrder':
+        if (value !== selectedServiceOrder.name) {
+          setSelectedServiceOrder({});
+        }
+        filterArray(
+          value,
+          serviceOrders,
+          selectedServiceOrder,
+          setNoServiceOrderSuggestions,
+          setAutocompleteServiceOrders
+        );
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  const handleOnFocus = el => {
+    setInputActive({ ...inputActive, [el]: true });
+  };
+
+  const handleBlur = (e, el) => {
+    if (e.target.value === '') {
+      setInputActive({ ...inputActive, [el]: false });
+    }
+  };
+
+  const serviceOrderInputProps = {
+    value: inputServiceOrder,
+    onChange: handleAutocompleteServiceOrderChange,
+    name: 'autocompleteServiceOrder',
+    id: 'autocompleteServiceOrderId',
+    onBlur: e => handleBlur(e, 'serviceOrder'),
+    onFocus: () => handleOnFocus('serviceOrder'),
+    disabled: !!billingId,
+  };
+
+  const handleSuggestionSelect = (suggestion, type) => {
+    switch (type) {
+      case 'serviceOrder': {
+        selectSuggestion(
+          suggestion,
+          setSelectedServiceOrder,
+          formRef,
+          'serviceOrderName'
+        );
+        break;
+      }
+
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (billingId) {
+        setInputActive({ ...inputActive, serviceOrder: true });
+        setSelectedServiceOrder(current.serviceOrder[0]);
+        setServiceOrderInput(current.service[0].name);
+      }
+    }, 100);
+  }, []); //eslint-disable-line
+
+  const handleNoServiceOrder = () => history.push('/serviceOrder');
 
   return (
     <>
@@ -175,237 +286,137 @@ function BillingDialog({ setOpen, current }) {
           size={1}
           color="#FFF"
           onClick={handleClose}
-          style={{ cursor: searching || submitting ? 'default' : 'pointer' }}
+          style={{ cursor: submitting ? 'default' : 'pointer' }}
         />
       </Toolbar>
       {billingId ? (
         <Container>
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <fieldset disabled={submitting}>
-              <Divider>Dádos Básicos</Divider>
+              <Divider>Dados da Faturamento</Divider>
               <RowContainer>
-                <InputContainer style={{ marginRight: '5px' }}>
-                  <DefaultInput
-                    name="name"
-                    type="text"
-                    placeholder="Nome*"
-                    defaultValue={current.name}
-                    required
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <label>
-                  <input
-                    type="radio"
-                    value="1"
-                    name="entityType"
-                    defaultChecked={current.entityType === '1'}
-                    onChange={() => handleOptionChange('1')}
-                  />
-                  Pessoa Física
-                </label>
-                <label>
-                  <input
-                    type="radio"
-                    name="entityType"
-                    value="2"
-                    defaultChecked={current.entityType === '2'}
-                    onChange={() => handleOptionChange('2')}
-                  />
-                  Pessoa Jurídica
-                </label>
-                {entityType === '1' ? (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
+                <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
+                  <FloatingLabel
+                    htmlFor="autocompleteServiceOrderId"
+                    active={inputActive.serviceOrder}
                   >
-                    <Input
-                      mask="999.999.999-99"
-                      name="cpf"
-                      type="text"
-                      placeholder="CPF"
-                      defaultValue={current.cpf}
-                    />
-                  </InputContainer>
-                ) : (
-                  <InputContainer
-                    style={{
-                      width: '49%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <Input
-                      mask="99.999.999/9999-99"
-                      defaultValue={current.cnpj}
-                      name="cnpj"
-                      type="text"
-                      placeholder="CNPJ"
-                    />
-                  </InputContainer>
-                )}
-              </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99-99999-9999"
-                    defaultValue={current.phone}
-                    name="phone"
-                    type="text"
-                    placeholder="Telefone"
+                    Ordem de Serviço
+                  </FloatingLabel>
+                  <Autocomplete
+                    suggestions={autocompleteServiceOrders}
+                    onSuggestionsFetchRequested={({ value }) =>
+                      filterSuggestions(value, 'serviceOrder')
+                    }
+                    onSuggestionsClearRequested={clearServiceOrderRequest}
+                    getSuggestionValue={getSuggestionValue}
+                    renderSuggestion={renderSuggestion}
+                    inputProps={serviceOrderInputProps}
+                    onSuggestionSelected={(e, { suggestion }) =>
+                      handleSuggestionSelect(suggestion, 'serviceOrder')
+                    }
+                    name="serviceOrderName"
                   />
-                </InputContainer>
-
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="email"
-                    defaultValue={current.email}
-                    type="text"
-                    placeholder="Email"
-                  />
+                  {noServiceOrderSuggestions ? (
+                    <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
+                      Nenhum cliente encontrado. Clique para adicionar.
+                    </NoAutocompleteSuggestion>
+                  ) : null}
                 </InputContainer>
               </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="description"
-                    type="text"
-                    placeholder="Descrição"
-                    defaultValue={current.description}
-                  />
-                </InputContainer>
-              </RowContainer>
-
-              <Divider>Endereço</Divider>
-
-              <RowContainer>
-                <SearchContainer>
-                  <InputContainer
-                    style={{
-                      width: '100%',
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="address.cep"
-                      type="text"
-                      placeholder="CEP"
-                      defaultValue={current.address.cep}
-                    />
-                  </InputContainer>
-                  <SearchButton onClick={handleCepSearch} disabled={searching}>
-                    <Icon
-                      path={mdiAccountSearch}
-                      title="Buscar Cep"
-                      size="30px"
-                      color="#333"
-                    />
-                  </SearchButton>
-                </SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '65%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.address"
-                    defaultValue={current.address.address}
-                    type="text"
-                    placeholder="Rua"
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '15%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    maxLength="5"
-                    name="address.number"
-                    type="text"
-                    placeholder="Número"
-                    defaultValue={current.address.number}
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.neighborhood"
-                    type="text"
-                    placeholder="Bairro"
-                    defaultValue={current.address.neighborhood}
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '42%',
-                    marginRight: '5px',
-                    marginLeft: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.additional"
-                    type="text"
-                    placeholder="Complemento"
-                    defaultValue={current.address.additional}
-                  />
-                </InputContainer>
-              </RowContainer>
-              <RowContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.city"
-                    type="text"
-                    placeholder="Cidade"
-                    defaultValue={current.address.city}
-                  />
-                </InputContainer>
-                <InputContainer
-                  style={{
-                    width: '50%',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.state"
-                    type="text"
-                    placeholder="Estado"
-                    defaultValue={current.address.state}
-                  />
-                </InputContainer>
+              <Divider>Danfe | XML</Divider>
+              <RowContainer style={{ justifyContent: 'space-around' }}>
+                <input
+                  id="uploadDanfeElementButton"
+                  hidden
+                  type="file"
+                  onChange={e =>
+                    handleUploadMethod(e, 'uploadDanfeElementButton', 'danfe')
+                  }
+                />
+                <input
+                  id="uploadXmlElementButton"
+                  hidden
+                  type="file"
+                  onChange={e =>
+                    handleUploadMethod(e, 'uploadXmlElementButton', 'xml')
+                  }
+                />
+                {current && current._danfe.length === 0 && !danfe ? (
+                  <DanfeImage>
+                    <UploadImage
+                      type="button"
+                      onClick={() =>
+                        handleClickToUpload('uploadDanfeElementButton')
+                      }
+                    >
+                      Adicionar Danfe
+                    </UploadImage>
+                  </DanfeImage>
+                ) : null}
+                {current && current._xml.length === 0 && !xml ? (
+                  <DanfeImage>
+                    <UploadImage
+                      type="button"
+                      onClick={() =>
+                        handleClickToUpload('uploadXmlElementButton')
+                      }
+                    >
+                      Adicionar XML
+                    </UploadImage>
+                  </DanfeImage>
+                ) : null}
+                {(current._danfe.length > 0 && current._danfe[0].fileLink) ||
+                danfe ? (
+                  <DanfeImage>
+                    <span>Danfe</span>
+                    <a
+                      href={
+                        current._danfe.length > 0
+                          ? current._danfe[0].fileLink
+                          : danfe.fileLink
+                      }
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      download
+                    >
+                      <Icon path={mdiFile} size={6} color="#CCC" />
+                    </a>
+                    <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                      <Icon
+                        path={mdiDelete}
+                        title="Remover Danfe"
+                        size="20px"
+                        color="#333"
+                      />
+                    </RemoveButton>
+                  </DanfeImage>
+                ) : null}
+                {(current._xml.length > 0 && current._xml[0].fileLink) ||
+                xml ? (
+                  <DanfeImage>
+                    <span>XML</span>
+                    <a
+                      href={
+                        current._xml.length > 0
+                          ? current._xml[0].fileLink
+                          : xml.fileLink
+                      }
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      download
+                    >
+                      <Icon path={mdiFile} size={6} color="#CCC" />
+                    </a>
+                    <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                      <Icon
+                        path={mdiDelete}
+                        title="Remover XML"
+                        size="20px"
+                        color="#333"
+                      />
+                    </RemoveButton>
+                  </DanfeImage>
+                ) : null}
               </RowContainer>
             </fieldset>
           </Form>
@@ -415,204 +426,119 @@ function BillingDialog({ setOpen, current }) {
           <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
             <Divider>Dádos Básicos</Divider>
             <RowContainer>
-              <InputContainer style={{ marginRight: '5px' }}>
-                <DefaultInput name="name" type="text" placeholder="Nome*" />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <label>
-                <input
-                  type="radio"
-                  value="1"
-                  checked={entityType === '1'}
-                  onChange={() => handleOptionChange('1')}
-                />
-                Pessoa Física
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  value="2"
-                  checked={entityType === '2'}
-                  onChange={() => handleOptionChange('2')}
-                />
-                Pessoa Jurídica
-              </label>
-              {entityType === '1' ? (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
+              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
+                <FloatingLabel
+                  htmlFor="autocompleteServiceOrderId"
+                  active={inputActive.serviceOrder}
                 >
-                  <Input
-                    mask="999.999.999-99"
-                    name="cpf"
-                    type="text"
-                    placeholder="CPF"
-                  />
-                </InputContainer>
-              ) : (
-                <InputContainer
-                  style={{
-                    width: '49%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <Input
-                    mask="99.999.999/9999-99"
-                    name="cnpj"
-                    type="text"
-                    placeholder="CNPJ"
-                  />
-                </InputContainer>
-              )}
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <Input
-                  mask="99-99999-9999"
-                  name="phone"
-                  type="text"
-                  placeholder="Telefone"
+                  Ordem de Serviço
+                </FloatingLabel>
+                <Autocomplete
+                  suggestions={autocompleteServiceOrders}
+                  onSuggestionsFetchRequested={({ value }) =>
+                    filterSuggestions(value, 'serviceOrder')
+                  }
+                  onSuggestionsClearRequested={clearServiceOrderRequest}
+                  getSuggestionValue={getSuggestionValue}
+                  renderSuggestion={renderSuggestion}
+                  inputProps={serviceOrderInputProps}
+                  onSuggestionSelected={(e, { suggestion }) =>
+                    handleSuggestionSelect(suggestion, 'serviceOrder')
+                  }
+                  name="serviceOrderName"
                 />
-              </InputContainer>
-
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput name="email" type="text" placeholder="Email" />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="description"
-                  type="text"
-                  placeholder="Descrição"
-                />
+                {noServiceOrderSuggestions ? (
+                  <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
+                    Nenhum cliente encontrado. Clique para adicionar.
+                  </NoAutocompleteSuggestion>
+                ) : null}
               </InputContainer>
             </RowContainer>
 
-            <Divider>Endereço</Divider>
-
-            <RowContainer>
-              <SearchContainer>
-                <InputContainer
-                  style={{
-                    width: '100%',
-                    marginRight: '5px',
-                  }}
-                >
-                  <DefaultInput
-                    name="address.cep"
-                    type="text"
-                    placeholder="CEP"
-                  />
-                </InputContainer>
-                <SearchButton onClick={handleCepSearch} disabled={searching}>
-                  <Icon
-                    path={mdiAccountSearch}
-                    title="Buscar Cep"
-                    size="30px"
-                    color="#333"
-                  />
-                </SearchButton>
-              </SearchContainer>
-              <InputContainer
-                style={{
-                  width: '65%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.address"
-                  type="text"
-                  placeholder="Rua"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '15%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  maxLength="5"
-                  name="address.number"
-                  type="text"
-                  placeholder="Número"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.neighborhood"
-                  type="text"
-                  placeholder="Bairro"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '42%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.additional"
-                  type="text"
-                  placeholder="Complemento"
-                />
-              </InputContainer>
-            </RowContainer>
-            <RowContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.city"
-                  type="text"
-                  placeholder="Cidade"
-                />
-              </InputContainer>
-              <InputContainer
-                style={{
-                  width: '50%',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <DefaultInput
-                  name="address.state"
-                  type="text"
-                  placeholder="Estado"
-                />
-              </InputContainer>
+            <Divider>Danfe | XML</Divider>
+            <RowContainer style={{ justifyContent: 'space-around' }}>
+              <input
+                id="uploadDanfeElementButton"
+                hidden
+                type="file"
+                onChange={e =>
+                  handleUploadMethod(e, 'uploadDanfeElementButton', 'danfe')
+                }
+              />
+              <input
+                id="uploadXmlElementButton"
+                hidden
+                type="file"
+                onChange={e =>
+                  handleUploadMethod(e, 'uploadXmlElementButton', 'xml')
+                }
+              />
+              {!danfe || !danfe.fileLink ? (
+                <DanfeImage>
+                  <UploadImage
+                    type="button"
+                    onClick={() =>
+                      handleClickToUpload('uploadDanfeElementButton')
+                    }
+                  >
+                    Adicionar Danfe
+                  </UploadImage>
+                </DanfeImage>
+              ) : null}
+              {!xml || !xml.fileLink ? (
+                <DanfeImage>
+                  <UploadImage
+                    type="button"
+                    onClick={() =>
+                      handleClickToUpload('uploadXmlElementButton')
+                    }
+                  >
+                    Adicionar XML
+                  </UploadImage>
+                </DanfeImage>
+              ) : null}
+              {danfe && danfe.fileLink ? (
+                <DanfeImage>
+                  <span>Danfe</span>
+                  <a
+                    href={danfe.fileLink}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    download
+                  >
+                    <Icon path={mdiFile} size={6} color="#CCC" />
+                  </a>
+                  <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                    <Icon
+                      path={mdiDelete}
+                      title="Remover Danfe"
+                      size="20px"
+                      color="#333"
+                    />
+                  </RemoveButton>
+                </DanfeImage>
+              ) : null}
+              {xml && xml.fileLink ? (
+                <DanfeImage>
+                  <span>XML</span>
+                  <a
+                    href={xml.fileLink}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    download
+                  >
+                    <Icon path={mdiFile} size={6} color="#CCC" />
+                  </a>
+                  <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                    <Icon
+                      path={mdiDelete}
+                      title="Remover XML"
+                      size="20px"
+                      color="#333"
+                    />
+                  </RemoveButton>
+                </DanfeImage>
+              ) : null}
             </RowContainer>
           </Form>
         </Container>
@@ -632,10 +558,12 @@ function BillingDialog({ setOpen, current }) {
         <button
           type="submit"
           form="editForm"
-          disabled={searching || submitting}
+          disabled={submitting || !selectedServiceOrder._id}
           style={{
-            cursor: searching || submitting ? 'default' : 'pointer',
-            background: searching || submitting ? '#909090' : '#333',
+            cursor:
+              submitting || !selectedServiceOrder._id ? 'default' : 'pointer',
+            background:
+              submitting || !selectedServiceOrder._id ? '#909090' : '#333',
           }}
         >
           Salvar
@@ -654,4 +582,9 @@ export default BillingDialog;
 BillingDialog.propTypes = {
   setOpen: PropTypes.func.isRequired,
   current: PropTypes.oneOfType([PropTypes.object]).isRequired,
+  serviceOrders: PropTypes.arrayOf(PropTypes.object),
+};
+
+BillingDialog.defaultProps = {
+  serviceOrders: [],
 };
