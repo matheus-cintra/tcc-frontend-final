@@ -270,7 +270,7 @@ function CustomerDialog({ setOpen, current }) {
                 <RowContainer>
                   <FloatingLabelInputContainer>
                     <FloatingLabel htmlFor="name" active={inputActive.name}>
-                      Cliente
+                      Cliente*
                     </FloatingLabel>
                     <FloatLabelInput
                       id="name"
@@ -288,7 +288,6 @@ function CustomerDialog({ setOpen, current }) {
                       }}
                       defaultValue={current.name}
                       name="name"
-                      required
                     />
                   </FloatingLabelInputContainer>
                 </RowContainer>
@@ -319,7 +318,7 @@ function CustomerDialog({ setOpen, current }) {
                         htmlFor="inputCpf"
                         active={inputActive.cpf}
                       >
-                        CPF
+                        CPF*
                       </FloatingLabel>
                       <Input
                         mask="999.999.999-99"
@@ -343,7 +342,7 @@ function CustomerDialog({ setOpen, current }) {
                         htmlFor="inputCnpj"
                         active={inputActive.cnpj}
                       >
-                        CNPJ
+                        CNPJ*
                       </FloatingLabel>
                       <Input
                         mask="99.999.999/9999-99"
@@ -749,7 +748,7 @@ function CustomerDialog({ setOpen, current }) {
               <RowContainer>
                 <FloatingLabelInputContainer>
                   <FloatingLabel htmlFor="name" active={inputActive.name}>
-                    Cliente
+                    Cliente*
                   </FloatingLabel>
                   <FloatLabelInput
                     id="name"
@@ -766,7 +765,6 @@ function CustomerDialog({ setOpen, current }) {
                       }
                     }}
                     name="name"
-                    required
                   />
                 </FloatingLabelInputContainer>
               </RowContainer>
@@ -792,7 +790,7 @@ function CustomerDialog({ setOpen, current }) {
                 {entityType === '1' ? (
                   <FloatingLabelInputContainer style={{ width: '50%' }}>
                     <FloatingLabel htmlFor="inputCpf" active={inputActive.cpf}>
-                      CPF
+                      CPF*
                     </FloatingLabel>
                     <Input
                       mask="999.999.999-99"
@@ -815,7 +813,7 @@ function CustomerDialog({ setOpen, current }) {
                       htmlFor="inputCnpj"
                       active={inputActive.cnpj}
                     >
-                      CNPJ
+                      CNPJ*
                     </FloatingLabel>
                     <Input
                       mask="99.999.999/9999-99"
