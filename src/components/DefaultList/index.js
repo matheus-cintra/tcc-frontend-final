@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import Icon from '@mdi/react';
 import { mdiFile, mdiMagnify } from '@mdi/js';
+import helper from '../../helpers/helper';
 import {
   Toolbar,
   Scroll,
@@ -62,9 +63,10 @@ function DefaultList(props) {
 
   const handleSearch = async data => {
     setSearching(true);
-    const { searchContent } = data;
+    let { searchContent } = data;
+    searchContent = helper.normalize(searchContent, 'lower');
     let result;
-    if (searchContent === '') {
+    if (!searchContent || searchContent === '') {
       result = await decorator.getRegisters('15', undefined);
       setFiltered(false);
     } else {
