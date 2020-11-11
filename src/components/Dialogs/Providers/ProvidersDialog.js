@@ -7,7 +7,6 @@ import { cnpj as _cnpjCheck } from 'cpf-cnpj-validator';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
 import Input from '../../InputMask/Input';
-import DefaultInput from '../../DefaultInput/Input';
 import Divider from '../../Divider';
 import helpers from '../../../helpers/helper';
 import Modal from '../../Modals';
@@ -22,7 +21,6 @@ import {
   Form,
   BottomActions,
   RowContainer,
-  InputContainer,
   SearchContainer,
   SearchButton,
   LoadingContainer,
@@ -328,18 +326,31 @@ function ProviderDialog({ setOpen, current }) {
                   </FloatingLabelInputContainer>
                 </RowContainer>
                 <RowContainer>
-                  <InputContainer
-                    style={{
-                      marginRight: '5px',
-                    }}
-                  >
-                    <DefaultInput
-                      name="description"
+                  <FloatingLabelInputContainer>
+                    <FloatingLabel
+                      htmlFor="description"
+                      active={inputActive.description}
+                    >
+                      Descrição
+                    </FloatingLabel>
+                    <FloatLabelInput
+                      id="description"
                       type="text"
-                      placeholder="Descrição"
+                      onFocus={() =>
+                        setInputActive({ ...inputActive, description: true })
+                      }
+                      onBlur={e => {
+                        if (e.target.value === '') {
+                          setInputActive({
+                            ...inputActive,
+                            description: false,
+                          });
+                        }
+                      }}
                       defaultValue={current.description}
+                      name="description"
                     />
-                  </InputContainer>
+                  </FloatingLabelInputContainer>
                 </RowContainer>
 
                 <Divider>Endereço</Divider>
