@@ -131,7 +131,6 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      console.warn('selectedServiceOrder.service > ', selectedServiceOrder);
       const dataSet = {
         serviceOrderId: selectedServiceOrder._id,
         serviceId:
@@ -141,8 +140,6 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
         xmlId: xmlId && xmlId,
         danfeId: danfeId && danfeId,
       };
-
-      console.warn('chegou aqui... ', dataSet, billingId);
 
       const result = billingId
         ? await api.put(`/api/v1/billings/${billingId}`, { ...dataSet })
@@ -160,7 +157,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
 
       handleClose();
     } catch (error) {
-      console.warn('erro > ', error);
+      toast.error(error);
     }
   };
   // submit(

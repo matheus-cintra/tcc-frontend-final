@@ -109,21 +109,17 @@ function AttachmentDialog({ setOpen, current }) {
   async function handleUpload(e, el) {
     const $el = document.getElementById(el);
     const files = e.target.files[0];
-    console.warn('files . ', files);
     const result = await api.post('/api/v1/tools/get-signed-url', {
       fileName: files.name,
       fileSize: files.size,
     });
-    console.warn('result . ', result);
     fetch(result.data.doc.url, { method: 'PUT', body: files })
       .then(() => {
         setAttachment([...attachment, result.data.doc]);
         setAttachmentId([...attachmentId, result.data.doc.attachmentId]);
-        console.warn('rodou...', attachment, attachmentId);
         $el.value = '';
       })
-      .catch(error => {
-        console.warn('error > ', error);
+      .catch(() => {
         toast.error('Falha ao anexar arquivo. Tente novamente.');
         $el.value = '';
       });
