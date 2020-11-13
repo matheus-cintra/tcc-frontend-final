@@ -1,68 +1,97 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import Icon from '@mdi/react';
 import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+  mdiReceipt,
+  mdiFile,
+  mdiAccountSupervisor,
+  mdiAttachment,
+} from '@mdi/js';
+import {
+  getAttachments,
+  getBillings,
+  getCustomers,
+  getServiceOrders,
+} from './methods';
 
-import { GraphContainer, Graph, BigGraph } from './styles';
+import {
+  Container,
+  BillingTotal,
+  ServiceOrderTotal,
+  CustomerTotal,
+  DocumentsTotal,
+  InfoContainer,
+  BigNumber,
+  NormalText,
+} from './styles';
 
-const data = [
-  { name: 'Janeiro', clientes: 3 },
-  { name: 'Fevereiro', clientes: 7 },
-  { name: 'Março', clientes: 12 },
-  { name: 'Abril', clientes: 24 },
-  { name: 'Maio', clientes: 18 },
-  { name: 'Junho', clientes: 31 },
-];
+function Dashboard() {
+  const [billings, setBillings] = useState('');
+  const [serviceOrders, setServiceOrders] = useState(0);
+  const [customers, setCustomers] = useState(0);
+  const [attachments, setAttachments] = useState(0);
 
-export default function Dashboard() {
+  async function getDashboardInfo() {
+    const resultCustomer = await getCustomers();
+    const resultAttachments = await getAttachments();
+    const resultServiceOrders = await getServiceOrders();
+    const resultBilling = await getBillings();
+    setBillings(resultBilling);
+    setCustomers(resultCustomer.data.data.customer);
+    setAttachments(resultAttachments.data.data.attachment);
+    setServiceOrders(resultServiceOrders.data.data.serviceOrder);
+  }
+
+  useEffect(() => {
+    getDashboardInfo();
+  }, []);
+
   return (
-    <>
-      <GraphContainer>
-        <Graph>
-          <h2>Numero de Cliente (6 meses)</h2>
-          <ResponsiveContainer width="100%" height="70%">
-            <LineChart width={600} height={300} data={data}>
-              <Line type="monotone" dataKey="clientes" stroke="#8884d8" />
-              <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-            </LineChart>
-          </ResponsiveContainer>
-        </Graph>
-        <Graph>
-          <h2>Total de Vendas (6 meses)</h2>
-          <ResponsiveContainer width="100%" height="70%">
-            <LineChart width={600} height={300} data={data}>
-              <Line type="monotone" dataKey="clientes" stroke="#8884d8" />
-              <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-            </LineChart>
-          </ResponsiveContainer>
-        </Graph>
-      </GraphContainer>
-      <GraphContainer>
-        <BigGraph>
-          <h2>Total de Caixa (6 meses)</h2>
-          <ResponsiveContainer width="100%" height="70%">
-            <LineChart width={600} height={300} data={data}>
-              <Line type="monotone" dataKey="clientes" stroke="#8884d8" />
-              <CartesianGrid stroke="#ccc" strokeDasharray="5 5" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-            </LineChart>
-          </ResponsiveContainer>
-        </BigGraph>
-      </GraphContainer>
-    </>
+    <Container>
+      <BillingTotal>
+        <Icon
+          path={mdiReceipt}
+          title="Faturamento Total"
+          size={4}
+          color="#455a64"
+        />
+        <InfoContainer>
+          <BigNumber>R${billings}</BigNumber>
+          <NormalText>Faturamento</NormalText>
+        </InfoContainer>
+      </BillingTotal>
+      <ServiceOrderTotal>
+        <Icon
+          path={mdiFile}
+          title="Ordens de Serviço Executadas"
+          size={4}
+          color="#455a64"
+        />
+        <InfoContainer>
+          <BigNumber size={72}>{serviceOrders}</BigNumber>
+          <NormalText>Ordens de Serviço Executadas</NormalText>
+        </InfoContainer>
+      </ServiceOrderTotal>
+      <CustomerTotal>
+        <Icon
+          path={mdiAccountSupervisor}
+          title="Clientes"
+          size={4}
+          color="#455a64"
+        />
+        <InfoContainer>
+          <BigNumber size={72}>{customers}</BigNumber>
+          <NormalText>Total de Clientes</NormalText>
+        </InfoContainer>
+      </CustomerTotal>
+      <DocumentsTotal>
+        <Icon path={mdiAttachment} title="Anexos" size={4} color="#455a64" />
+        <InfoContainer>
+          <BigNumber size={72}>{attachments}</BigNumber>
+          <NormalText>Anexos Totais</NormalText>
+        </InfoContainer>
+      </DocumentsTotal>
+    </Container>
   );
 }
+
+export default Dashboard;

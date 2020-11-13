@@ -1,91 +1,62 @@
 import styled from 'styled-components';
 
-export const GraphContainer = styled.div`
-  height: 430px;
+export const Container = styled.div`
   display: flex;
-  justify-content: space-between;
-  margin: 10px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  padding: 10px;
+  height: 100%;
+  justify-content: space-around;
 
-  @media screen and (max-width: 900px) {
-    flex-direction: column;
-    height: 100%;
+  & > div {
+    width: 250px;
+    border-radius: 5px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   }
 `;
 
-export const Graph = styled.div`
-  width: 100%;
-  min-width: 210px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  text-align: center;
-
-  flex-direction: column;
-
-  &:first-child {
-    margin-right: 10px;
-  }
-
+export const BillingTotal = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-
-  padding: 15px;
-  border-radius: 5px;
-
-  div {
-    margin-top: 20px;
-    margin-right: 40px;
-  }
-
-  @media screen and (max-width: 900px) {
-    height: 100%;
-
-    &:first-child {
-      margin-bottom: 10px;
-    }
-  }
+  justify-content: space-around;
+  padding: 150px 0;
 `;
 
-export const BigGraph = styled.div`
-  width: 100%;
-  border-radius: 5px;
-  min-width: 210px;
-  flex-direction: column;
-  text-align: center;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-
+export const ServiceOrderTotal = styled.div`
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: space-around;
+  padding: 150px 0;
+`;
+export const CustomerTotal = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 150px 0;
+`;
+export const DocumentsTotal = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  padding: 150px 0;
+`;
 
-  padding: 15px;
-  border-radius: 5px;
-
-  div {
-    margin-top: 20px;
-    margin-right: 24px;
-  }
-
-  @media screen and (max-width: 900px) and (min-width: 400px) {
-    height: 58%;
-  }
-
-  @media screen and (max-width: 400px) and (min-width: 375px) {
-    height: 58%;
-    /* margin-top: 70px; */
-  }
-
-  @media screen and (max-width: 400px) and (min-width: 375px) and (max-height: 750px) {
-    height: 58%;
-    margin-top: 70px;
-  }
-
-  @media screen and (max-width: 374px) and (min-width: 360px) {
-    height: 58%;
-    margin-top: 25px;
-  }
-
-  @media screen and (max-width: 359px) {
-    height: 58%;
-    margin-top: 169px;
-  }
+export const InfoContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+export const BigNumber = styled.span`
+  font-size: ${props => (props.size ? props.size : 35)}px;
+  font-weight: 600;
+  color: red;
+`;
+export const NormalText = styled.span`
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
 `;

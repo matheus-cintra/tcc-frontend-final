@@ -140,7 +140,7 @@ export const CompanyImage = styled.div`
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 
   width: 250px;
-  height: 300px;
+  height: 215px;
   border-radius: 15px;
   margin-top: 20px;
 
@@ -151,10 +151,10 @@ export const CompanyImage = styled.div`
   }
 
   img {
-    width: 200px;
-    height: 200px;
-    max-width: 200px;
-    max-height: 200px;
+    width: 100px;
+    height: 100px;
+    max-width: 100px;
+    max-height: 100px;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
     border-radius: 50%;
   }
