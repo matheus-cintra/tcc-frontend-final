@@ -21,6 +21,13 @@ export default function user(state = INITIAL_STATE, action) {
       });
     }
 
+    case '@auth/LOGOUT_USER': {
+      return produce(state, draft => {
+        draft.profile = null;
+        draft.imageLink = null;
+      });
+    }
+
     default:
       return state;
   }

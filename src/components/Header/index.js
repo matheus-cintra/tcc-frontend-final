@@ -16,7 +16,10 @@ function Header() {
         <aside>
           <Profile>
             <div>
-              <strong>{userProfile.profile.name}</strong>
+              <strong>
+                {(userProfile.profile && userProfile.profile.name) ||
+                  'Usuario XXX'}
+              </strong>
               <Link to="/profile">Meu Perfil</Link>
             </div>
             <img

@@ -4,6 +4,7 @@ import { connect, useDispatch } from 'react-redux';
 import { mdiDelete, mdiDatabase, mdiMapMarker } from '@mdi/js';
 import { toast } from 'react-toastify';
 import DefaultInput from '../../components/DefaultInput/Input';
+import { logoutUser } from '../../store/modules/auth/actions';
 import api from '../../services/api';
 import {
   Container,
@@ -34,10 +35,12 @@ import {
   StateTitle,
   SubmitButton,
   LoadingScreen,
+  DeleteAccount,
 } from './styles';
 
 import Modal from '../../components/Modals';
 import Asks from './Dialogs/Asks';
+import AsksDeleteAccount from './Dialogs/AsksDeleteAccount';
 
 import { handleUpload, handleSubmit } from './methods';
 import { setProfile } from '../../store/modules/user/actions';
@@ -51,6 +54,7 @@ function Profile() {
   const [searchingAttachments, setSearchingAttachments] = useState(false);
   const [searchingProfileImage, setSearchingProfileImage] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+  const [askDeleteAccountOpen, setAskDeleteAccountOpen] = useState(false);
   const [, setOpen] = useState(false);
 
   const dispatch = useDispatch();
@@ -122,6 +126,9 @@ function Profile() {
 
   const handleOpenAskDialog = () => setAskOpen(asking => !asking);
 
+  const handleOpenDeleteAccountDialog = () =>
+    setAskDeleteAccountOpen(asking => !asking);
+
   function handleCloseReturn(userUpdate) {
     const profileInfo = { user: userUpdate.data.data.result };
     dispatch(setProfile(profileInfo));
@@ -139,6 +146,23 @@ function Profile() {
         }
         accountId={accountInfo._id}
         closeReturn={handleCloseReturn}
+      />
+    );
+  };
+
+  function closeUpdate() {
+    console.warn('chegou aqui... ');
+    dispatch(logoutUser());
+    console.warn('chegou aqui 22... ');
+    window.location.reload();
+  }
+
+  const handleAskDeleteAccountDialog = () => {
+    return (
+      <AsksDeleteAccount
+        setAskOpen={handleOpenDeleteAccountDialog}
+        accountId={accountInfo._id}
+        closeUpdate={closeUpdate}
       />
     );
   };
@@ -209,6 +233,12 @@ function Profile() {
             <Row>
               <p />
               <SubmitButton>Salvar</SubmitButton>
+              <DeleteAccount
+                type="button"
+                onClick={handleOpenDeleteAccountDialog}
+              >
+                Encerrar Conta
+              </DeleteAccount>
             </Row>
           </FormContainer>
         </ProfileContainer>
@@ -252,6 +282,9 @@ function Profile() {
 
       <Modal open={askOpen} setOpen={setOpen}>
         <div>{handleAskDialog()}</div>
+      </Modal>
+      <Modal open={askDeleteAccountOpen} setOpen={setOpen}>
+        <div>{handleAskDeleteAccountDialog()}</div>
       </Modal>
     </>
   );

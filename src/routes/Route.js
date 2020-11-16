@@ -28,6 +28,10 @@ export default function RouteWrapper({
   const decoded = jwt.decode(token);
   const expired = decoded && currTime > decoded.exp;
 
+  console.warn('expired > ', expired);
+  console.warn('signed > ', signed);
+  console.warn('isPrivate > ', isPrivate);
+
   const dispatch = useDispatch();
 
   const moduleInfo = {

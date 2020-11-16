@@ -36,7 +36,8 @@ export function* signIn({ payload }) {
 
     history.push('/dashboard');
   } catch (err) {
-    toast.error(err.response.data.data.message);
+    console.warn('err > ', err.response);
+    toast.error(err.response.data.message);
   }
 }
 

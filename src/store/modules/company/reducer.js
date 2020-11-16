@@ -14,6 +14,13 @@ export default function company(state = INITIAL_STATE, action) {
       });
     }
 
+    case '@auth/LOGOUT_USER': {
+      return produce(state, draft => {
+        draft.companyName = null;
+        draft.companyImage = null;
+      });
+    }
+
     default:
       return state;
   }

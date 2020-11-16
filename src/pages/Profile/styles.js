@@ -331,6 +331,26 @@ export const SubmitButton = styled.button.attrs({
   }
 `;
 
+export const DeleteAccount = styled.button`
+  margin: 30px 30px 0 0;
+  width: 150px;
+  height: 40px;
+  border: none;
+  background: #333;
+  border-radius: 5px;
+  color: #fff;
+  font-weight: bold;
+  transition: background 0.4s;
+
+  &:hover {
+    background: #ccc;
+  }
+
+  @media screen and (max-width: 768px) {
+    margin: 30px 0 0 0;
+  }
+`;
+
 export const LoadingScreen = styled.div`
   border: ${props =>
     props.padding
