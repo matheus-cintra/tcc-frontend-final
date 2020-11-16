@@ -77,15 +77,6 @@ function ProviderDialog({ setOpen, current }) {
     }),
   });
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (formRef.current === null) return;
-    const { getData } = formRef.current;
-    console.warn('myForm > ', getData()); //eslint-disable-line
-  });
-  /** ************************************************************************* */
-
   const handleClose = () => {
     if (submitting || searching) return;
     setOpen(open => !open);

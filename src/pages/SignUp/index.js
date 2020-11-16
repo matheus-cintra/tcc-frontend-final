@@ -25,15 +25,6 @@ export default function SignUp() {
   const formRef = useRef(null);
   const dispatch = useDispatch();
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (formRef.current === null) return;
-    const { getData } = formRef.current;
-    console.warn('myForm > ', getData()); //eslint-disable-line
-  });
-  /** ************************************************************************* */
-
   async function handleSubmit(data) {
     try {
       await validateSignUp(data);

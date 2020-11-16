@@ -55,15 +55,6 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
     serviceOrder: false,
   });
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (formRef.current === null) return;
-    const { getData } = formRef.current;
-    console.warn('myForm > ', getData()); //eslint-disable-line
-  });
-  /** ************************************************************************* */
-
   useEffect(() => {
     const elServiceOrder = document.getElementById(
       'autocompleteServiceOrderId'

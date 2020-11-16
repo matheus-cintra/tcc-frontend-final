@@ -64,15 +64,6 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
     paymentValue: false,
   });
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (formRef.current === null) return;
-    const { getData } = formRef.current;
-    console.warn('myForm > ', getData()); //eslint-disable-line
-  });
-  /** ************************************************************************* */
-
   useCallback(() => {
     setTimeout(() => {
       const paymentDateElement = document.getElementById('inputPaymentDate');

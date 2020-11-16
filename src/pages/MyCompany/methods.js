@@ -176,7 +176,6 @@ async function handleSubmit(
     };
 
     if (attachmentId) data.logo = attachmentId;
-    console.warn('comapnuy> ', companyInfo);
 
     const updatedCompany = await api.put(`/api/v1/company/${companyInfo._id}`, {
       ...data,
@@ -208,7 +207,6 @@ async function handleSubmit(
     }
 
     dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
-    console.warn('data > ', data);
     setCompanyInfo(data);
 
     toast.success('Empresa Atualizada.');

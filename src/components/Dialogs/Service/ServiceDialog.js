@@ -41,15 +41,6 @@ function ServiceDialog({ setOpen, current }) {
     price: Yup.string().required('Preço Obrigatório'),
   });
 
-  /** ************************* PRINT FORM IN CONSOLE ************************* */
-  const root = document.getElementById('root');
-  root.addEventListener('dblclick', () => {
-    if (formRef.current === null) return;
-    const { getData } = formRef.current;
-    console.warn('myForm > ', getData()); //eslint-disable-line
-  });
-  /** ************************************************************************* */
-
   const handleClose = () => {
     setOpen(open => !open);
   };
