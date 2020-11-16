@@ -96,6 +96,10 @@ async function getRegistersBySearch(search) {
         .format('DD/MM/YYYY'),
       icon: serviceorder.cnpj ? mdiFactory : mdiAccount,
       subtitle: serviceorder.cnpj ? 'Jurídica' : 'Física',
+      formatedPrice:
+        serviceorder.paymentValue &&
+        helpers.formatPrice(serviceorder.paymentValue),
+      statusPaid: serviceorder.paymentValue ? mdiCheck : mdiAlertCircleOutline,
     };
   });
 

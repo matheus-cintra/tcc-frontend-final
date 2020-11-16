@@ -39,7 +39,7 @@ function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
   return (
     <>
       <Toolbar>
-        <Title>Remover Foto de Perfil</Title>
+        <Title>Remover Logotipo da Empresa</Title>
         <Icon
           path={mdiClose}
           title="Close"
@@ -50,7 +50,7 @@ function Asks({ setAskOpen, attachmentId, accountId, closeReturn }) {
       </Toolbar>
       <Container>
         <AskText>
-          Você tem certeza que deseja remover sua foto de perfil? Essa ação é
+          Você tem certeza que deseja remover o logotipo da empresa? Essa ação é
           definitiva e após a exclusão, você passará a utilizar uma foto padrão.
         </AskText>
         <BottomActions>

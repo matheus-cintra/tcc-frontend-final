@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { Container } from './styles';
 import routes from './routesTemplate';
 import { store } from '../../store';
+import FallbackIcon from '../../assets/fallback_icon.jpg';
 
 function Sidenav() {
   const companyInfo = store.getState();
@@ -14,13 +15,7 @@ function Sidenav() {
   return (
     <Container>
       <header>
-        <img
-          src={
-            companyImage ||
-            'https://api.adorable.io/avatars/100/abott@adorable.png'
-          }
-          alt="Logo"
-        />
+        <img src={companyImage || FallbackIcon} alt="Logo" />
         <h2>{companyName}</h2>
       </header>
       <ul>

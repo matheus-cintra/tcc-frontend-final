@@ -176,10 +176,16 @@ async function handleSubmit(
     };
 
     if (attachmentId) data.logo = attachmentId;
+    console.warn('comapnuy> ', companyInfo);
 
-    await api.put(`/api/v1/company/${companyInfo._id}`, {
+    const updatedCompany = await api.put(`/api/v1/company/${companyInfo._id}`, {
       ...data,
     });
+
+    data = {
+      ...updatedCompany.data.data.company,
+      ...data,
+    };
 
     data._cnpj = data.cnpj.replace(
       /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/g,
@@ -202,7 +208,7 @@ async function handleSubmit(
     }
 
     dispatch(setCompany(data.fantasyName, companyLogo.fileLink));
-
+    console.warn('data > ', data);
     setCompanyInfo(data);
 
     toast.success('Empresa Atualizada.');

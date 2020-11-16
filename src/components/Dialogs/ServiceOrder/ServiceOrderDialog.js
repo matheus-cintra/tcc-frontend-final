@@ -353,7 +353,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     htmlFor="autocompleteCustomerId"
                     active={inputActive.customer}
                   >
-                    Cliente
+                    Cliente*
                   </FloatingLabel>
                   <Autocomplete
                     suggestions={autocompleteCustomers}
@@ -408,7 +408,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     htmlFor="autocompleteServiceId"
                     active={inputActive.service}
                   >
-                    Serviço Prestado
+                    Serviço Prestado*
                   </FloatingLabel>
                   <Autocomplete
                     suggestions={autocompleteServices}
@@ -466,7 +466,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                         htmlFor="finalPriceId"
                         active={inputActive.finalPrice}
                       >
-                        Preço Final R$
+                        Preço Final R$*
                       </FloatingLabel>
                       <FloatLabelInput
                         id="finalPriceId"
@@ -491,7 +491,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                         htmlFor="inputDateService"
                         active={inputActive.dateService}
                       >
-                        Data de Execução
+                        Data de Execução*
                       </FloatingLabel>
                       <Input
                         mask="99/99/9999"
@@ -658,7 +658,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     htmlFor="autocompleteCustomerId"
                     active={inputActive.customer}
                   >
-                    Cliente
+                    Cliente*
                   </FloatingLabel>
                   <Autocomplete
                     suggestions={autocompleteCustomers}
@@ -713,7 +713,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                     htmlFor="autocompleteServiceId"
                     active={inputActive.service}
                   >
-                    Serviço Prestado
+                    Serviço Prestado*
                   </FloatingLabel>
                   <Autocomplete
                     suggestions={autocompleteServices}
@@ -771,7 +771,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                         htmlFor="finalPriceId"
                         active={inputActive.finalPrice}
                       >
-                        Preço Final R$
+                        Preço Final R$*
                       </FloatingLabel>
                       <FloatLabelInput
                         id="finalPriceId"
@@ -795,7 +795,7 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
                         htmlFor="inputDateService"
                         active={inputActive.dateService}
                       >
-                        Data de Execução
+                        Data de Execução*
                       </FloatingLabel>
                       <Input
                         mask="99/99/9999"

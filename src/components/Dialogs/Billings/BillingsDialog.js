@@ -315,7 +315,8 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                   />
                   {noServiceOrderSuggestions ? (
                     <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
-                      Nenhum cliente encontrado. Clique para adicionar.
+                      Nenhuma ordem de serviço encontrada. Clique para
+                      adicionar.
                     </NoAutocompleteSuggestion>
                   ) : null}
                 </InputContainer>
@@ -446,7 +447,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                 />
                 {noServiceOrderSuggestions ? (
                   <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
-                    Nenhum cliente encontrado. Clique para adicionar.
+                    Nenhuma ordem de serviço encontrada. Clique para adicionar.
                   </NoAutocompleteSuggestion>
                 ) : null}
               </InputContainer>

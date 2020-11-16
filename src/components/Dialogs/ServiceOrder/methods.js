@@ -135,13 +135,7 @@ async function submit(
 
       formRef.current.setErrors(errorMessages);
     } else {
-      return toast.error(
-        (error.response &&
-          error.response.data &&
-          error.response.data.data &&
-          error.response.data.data.message) ||
-          'Erro na Validação dos dados.'
-      );
+      return toast.error('Verifique campos obrigatórios');
     }
   }
 }
