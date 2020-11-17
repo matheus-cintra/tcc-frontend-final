@@ -85,7 +85,7 @@ function ServiceDialog({ setOpen, current }) {
 
         formRef.current.setErrors(errorMessages);
       } else {
-        toast.error(error.response.data.data.message);
+        toast.error('Preço inválido');
       }
     }
   }
