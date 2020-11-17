@@ -156,13 +156,14 @@ function ProviderDialog({ setOpen, current }) {
     } catch (error) {
       setSubmitting(false);
       if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
+        toast.error('Verifique os campos Obrigatórios.');
+        // const errorMessages = {};
 
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
+        // error.inner.forEach(err => {
+        //   errorMessages[err.path] = err.message;
+        // });
 
-        formRef.current.setErrors(errorMessages);
+        // formRef.current.setErrors(errorMessages);
       } else {
         return toast.error(error.response.data.data.message);
       }
@@ -221,7 +222,7 @@ function ProviderDialog({ setOpen, current }) {
                 <RowContainer>
                   <FloatingLabelInputContainer>
                     <FloatingLabel htmlFor="name" active={inputActive.name}>
-                      Fornecedor
+                      Fornecedor*
                     </FloatingLabel>
                     <FloatLabelInput
                       id="name"
@@ -239,7 +240,6 @@ function ProviderDialog({ setOpen, current }) {
                       }}
                       defaultValue={current.name}
                       name="name"
-                      required
                     />
                   </FloatingLabelInputContainer>
                 </RowContainer>
@@ -249,7 +249,7 @@ function ProviderDialog({ setOpen, current }) {
                       htmlFor="inputCnpj"
                       active={inputActive.cnpj}
                     >
-                      CNPJ
+                      CNPJ*
                     </FloatingLabel>
                     <Input
                       mask="99.999.999/9999-99"
@@ -274,7 +274,7 @@ function ProviderDialog({ setOpen, current }) {
                       htmlFor="inputPhone"
                       active={inputActive.phone}
                     >
-                      Telefone
+                      Telefone*
                     </FloatingLabel>
                     <Input
                       mask="(99) 99999-9999"
@@ -297,7 +297,7 @@ function ProviderDialog({ setOpen, current }) {
                       htmlFor="inputEmail"
                       active={inputActive.email}
                     >
-                      Email
+                      Email*
                     </FloatingLabel>
                     <FloatLabelInput
                       id="inputEmail"
@@ -548,7 +548,7 @@ function ProviderDialog({ setOpen, current }) {
               <RowContainer>
                 <FloatingLabelInputContainer>
                   <FloatingLabel htmlFor="name" active={inputActive.name}>
-                    Fornecedor
+                    Fornecedor*
                   </FloatingLabel>
                   <FloatLabelInput
                     id="name"
@@ -565,14 +565,13 @@ function ProviderDialog({ setOpen, current }) {
                       }
                     }}
                     name="name"
-                    required
                   />
                 </FloatingLabelInputContainer>
               </RowContainer>
               <RowContainer>
                 <FloatingLabelInputContainer>
                   <FloatingLabel htmlFor="inputCnpj" active={inputActive.cnpj}>
-                    CNPJ
+                    CNPJ*
                   </FloatingLabel>
                   <Input
                     mask="99.999.999/9999-99"
@@ -596,7 +595,7 @@ function ProviderDialog({ setOpen, current }) {
                     htmlFor="inputPhone"
                     active={inputActive.phone}
                   >
-                    Telefone
+                    Telefone*
                   </FloatingLabel>
                   <Input
                     mask="(99) 99999-9999"
@@ -618,7 +617,7 @@ function ProviderDialog({ setOpen, current }) {
                     htmlFor="inputEmail"
                     active={inputActive.email}
                   >
-                    Email
+                    Email*
                   </FloatingLabel>
                   <FloatLabelInput
                     id="inputEmail"

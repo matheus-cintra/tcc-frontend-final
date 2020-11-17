@@ -77,13 +77,14 @@ function ServiceDialog({ setOpen, current }) {
       handleClose();
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
+        toast.error('Verifique os campos Obrigatório');
+        // const errorMessages = {};
 
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
+        // error.inner.forEach(err => {
+        //   errorMessages[err.path] = err.message;
+        // });
 
-        formRef.current.setErrors(errorMessages);
+        // formRef.current.setErrors(errorMessages);
       } else {
         toast.error('Preço inválido');
       }
@@ -155,7 +156,7 @@ function ServiceDialog({ setOpen, current }) {
               </FloatingLabelInputContainer>
               <FloatingLabelInputContainer>
                 <FloatingLabel htmlFor="name" active={inputActive.name}>
-                  Nome
+                  Nome*
                 </FloatingLabel>
                 <FloatLabelInput
                   id="name"
@@ -178,7 +179,7 @@ function ServiceDialog({ setOpen, current }) {
                   htmlFor="formatedPrice"
                   active={inputActive.formatedPrice}
                 >
-                  Preço
+                  Preço*
                 </FloatingLabel>
                 <FloatLabelInput
                   id="formatedPrice"
@@ -254,7 +255,7 @@ function ServiceDialog({ setOpen, current }) {
               </FloatingLabelInputContainer>
               <FloatingLabelInputContainer>
                 <FloatingLabel htmlFor="name" active={inputActive.name}>
-                  Nome
+                  Nome*
                 </FloatingLabel>
                 <FloatLabelInput
                   id="name"
@@ -276,7 +277,7 @@ function ServiceDialog({ setOpen, current }) {
                   htmlFor="formatedPrice"
                   active={inputActive.formatedPrice}
                 >
-                  Preço
+                  Preço*
                 </FloatingLabel>
                 <FloatLabelInput
                   id="formatedPrice"
