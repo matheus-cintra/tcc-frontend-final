@@ -211,13 +211,13 @@ export const SearchContainer = styled.div`
 `;
 
 export const LoadingScreen = styled.div`
-  border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #3498db; /* Blue */
+  border: 10px solid #f3f3f3;
+  border-top: 10px solid #455a64;
   border-radius: 50%;
-  width: 120px;
-  height: 120px;
+  width: 80px;
+  height: 80px;
   animation: spin 2s linear infinite;
-  padding: 100px;
+  padding: 60px;
 
   @keyframes spin {
     0% {
@@ -227,6 +227,23 @@ export const LoadingScreen = styled.div`
       transform: rotate(360deg);
     }
   }
+`;
+
+export const LoadingContainer = styled.div`
+  max-height: calc(100vh - 170px);
+  height: 100%;
+  margin: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+`;
+
+export const TextLoadingDocuments = styled.span`
+  font-size: 16px;
+  color: #455a64;
+  margin-bottom: 15px;
+  font-weight: 600;
 `;
 
 export const AutocompleteContainer = styled.div`

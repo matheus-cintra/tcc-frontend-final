@@ -25,6 +25,9 @@ import {
   AttachmentContainer,
   RemoveButton,
   Scroll,
+  LoadingContainer,
+  TextLoadingDocuments,
+  LoadingScreen,
 } from './styles';
 
 function AttachmentDialog({ setOpen, current }) {
@@ -33,6 +36,7 @@ function AttachmentDialog({ setOpen, current }) {
   const [askOpen, setAskOpen] = useState(false);
   const [attachmentId, setAttachmentId] = useState([]);
   const [attachment, setAttachment] = useState([]);
+  const [attaching, setAttaching] = useState(false);
 
   const [inputActive, setInputActive] = useState({
     code: false,
@@ -98,6 +102,7 @@ function AttachmentDialog({ setOpen, current }) {
   };
 
   async function handleUpload(e, el) {
+    setAttaching(true);
     const $el = document.getElementById(el);
     const files = e.target.files[0];
     const result = await api.post('/api/v1/tools/get-signed-url', {
@@ -109,8 +114,10 @@ function AttachmentDialog({ setOpen, current }) {
         setAttachment([...attachment, result.data.doc]);
         setAttachmentId([...attachmentId, result.data.doc.attachmentId]);
         $el.value = '';
+        setAttaching(false);
       })
       .catch(() => {
+        setAttaching(false);
         toast.error('Falha ao anexar arquivo. Tente novamente.');
         $el.value = '';
       });
@@ -172,244 +179,264 @@ function AttachmentDialog({ setOpen, current }) {
         />
       </Toolbar>
       {documentId ? (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <RowContainer>
-              <FloatingLabelInputContainer style={{ width: '290px' }}>
-                <FloatingLabel htmlFor="code" active={inputActive.code}>
-                  Código (Auto)
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="code"
-                  type="text"
-                  onFocus={() => setInputActive({ ...inputActive, code: true })}
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        code: false,
-                      });
+        <>
+          <LoadingContainer style={{ display: attaching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>Anexando</TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: attaching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+              <RowContainer>
+                <FloatingLabelInputContainer style={{ width: '290px' }}>
+                  <FloatingLabel htmlFor="code" active={inputActive.code}>
+                    Código (Auto)
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="code"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, code: true })
                     }
-                  }}
-                  name="code"
-                  defaultValue={current.code}
-                  disabled
-                />
-              </FloatingLabelInputContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel htmlFor="name" active={inputActive.name}>
-                  Nome do Anexo
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="name"
-                  type="text"
-                  onFocus={() => setInputActive({ ...inputActive, name: true })}
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        name: false,
-                      });
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          code: false,
+                        });
+                      }
+                    }}
+                    name="code"
+                    defaultValue={current.code}
+                    disabled
+                  />
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="name" active={inputActive.name}>
+                    Nome do Anexo
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="name"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, name: true })
                     }
-                  }}
-                  name="name"
-                  defaultValue={current.name}
-                />
-              </FloatingLabelInputContainer>
-            </RowContainer>
-            <RowContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel
-                  htmlFor="description"
-                  active={inputActive.description}
-                >
-                  Descrição
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="description"
-                  type="text"
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, description: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        description: false,
-                      });
-                    }
-                  }}
-                  name="description"
-                  defaultValue={current.description}
-                />
-              </FloatingLabelInputContainer>
-            </RowContainer>
-            <RowContainer style={{ justifyContent: 'center' }}>
-              <input
-                id="uploadElementButton"
-                hidden
-                type="file"
-                onChange={e => handleUpload(e, 'uploadElementButton')}
-              />
-              <UploadImage
-                type="button"
-                onClick={() => handleClickToUpload('uploadElementButton')}
-              >
-                Adicionar Anexo
-              </UploadImage>
-            </RowContainer>
-            {attachment && attachment.length > 0 ? (
-              <Scroll options={{ suppressScrollX: true }}>
-                {attachment.map(item => (
-                  <RowContainer
-                    key={item._id}
-                    style={{ padding: '0 10px 5px 10px' }}
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          name: false,
+                        });
+                      }
+                    }}
+                    name="name"
+                    defaultValue={current.name}
+                  />
+                </FloatingLabelInputContainer>
+              </RowContainer>
+              <RowContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="description"
+                    active={inputActive.description}
                   >
-                    <AttachmentContainer>
-                      <a
-                        href={item.fileLink}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        download
-                      >
-                        {item.fileName}
-                      </a>
-                      <RemoveButton
-                        type="button"
-                        onClick={() => handleRemoveAttachment(item)}
-                      >
-                        <Icon
-                          path={mdiDelete}
-                          title="Remover Anexo"
-                          size="20px"
-                          color="#333"
-                        />
-                      </RemoveButton>
-                    </AttachmentContainer>
-                  </RowContainer>
-                ))}
-              </Scroll>
-            ) : null}
-          </Form>
-        </Container>
+                    Descrição
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="description"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, description: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          description: false,
+                        });
+                      }
+                    }}
+                    name="description"
+                    defaultValue={current.description}
+                  />
+                </FloatingLabelInputContainer>
+              </RowContainer>
+              <RowContainer style={{ justifyContent: 'center' }}>
+                <input
+                  id="uploadElementButton"
+                  hidden
+                  type="file"
+                  onChange={e => handleUpload(e, 'uploadElementButton')}
+                />
+                <UploadImage
+                  type="button"
+                  onClick={() => handleClickToUpload('uploadElementButton')}
+                >
+                  Adicionar Anexo
+                </UploadImage>
+              </RowContainer>
+              {attachment && attachment.length > 0 ? (
+                <Scroll options={{ suppressScrollX: true }}>
+                  {attachment.map(item => (
+                    <RowContainer
+                      key={item._id}
+                      style={{ padding: '0 10px 5px 10px' }}
+                    >
+                      <AttachmentContainer>
+                        <a
+                          href={item.fileLink}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          download
+                        >
+                          {item.fileName}
+                        </a>
+                        <RemoveButton
+                          type="button"
+                          onClick={() => handleRemoveAttachment(item)}
+                        >
+                          <Icon
+                            path={mdiDelete}
+                            title="Remover Anexo"
+                            size="20px"
+                            color="#333"
+                          />
+                        </RemoveButton>
+                      </AttachmentContainer>
+                    </RowContainer>
+                  ))}
+                </Scroll>
+              ) : null}
+            </Form>
+          </Container>
+        </>
       ) : (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <RowContainer>
-              <FloatingLabelInputContainer style={{ width: '290px' }}>
-                <FloatingLabel htmlFor="code" active={inputActive.code}>
-                  Código (Auto)
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="code"
-                  type="text"
-                  onFocus={() => setInputActive({ ...inputActive, code: true })}
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        code: false,
-                      });
+        <>
+          <LoadingContainer style={{ display: attaching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>Anexando</TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: attaching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+              <RowContainer>
+                <FloatingLabelInputContainer style={{ width: '290px' }}>
+                  <FloatingLabel htmlFor="code" active={inputActive.code}>
+                    Código (Auto)
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="code"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, code: true })
                     }
-                  }}
-                  name="code"
-                  disabled
-                />
-              </FloatingLabelInputContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel htmlFor="name" active={inputActive.name}>
-                  Nome do Anexo
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="name"
-                  type="text"
-                  onFocus={() => setInputActive({ ...inputActive, name: true })}
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        name: false,
-                      });
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          code: false,
+                        });
+                      }
+                    }}
+                    name="code"
+                    disabled
+                  />
+                </FloatingLabelInputContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel htmlFor="name" active={inputActive.name}>
+                    Nome do Anexo
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="name"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, name: true })
                     }
-                  }}
-                  name="name"
-                />
-              </FloatingLabelInputContainer>
-            </RowContainer>
-            <RowContainer>
-              <FloatingLabelInputContainer>
-                <FloatingLabel
-                  htmlFor="description"
-                  active={inputActive.description}
-                >
-                  Descrição
-                </FloatingLabel>
-                <FloatLabelInput
-                  id="description"
-                  type="text"
-                  onFocus={() =>
-                    setInputActive({ ...inputActive, description: true })
-                  }
-                  onBlur={e => {
-                    if (e.target.value === '') {
-                      setInputActive({
-                        ...inputActive,
-                        description: false,
-                      });
-                    }
-                  }}
-                  name="description"
-                />
-              </FloatingLabelInputContainer>
-            </RowContainer>
-            <RowContainer style={{ justifyContent: 'center' }}>
-              <input
-                id="uploadElementButton"
-                hidden
-                type="file"
-                onChange={e => handleUpload(e, 'uploadElementButton')}
-              />
-              <UploadImage
-                type="button"
-                onClick={() => handleClickToUpload('uploadElementButton')}
-              >
-                Adicionar Anexo
-              </UploadImage>
-            </RowContainer>
-            {attachment && attachment.length > 0 ? (
-              <Scroll options={{ suppressScrollX: true }}>
-                {attachment.map(item => (
-                  <RowContainer
-                    key={item.attachmentId}
-                    style={{ padding: '0 10px 5px 10px' }}
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          name: false,
+                        });
+                      }
+                    }}
+                    name="name"
+                  />
+                </FloatingLabelInputContainer>
+              </RowContainer>
+              <RowContainer>
+                <FloatingLabelInputContainer>
+                  <FloatingLabel
+                    htmlFor="description"
+                    active={inputActive.description}
                   >
-                    <AttachmentContainer>
-                      <a
-                        href={item.fileLink}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                        download
-                      >
-                        {item.fileName}
-                      </a>
-                      <RemoveButton
-                        type="button"
-                        onClick={() => handleRemoveAttachment(item)}
-                      >
-                        <Icon
-                          path={mdiDelete}
-                          title="Remover Anexo"
-                          size="20px"
-                          color="#333"
-                        />
-                      </RemoveButton>
-                    </AttachmentContainer>
-                  </RowContainer>
-                ))}
-              </Scroll>
-            ) : null}
-          </Form>
-        </Container>
+                    Descrição
+                  </FloatingLabel>
+                  <FloatLabelInput
+                    id="description"
+                    type="text"
+                    onFocus={() =>
+                      setInputActive({ ...inputActive, description: true })
+                    }
+                    onBlur={e => {
+                      if (e.target.value === '') {
+                        setInputActive({
+                          ...inputActive,
+                          description: false,
+                        });
+                      }
+                    }}
+                    name="description"
+                  />
+                </FloatingLabelInputContainer>
+              </RowContainer>
+              <RowContainer style={{ justifyContent: 'center' }}>
+                <input
+                  id="uploadElementButton"
+                  hidden
+                  type="file"
+                  onChange={e => handleUpload(e, 'uploadElementButton')}
+                />
+                <UploadImage
+                  type="button"
+                  onClick={() => handleClickToUpload('uploadElementButton')}
+                >
+                  Adicionar Anexo
+                </UploadImage>
+              </RowContainer>
+              {attachment && attachment.length > 0 ? (
+                <Scroll options={{ suppressScrollX: true }}>
+                  {attachment.map(item => (
+                    <RowContainer
+                      key={item.attachmentId}
+                      style={{ padding: '0 10px 5px 10px' }}
+                    >
+                      <AttachmentContainer>
+                        <a
+                          href={item.fileLink}
+                          rel="noopener noreferrer"
+                          target="_blank"
+                          download
+                        >
+                          {item.fileName}
+                        </a>
+                        <RemoveButton
+                          type="button"
+                          onClick={() => handleRemoveAttachment(item)}
+                        >
+                          <Icon
+                            path={mdiDelete}
+                            title="Remover Anexo"
+                            size="20px"
+                            color="#333"
+                          />
+                        </RemoveButton>
+                      </AttachmentContainer>
+                    </RowContainer>
+                  ))}
+                </Scroll>
+              ) : null}
+            </Form>
+          </Container>
+        </>
       )}
       <BottomActions>
         <Icon

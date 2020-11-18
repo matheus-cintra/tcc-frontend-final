@@ -32,6 +32,9 @@ import {
   DanfeImage,
   UploadImage,
   RemoveButton,
+  LoadingContainer,
+  TextLoadingDocuments,
+  LoadingScreen,
 } from './styles';
 
 function BillingDialog({ setOpen, current, serviceOrders }) {
@@ -54,6 +57,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
   const [inputActive, setInputActive] = useState({
     serviceOrder: false,
   });
+  const [attaching, setAttaching] = useState(false);
 
   useEffect(() => {
     const elServiceOrder = document.getElementById(
@@ -86,6 +90,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
   };
 
   async function handleUpload(e, setInfo, setInfoId, el) {
+    setAttaching(true);
     const $el = document.getElementById(el);
     const files = e.target.files[0];
     const result = await api.post('/api/v1/tools/get-signed-url', {
@@ -97,8 +102,10 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
         setInfo(result.data.doc);
         setInfoId(result.data.doc.attachmentId);
         $el.value = '';
+        setAttaching(false);
       })
       .catch(() => {
+        setAttaching(false);
         toast.error('Falha ao anexar arquivo. Tente novamente.');
         $el.value = '';
       });
@@ -278,10 +285,155 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
         />
       </Toolbar>
       {billingId ? (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <fieldset disabled={submitting}>
-              <Divider>Dados da Faturamento</Divider>
+        <>
+          <LoadingContainer style={{ display: attaching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>Anexando</TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: attaching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+              <fieldset disabled={submitting}>
+                <Divider>Dados da Faturamento</Divider>
+                <RowContainer>
+                  <InputContainer
+                    style={{ marginRight: '5px', display: 'flex' }}
+                  >
+                    <FloatingLabel
+                      htmlFor="autocompleteServiceOrderId"
+                      active={inputActive.serviceOrder}
+                    >
+                      Ordem de Serviço
+                    </FloatingLabel>
+                    <Autocomplete
+                      suggestions={autocompleteServiceOrders}
+                      onSuggestionsFetchRequested={({ value }) =>
+                        filterSuggestions(value, 'serviceOrder')
+                      }
+                      onSuggestionsClearRequested={clearServiceOrderRequest}
+                      getSuggestionValue={getSuggestionValue}
+                      renderSuggestion={renderSuggestion}
+                      inputProps={serviceOrderInputProps}
+                      onSuggestionSelected={(e, { suggestion }) =>
+                        handleSuggestionSelect(suggestion, 'serviceOrder')
+                      }
+                      name="serviceOrderName"
+                    />
+                    {noServiceOrderSuggestions ? (
+                      <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
+                        Nenhuma ordem de serviço encontrada. Clique para
+                        adicionar.
+                      </NoAutocompleteSuggestion>
+                    ) : null}
+                  </InputContainer>
+                </RowContainer>
+                <Divider>Danfe | XML</Divider>
+                <RowContainer style={{ justifyContent: 'space-around' }}>
+                  <input
+                    id="uploadDanfeElementButton"
+                    hidden
+                    type="file"
+                    onChange={e =>
+                      handleUploadMethod(e, 'uploadDanfeElementButton', 'danfe')
+                    }
+                  />
+                  <input
+                    id="uploadXmlElementButton"
+                    hidden
+                    type="file"
+                    onChange={e =>
+                      handleUploadMethod(e, 'uploadXmlElementButton', 'xml')
+                    }
+                  />
+                  {current && current._danfe.length === 0 && !danfe ? (
+                    <DanfeImage>
+                      <UploadImage
+                        type="button"
+                        onClick={() =>
+                          handleClickToUpload('uploadDanfeElementButton')
+                        }
+                      >
+                        Adicionar Danfe
+                      </UploadImage>
+                    </DanfeImage>
+                  ) : null}
+                  {current && current._xml.length === 0 && !xml ? (
+                    <DanfeImage>
+                      <UploadImage
+                        type="button"
+                        onClick={() =>
+                          handleClickToUpload('uploadXmlElementButton')
+                        }
+                      >
+                        Adicionar XML
+                      </UploadImage>
+                    </DanfeImage>
+                  ) : null}
+                  {(current._danfe.length > 0 && current._danfe[0].fileLink) ||
+                  danfe ? (
+                    <DanfeImage>
+                      <span>Danfe</span>
+                      <a
+                        href={
+                          current._danfe.length > 0
+                            ? current._danfe[0].fileLink
+                            : danfe.fileLink
+                        }
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        download
+                      >
+                        <Icon path={mdiFile} size={6} color="#CCC" />
+                      </a>
+                      <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                        <Icon
+                          path={mdiDelete}
+                          title="Remover Danfe"
+                          size="20px"
+                          color="#333"
+                        />
+                      </RemoveButton>
+                    </DanfeImage>
+                  ) : null}
+                  {(current._xml.length > 0 && current._xml[0].fileLink) ||
+                  xml ? (
+                    <DanfeImage>
+                      <span>XML</span>
+                      <a
+                        href={
+                          current._xml.length > 0
+                            ? current._xml[0].fileLink
+                            : xml.fileLink
+                        }
+                        rel="noopener noreferrer"
+                        target="_blank"
+                        download
+                      >
+                        <Icon path={mdiFile} size={6} color="#CCC" />
+                      </a>
+                      <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                        <Icon
+                          path={mdiDelete}
+                          title="Remover XML"
+                          size="20px"
+                          color="#333"
+                        />
+                      </RemoveButton>
+                    </DanfeImage>
+                  ) : null}
+                </RowContainer>
+              </fieldset>
+            </Form>
+          </Container>
+        </>
+      ) : (
+        <>
+          <LoadingContainer style={{ display: attaching ? 'flex' : 'none' }}>
+            <TextLoadingDocuments>Anexando</TextLoadingDocuments>
+            <LoadingScreen />
+          </LoadingContainer>
+          <Container style={{ display: attaching ? 'none' : 'flex' }}>
+            <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
+              <Divider>Dádos Básicos</Divider>
               <RowContainer>
                 <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
                   <FloatingLabel
@@ -312,6 +464,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                   ) : null}
                 </InputContainer>
               </RowContainer>
+
               <Divider>Danfe | XML</Divider>
               <RowContainer style={{ justifyContent: 'space-around' }}>
                 <input
@@ -330,7 +483,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     handleUploadMethod(e, 'uploadXmlElementButton', 'xml')
                   }
                 />
-                {current && current._danfe.length === 0 && !danfe ? (
+                {!danfe || !danfe.fileLink ? (
                   <DanfeImage>
                     <UploadImage
                       type="button"
@@ -342,7 +495,7 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     </UploadImage>
                   </DanfeImage>
                 ) : null}
-                {current && current._xml.length === 0 && !xml ? (
+                {!xml || !xml.fileLink ? (
                   <DanfeImage>
                     <UploadImage
                       type="button"
@@ -354,16 +507,11 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     </UploadImage>
                   </DanfeImage>
                 ) : null}
-                {(current._danfe.length > 0 && current._danfe[0].fileLink) ||
-                danfe ? (
+                {danfe && danfe.fileLink ? (
                   <DanfeImage>
                     <span>Danfe</span>
                     <a
-                      href={
-                        current._danfe.length > 0
-                          ? current._danfe[0].fileLink
-                          : danfe.fileLink
-                      }
+                      href={danfe.fileLink}
                       rel="noopener noreferrer"
                       target="_blank"
                       download
@@ -380,16 +528,11 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     </RemoveButton>
                   </DanfeImage>
                 ) : null}
-                {(current._xml.length > 0 && current._xml[0].fileLink) ||
-                xml ? (
+                {xml && xml.fileLink ? (
                   <DanfeImage>
                     <span>XML</span>
                     <a
-                      href={
-                        current._xml.length > 0
-                          ? current._xml[0].fileLink
-                          : xml.fileLink
-                      }
+                      href={xml.fileLink}
                       rel="noopener noreferrer"
                       target="_blank"
                       download
@@ -407,130 +550,9 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                   </DanfeImage>
                 ) : null}
               </RowContainer>
-            </fieldset>
-          </Form>
-        </Container>
-      ) : (
-        <Container>
-          <Form ref={formRef} onSubmit={handleSubmit} id="editForm">
-            <Divider>Dádos Básicos</Divider>
-            <RowContainer>
-              <InputContainer style={{ marginRight: '5px', display: 'flex' }}>
-                <FloatingLabel
-                  htmlFor="autocompleteServiceOrderId"
-                  active={inputActive.serviceOrder}
-                >
-                  Ordem de Serviço
-                </FloatingLabel>
-                <Autocomplete
-                  suggestions={autocompleteServiceOrders}
-                  onSuggestionsFetchRequested={({ value }) =>
-                    filterSuggestions(value, 'serviceOrder')
-                  }
-                  onSuggestionsClearRequested={clearServiceOrderRequest}
-                  getSuggestionValue={getSuggestionValue}
-                  renderSuggestion={renderSuggestion}
-                  inputProps={serviceOrderInputProps}
-                  onSuggestionSelected={(e, { suggestion }) =>
-                    handleSuggestionSelect(suggestion, 'serviceOrder')
-                  }
-                  name="serviceOrderName"
-                />
-                {noServiceOrderSuggestions ? (
-                  <NoAutocompleteSuggestion onClick={handleNoServiceOrder}>
-                    Nenhuma ordem de serviço encontrada. Clique para adicionar.
-                  </NoAutocompleteSuggestion>
-                ) : null}
-              </InputContainer>
-            </RowContainer>
-
-            <Divider>Danfe | XML</Divider>
-            <RowContainer style={{ justifyContent: 'space-around' }}>
-              <input
-                id="uploadDanfeElementButton"
-                hidden
-                type="file"
-                onChange={e =>
-                  handleUploadMethod(e, 'uploadDanfeElementButton', 'danfe')
-                }
-              />
-              <input
-                id="uploadXmlElementButton"
-                hidden
-                type="file"
-                onChange={e =>
-                  handleUploadMethod(e, 'uploadXmlElementButton', 'xml')
-                }
-              />
-              {!danfe || !danfe.fileLink ? (
-                <DanfeImage>
-                  <UploadImage
-                    type="button"
-                    onClick={() =>
-                      handleClickToUpload('uploadDanfeElementButton')
-                    }
-                  >
-                    Adicionar Danfe
-                  </UploadImage>
-                </DanfeImage>
-              ) : null}
-              {!xml || !xml.fileLink ? (
-                <DanfeImage>
-                  <UploadImage
-                    type="button"
-                    onClick={() =>
-                      handleClickToUpload('uploadXmlElementButton')
-                    }
-                  >
-                    Adicionar XML
-                  </UploadImage>
-                </DanfeImage>
-              ) : null}
-              {danfe && danfe.fileLink ? (
-                <DanfeImage>
-                  <span>Danfe</span>
-                  <a
-                    href={danfe.fileLink}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    download
-                  >
-                    <Icon path={mdiFile} size={6} color="#CCC" />
-                  </a>
-                  <RemoveButton type="button" onClick={handleOpenAskDialog}>
-                    <Icon
-                      path={mdiDelete}
-                      title="Remover Danfe"
-                      size="20px"
-                      color="#333"
-                    />
-                  </RemoveButton>
-                </DanfeImage>
-              ) : null}
-              {xml && xml.fileLink ? (
-                <DanfeImage>
-                  <span>XML</span>
-                  <a
-                    href={xml.fileLink}
-                    rel="noopener noreferrer"
-                    target="_blank"
-                    download
-                  >
-                    <Icon path={mdiFile} size={6} color="#CCC" />
-                  </a>
-                  <RemoveButton type="button" onClick={handleOpenAskDialog}>
-                    <Icon
-                      path={mdiDelete}
-                      title="Remover XML"
-                      size="20px"
-                      color="#333"
-                    />
-                  </RemoveButton>
-                </DanfeImage>
-              ) : null}
-            </RowContainer>
-          </Form>
-        </Container>
+            </Form>
+          </Container>
+        </>
       )}
       <BottomActions>
         {billingId ? (
