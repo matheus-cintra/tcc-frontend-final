@@ -90,7 +90,10 @@ export const Container = styled.nav`
       padding: 0.5em;
       position: relative;
       img {
-        width: calc(${sizes.tablet} - 50px);
+        width: 50px;
+        height: 50px;
+        max-width: 50px;
+        max-height: 50px;
       }
 
       h2 {

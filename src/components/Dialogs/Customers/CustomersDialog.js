@@ -196,13 +196,14 @@ function CustomerDialog({ setOpen, current }) {
     } catch (error) {
       setSubmitting(false);
       if (error instanceof Yup.ValidationError) {
-        const errorMessages = {};
+        toast.error('Verifique os campos Obrigatório');
+        // const errorMessages = {};
 
-        error.inner.forEach(err => {
-          errorMessages[err.path] = err.message;
-        });
+        // error.inner.forEach(err => {
+        //   errorMessages[err.path] = err.message;
+        // });
 
-        formRef.current.setErrors(errorMessages);
+        // formRef.current.setErrors(errorMessages);
       } else {
         return toast.error(error.response.data.data.message);
       }
