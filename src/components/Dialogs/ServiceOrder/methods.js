@@ -65,13 +65,16 @@ async function submit(
   form.data.customerName = form.customer.name;
   form.data.serviceName = form.service.name;
   setSubmitting(true);
-
+  console.warn('oba', form);
   try {
     formRef.current.setErrors({});
     await schema.validate(form.data, {
       abortEarly: false,
     });
-
+    if (form.data.paymentValue === '0' || form.data.paymentValue === '') {
+      setSubmitting(false);
+      return toast.error('Verificar campos obrigatórios.');
+    }
     const _serviceDate =
       form.data.dateService &&
       moment(form.data.dateService, 'DD/MM/YYYY')

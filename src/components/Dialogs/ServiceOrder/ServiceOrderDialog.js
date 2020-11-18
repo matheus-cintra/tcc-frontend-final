@@ -297,7 +297,11 @@ function ServiceOrderDialog({ setOpen, current, customers, services }) {
       inputPaymentDateEl.dispatchEvent(event);
 
     const inputPaymentValueEl = document.getElementById('inputPaymentValue');
-    if (current.paymentValue && current.paymentValue !== '')
+    if (
+      inputPaymentValueEl &&
+      current.paymentValue &&
+      current.paymentValue !== ''
+    )
       inputPaymentValueEl.dispatchEvent(event);
   }
 
