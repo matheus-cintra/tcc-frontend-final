@@ -3,13 +3,20 @@ import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 import logo from '../../assets/logo.svg';
-import { Form, LoginContainer, RegisterContainer } from './styles';
+import {
+  Form,
+  LoginContainer,
+  RegisterContainer,
+  LoadingContainer,
+  TextLoadingDocuments,
+  LoadingScreen,
+} from './styles';
 import Input from '../../components/Form/Input';
 
 import { signInRequest } from '../../store/modules/auth/actions';
 
 export default function SignIn() {
-  const [submitting, setSubmitting] = useState(false);
+  const [logging, setLogging] = useState(false);
 
   const dispatch = useDispatch();
 
@@ -25,14 +32,14 @@ export default function SignIn() {
   const formRef = useRef(null);
 
   async function handleSubmit(data) {
-    setSubmitting(true);
+    setLogging(true);
     try {
       const { email, password } = data;
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      dispatch(signInRequest(email, password));
+      dispatch(signInRequest(email, password, setLogging));
     } catch (error) {
       if (error instanceof Yup.ValidationError) {
         const errorMessages = {};
@@ -42,21 +49,31 @@ export default function SignIn() {
         });
         formRef.current.setErrors(errorMessages);
       }
+
+      setLogging(false);
     }
   }
 
   return (
     <>
-      <LoginContainer>
+      <LoadingContainer
+        style={{
+          display: logging ? 'flex' : 'none',
+          justifyContent: 'center',
+          flex: 1,
+        }}
+      >
+        <TextLoadingDocuments>Entrando</TextLoadingDocuments>
+        <LoadingScreen />
+      </LoadingContainer>
+      <LoginContainer style={{ display: logging ? 'none' : '' }}>
         <img src={logo} alt="Sis - MEI" />
 
         <Form ref={formRef} onSubmit={handleSubmit}>
           <Input name="email" type="email" placeholder="Seu e-mail" />
           <Input name="password" type="password" placeholder="Sua senha" />
 
-          <button type="submit" disabled={submitting}>
-            Acessar
-          </button>
+          <button type="submit">Acessar</button>
 
           <Link
             style={{

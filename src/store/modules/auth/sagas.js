@@ -9,7 +9,7 @@ import { signInSuccess, logoutUser } from './actions';
 import { setCompany } from '../company/actions';
 
 export function* signIn({ payload }) {
-  const { email, password } = payload;
+  const { email, password, setLogging } = payload;
 
   try {
     const response = yield call(api.post, '/api/v1/login', { email, password });
@@ -38,6 +38,7 @@ export function* signIn({ payload }) {
   } catch (err) {
     console.warn('err > ', err.response);
     toast.error(err.response.data.message);
+    setLogging(false);
   }
 }
 

@@ -187,6 +187,13 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
     );
   };
 
+  const handleDeleteAttachment = async (attachmentId, setType, setId) => {
+    const result = await api.delete(`/api/v1/attachments/${attachmentId}`);
+    if (!result.data.success) return toast.error('Erro ao deletar o anexo');
+    setType(undefined);
+    setId(undefined);
+  };
+
   const getSuggestionValue = suggestion => suggestion.service[0].name;
 
   const renderSuggestion = suggestion => (
@@ -384,7 +391,16 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                       >
                         <Icon path={mdiFile} size={6} color="#CCC" />
                       </a>
-                      <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                      <RemoveButton
+                        type="button"
+                        onClick={() =>
+                          handleDeleteAttachment(
+                            current._danfe[0].attachmentId,
+                            setDanfe,
+                            setDanfeId
+                          )
+                        }
+                      >
                         <Icon
                           path={mdiDelete}
                           title="Remover Danfe"
@@ -410,7 +426,16 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                       >
                         <Icon path={mdiFile} size={6} color="#CCC" />
                       </a>
-                      <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                      <RemoveButton
+                        type="button"
+                        onClick={() =>
+                          handleDeleteAttachment(
+                            current._xml[0].attachmentId,
+                            setXml,
+                            setXmlId
+                          )
+                        }
+                      >
                         <Icon
                           path={mdiDelete}
                           title="Remover XML"
@@ -518,7 +543,16 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     >
                       <Icon path={mdiFile} size={6} color="#CCC" />
                     </a>
-                    <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                    <RemoveButton
+                      type="button"
+                      onClick={() =>
+                        handleDeleteAttachment(
+                          danfe.attachmentId,
+                          setDanfe,
+                          setDanfeId
+                        )
+                      }
+                    >
                       <Icon
                         path={mdiDelete}
                         title="Remover Danfe"
@@ -539,7 +573,16 @@ function BillingDialog({ setOpen, current, serviceOrders }) {
                     >
                       <Icon path={mdiFile} size={6} color="#CCC" />
                     </a>
-                    <RemoveButton type="button" onClick={handleOpenAskDialog}>
+                    <RemoveButton
+                      type="button"
+                      onClick={() =>
+                        handleDeleteAttachment(
+                          xml.attachmentId,
+                          setXml,
+                          setXmlId
+                        )
+                      }
+                    >
                       <Icon
                         path={mdiDelete}
                         title="Remover XML"
