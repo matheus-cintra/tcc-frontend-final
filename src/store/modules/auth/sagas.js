@@ -36,7 +36,6 @@ export function* signIn({ payload }) {
 
     history.push('/dashboard');
   } catch (err) {
-    console.warn('err > ', err.response);
     toast.error(err.response.data.message);
     setLogging(false);
   }

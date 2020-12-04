@@ -65,7 +65,6 @@ async function submit(
   form.data.customerName = form.customer.name;
   form.data.serviceName = form.service.name;
   setSubmitting(true);
-  console.warn('oba', form);
   try {
     formRef.current.setErrors({});
     await schema.validate(form.data, {

@@ -151,9 +151,7 @@ function Profile() {
   };
 
   function closeUpdate() {
-    console.warn('chegou aqui... ');
     dispatch(logoutUser());
-    console.warn('chegou aqui 22... ');
     window.location.reload();
   }
 
